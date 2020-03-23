@@ -38,47 +38,27 @@ class CanvecEn(Provisioner):
             imageRequests[scale] = list()
             remainingWidthMetres = totalWidthMetres
             remainingHeightMetres = totalHeightMetres
-            maxWInMetres = self.pixelsToMetres(self.maxW, scale)
-            maxHInMetres = self.pixelsToMetres(self.maxH, scale)
-            remainingHeightPixels = self.metresToPixels(remainingHeightMetres, scale)
-            if remainingHeightPixels < self.maxH:
-                nextImageHeightPixels = remainingHeightPixels
-                nextImageHeightMetres = remainingHeightMetres
-            else:
-                nextImageHeightPixels = self.maxH
-                nextImageHeightMetres = maxHInMetres
+            nextImageData = self.getGridAxisAdvanceData(remainingHeightMetres, scale, self.maxH)
+            nextImageHeightPixels, nextImageHeightMetres = nextImageData.nextImagePixels, nextImageData.nextImageMapUnits
             lastStartPoint = startPoint.copy()
+            # advance along X axis from lower-left. Calculate all column dimensions for a single row
             while remainingWidthMetres > 0:
-                remainingWidthPixels = self.metresToPixels(remainingWidthMetres, scale)
-                if remainingWidthPixels < self.maxW:
-                    nextImageWidthPixels = remainingWidthPixels
-                    nextImageWidthMetres = remainingWidthMetres
-                    remainingWidthMetres = 0
-                else:
-                    nextImageWidthPixels = self.maxW
-                    nextImageWidthMetres = maxWInMetres
-                    remainingWidthMetres = remainingWidthMetres - maxWInMetres
+                nextImageData = self.getGridAxisAdvanceData(remainingWidthMetres, scale, self.maxW)
+                nextImageWidthPixels, nextImageWidthMetres, remainingWidthMetres = nextImageData.nextImagePixels, nextImageData.nextImageMapUnits, remainingWidthMetres - nextImageData.remainingMapUnitReduction
                 minX, minY = lastStartPoint[0], lastStartPoint[1]
                 maxX, maxY = minX + nextImageWidthMetres, minY + nextImageHeightMetres
                 imageRequests[scale].append([ImageDimensions(minX, minY, maxX, maxY, nextImageWidthPixels, nextImageHeightPixels)])
                 lastStartPoint = (maxX, minY)
             remainingHeightMetres = remainingHeightMetres - (imageRequests[scale][0][0].maxY - imageRequests[scale][0][0].minY)
+            # advance along Y axis from lower-left. Calculate all row dimensions for a single column
             while remainingHeightMetres > 0:
                 baseImageRequest = imageRequests[scale][0][0]
-                # duplicates logic at the start of the scale iteration *except for the height reduction*, should find some way to DRY here
-                # also very similar to width processing logic. if approach works should find some way to consolidate
-                remainingHeightPixels = self.metresToPixels(remainingHeightMetres, scale)
-                if remainingHeightPixels < self.maxH:
-                    nextImageHeightPixels = remainingHeightPixels
-                    nextImageHeightMetres = remainingHeightMetres
-                    remainingHeightMetres = 0
-                else:
-                    nextImageHeightPixels = self.maxH
-                    nextImageHeightMetres = maxHInMetres
-                    remainingHeightMetres = remainingHeightMetres - maxHInMetres
+                nextImageData = self.getGridAxisAdvanceData(remainingHeightMetres, scale, self.maxH)
+                nextImageHeightPixels, nextImageHeightMetres, remainingHeightMetres = nextImageData.nextImagePixels, nextImageData.nextImageMapUnits, remainingHeightMetres - nextImageData.remainingMapUnitReduction
                 minX, minY = baseImageRequest.minX, baseImageRequest.maxY
                 maxX, maxY = baseImageRequest.maxX, baseImageRequest.maxY + nextImageHeightMetres
                 imageRequests[scale][0].append(ImageDimensions(minX, minY, maxX, maxY, baseImageRequest.pixelX, nextImageHeightPixels))
+            # fill gaps using single row and column to make a complete grid
             i = 1
             while i < len(imageRequests[scale]):
                 j = 1
@@ -88,6 +68,9 @@ class CanvecEn(Provisioner):
                     imageRequests[scale][i].append(ImageDimensions(xReference.minX, yReference.minY, xReference.maxX, yReference.maxY, xReference.pixelX, yReference.pixelY))
                     j = j + 1
                 i = i + 1
+
+        # at this point we have determined all file requests that are required to cover the area, should be passed off to a separate component to issue the requests
+        
         fileRequests = list()
         for scale in imageRequests:
             i = 0
@@ -131,6 +114,14 @@ class CanvecEn(Provisioner):
                 except Exception as exc:
                     print ('exception: ' + str(type(exc)))
 
+    def getGridAxisAdvanceData(self, remainingMapUnits, scale, maxPixels):
+        remainingPixels = self.mapUnitsToPixels(remainingMapUnits, scale)
+        if remainingPixels < maxPixels:
+            return GridAxisAdvanceData(remainingPixels, remainingMapUnits, remainingMapUnits)
+        else:
+            maxPixelsInMapUnits = self.pixelsToMapUnits(maxPixels, scale)
+            return GridAxisAdvanceData(maxPixels, maxPixelsInMapUnits, maxPixelsInMapUnits)
+
     def issueFileRequest(self, fileRequest):
         filePath = fileRequest[0]
         if os.path.exists(filePath) and os.stat(filePath).st_size > 0:
@@ -153,8 +144,15 @@ class CanvecEn(Provisioner):
                 outputBounds = (imageRequest.minX, imageRequest.maxY, imageRequest.maxX, imageRequest.minY) \
             )
 
-    def metresToPixels(self, metres, scale):
-        return (metres / scale) / self.metresPerInch * self.dpi
+    def mapUnitsToPixels(self, mapUnits, scale):
+        return (mapUnits / scale) / self.mapUnitsPerInch * self.dpi
 
-    def pixelsToMetres(self, pixels, scale):
-        return ((pixels * scale) / self.dpi) * self.metresPerInch
+    def pixelsToMapUnits(self, pixels, scale):
+        return ((pixels * scale) / self.dpi) * self.mapUnitsPerInch
+
+
+
+class GridAxisAdvanceData:
+
+    def __init__(self, nextImagePixels, nextImageMapUnits, remainingMapUnitReduction):
+        self.nextImagePixels, self.nextImageMapUnits, self.remainingMapUnitReduction = nextImagePixels, nextImageMapUnits, remainingMapUnitReduction
