@@ -1,4 +1,4 @@
-class ImageRequestProperties:
+class ImageDimensions:
 
     def __init__(self, minX, minY, maxX, maxY, pixelX, pixelY):
         self.minX, self.minY, self.maxX, self.maxY, self.pixelX, self.pixelY = minX, minY, maxX, maxY, pixelX, pixelY
