@@ -70,6 +70,9 @@ class CanvecEn(Provisioner):
                 i = i + 1
 
         # at this point we have determined all file requests that are required to cover the area, should be passed off to a separate component to issue the requests
+        # one component executes requests and saves png files if not already existing
+        # separate component converts to .tiff if not already existing
+        # separate component merges files into big tiff? will have to check effects of merge on text quality
         
         fileRequests = list()
         for scale in imageRequests:

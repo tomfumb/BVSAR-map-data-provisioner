@@ -1,0 +1,5 @@
+https://wiki.openstreetmap.org/wiki/Zoom_levels
+https://tilemill-project.github.io/tilemill/docs/guides/advanced-map-design/
+https://gdal.org/programs/gdal_translate.html
+https://gdal.org/python/osgeo.gdal-module.html#TranslateOptions
+https://open.canada.ca/data/en/dataset/8ba2aa2a-7bb9-4448-b4d7-f164409fe056#wb-auto-6
