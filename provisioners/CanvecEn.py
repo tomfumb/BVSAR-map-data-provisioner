@@ -8,6 +8,7 @@ from osgeo import gdal
 
 from provisioners.Provisioner import Provisioner
 from provisioners.ImageDimensions import ImageDimensions
+from tilemill.TileMillManager import TileMillManager
 
 class CanvecEn(Provisioner):
 
@@ -16,19 +17,27 @@ class CanvecEn(Provisioner):
     dpi = 96
 
     # ** should be determined from WMS GetCapabilities, not hard-coded
+    
+
+    ## this can be a ProjectedWMSProvisioner maybe and it first tries to do EPSG:3857 before lookign for a fallback CRS
+    ## in theory anything projected can be treated as a cartesian grid so this could be fairly generic
+
+
     maxW = 4096
     maxH = 4096
 
     maxAsyncRequests = 4
 
-    scales = (250000, 150000, 70000, 35000)
+
+    scalesAndZooms = { 250000: (9, 10, 11), 150000: (12,), 70000: (13,), 35000: (14, 15, 16, 17) }
+    scales = scalesAndZooms.keys()
 
     def __init__(self):
         self.destCrs = pyproj.Proj('+init={self.crsEpsgCode}'.format(self = self))
 
-    def provision(self, minX, minY, maxX, maxY, outputDirectory):
-        lowerLeft = pyproj.transform(self.srcCrs, self.destCrs, minX, minY)
-        upperRight = pyproj.transform(self.srcCrs, self.destCrs, maxX, maxY)
+    def provision(self, boundsMinX, boundsMinY, boundsMaxX, boundsMaxY, outputDirectory):
+        lowerLeft = pyproj.transform(self.srcCrs, self.destCrs, boundsMinX, boundsMinY)
+        upperRight = pyproj.transform(self.srcCrs, self.destCrs, boundsMaxX, boundsMaxY)
         startPoint = list(map(lambda ord: math.floor(ord), lowerLeft))
         endPoint = list(map(lambda ord: math.ceil(ord), upperRight))
         totalWidthMetres = endPoint[0] - startPoint[0]
@@ -41,6 +50,9 @@ class CanvecEn(Provisioner):
             nextImageData = self.getGridAxisAdvanceData(remainingHeightMetres, scale, self.maxH)
             nextImageHeightPixels, nextImageHeightMetres = nextImageData.nextImagePixels, nextImageData.nextImageMapUnits
             lastStartPoint = startPoint.copy()
+
+            ## is it possible to calculate both axes in one block, but then still do grid-filling? 
+
             # advance along X axis from lower-left. Calculate all column dimensions for a single row
             while remainingWidthMetres > 0:
                 nextImageData = self.getGridAxisAdvanceData(remainingWidthMetres, scale, self.maxW)
@@ -109,6 +121,10 @@ class CanvecEn(Provisioner):
         for fileRequest in fileRequests:
             os.makedirs(os.path.dirname(fileRequest[0]), exist_ok = True)
         
+
+        ## would be great to build some heuristics here to find the optimal concurrent request count (with a defined or default limit, e.g. 8)
+
+
         with concurrent.futures.ThreadPoolExecutor(max_workers = self.maxAsyncRequests) as executor:
             requestFutures = (executor.submit(self.issueFileRequest, fileRequest) for fileRequest in fileRequests)
             for future in concurrent.futures.as_completed(requestFutures):
@@ -116,6 +132,9 @@ class CanvecEn(Provisioner):
                     future.result()
                 except Exception as exc:
                     print ('exception: ' + str(type(exc)))
+
+        tilemill = TileMillManager()
+        tilemill.generate(outputDirectory, self.scalesAndZooms, boundsMinX, boundsMinY, boundsMaxX, boundsMaxY)
 
     def getGridAxisAdvanceData(self, remainingMapUnits, scale, maxPixels):
         remainingPixels = self.mapUnitsToPixels(remainingMapUnits, scale)

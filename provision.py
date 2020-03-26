@@ -16,6 +16,13 @@ def main():
     if args['minX'] >= args['maxX'] or args['minY'] >= args['maxY']:
        	print('Min / max bounds are invalid. Min values must not equal or exceed max values')
         exit(1)
+
+    ### truncate values to reasonable precision, don't want outrageously long file / project names for this
+
+    ### additional parameter can have create, replace, continue and determines what happens if the provisioning has already occurred
+
+    ### add logging library to better control log granularity
+
     if args['src'] == SRC_CANVEC_EN:
         provisioner = CanvecEn()
         provisioner.provision( \
