@@ -9,12 +9,13 @@ import gdal
 import json
 import logging
 import pyproj
+import subprocess
+import time
+import sys
 
 class TileMillManager:
 
     # need to accommodate that this is just one way of providing data - should make specific to tiff data so that e.g. shapefile can do the same
-
-    url = 'http://localhost:20009/'
 
     def __init__(self):
         try:
@@ -30,10 +31,13 @@ class TileMillManager:
         requests_log.setLevel(logging.DEBUG)
         requests_log.propagate = True
 
-    def generate(self, parentDirectory, scalesAndZooms, minX, minY, maxX, maxY): 
-        projectName = self._getProjectNameFromDirectory(parentDirectory)
+    def generate(self, parentDirectory, scalesAndZooms, minX, minY, maxX, maxY, environmentConfig): 
+
+        ### need a deterministic way to get projectName - keep creating new projects when not necessary. Perhaps last modified date of a file?
+
+        projectName = 'auto_{nowTs}'.format(nowTs = self._getNowAsEpochMs())
         session = requests.session()
-        existingProjects = session.get(self.url + 'api/Project').json()
+        existingProjects = session.get(environmentConfig['tilemillUrl'] + 'api/Project').json()
         projectNameTaken = False
         for existingProject in existingProjects:
             if (existingProject["id"] == projectName):
@@ -53,37 +57,28 @@ class TileMillManager:
         lowestZoom = zoomLevels[0]
         highestZoom = zoomLevels[len(zoomLevels) - 1]
 
+        stylesheetEntries = ['Map { background-color: #fff }']
+        for scale in scales:
+            for zoomLevel in scalesAndZooms[scale]:
+                stylesheetEntries.append('.{scale} [zoom = {zoom}] {{ raster-opacity: 1; }}'.format(scale = str(scale), zoom = zoomLevel))
+
         layers = list()
         for scale in scales:
-            for filename in os.listdir(os.path.join(parentDirectory, str(scale))):
-                if filename.endswith('.tiff'):
-
-                    ## CURRENT issue - files are not available in docker volume, need copying to it before can reference in tilemill project
-                    ## will not be an issue when run in Docker container, dev issue only so solution does not need to be perfect
-
-                    try:
-                        import docker
-                        client = docker.from_env()
-                        container = client.containers.get("tilemill")
-                        container.put_archive()
-                    except ImportError:
-                        print ('no docker import available')
-
-
-
-
-                    layers.append({ \
-                        'geometry': 'raster', \
-                        'extent': self._getExtentFromRaster(os.path.join(parentDirectory, str(scale), filename)), \
-                        'id': re.sub(r'\.tiff$', '', filename), \
-                        'class': scale, \
-                        'Datasource': { 'file': os.path.join(parentDirectory, str(scale), filename) }, \
-                        'layer': None, \
-                        'srs-name': '900913', \
-                        'srs': '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over', \
-                        'advanced': {}, \
-                        'name': re.sub(r'\.tiff$', '', filename)
-                    })
+            for fileLocations in self._getLayerFilePaths(parentDirectory, scale, environmentConfig):
+                srcLocation = fileLocations.get('tilemillLocation', fileLocations['srcLocation'])
+                fileIdentifier = '{scale}_{filename}'.format(scale = str(scale), filename = re.sub(r'\.tiff$', '', fileLocations['filename']))
+                layers.append({ \
+                    'geometry': 'raster', \
+                    'extent': self._getExtentFromRaster(fileLocations['srcLocation']), \
+                    'id': fileIdentifier, \
+                    'class': str(scale), \
+                    'Datasource': { 'file': srcLocation }, \
+                    'layer': None, \
+                    'srs-name': '900913', \
+                    'srs': '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over', \
+                    'advanced': {}, \
+                    'name': fileIdentifier
+                })
 
         token = self._generateToken()
         projectDefinition = { \
@@ -94,7 +89,7 @@ class TileMillManager:
             'minzoom': lowestZoom, \
             'maxzoom': highestZoom, \
             'srs': '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over', \
-            'Stylesheet': (), \
+            'Stylesheet': list(map(lambda entry: {'data': entry[1], 'id': str(entry[0]) + '.mss'}, enumerate(stylesheetEntries))), \
             'Layer': layers, \
             'scale': 1, \
             'metatile': 2, \
@@ -105,42 +100,65 @@ class TileMillManager:
             'bones.token': token \
         }
         session.put( \
-            self.url + 'api/Project/' + projectName, \
+            environmentConfig['tilemillUrl'] + 'api/Project/' + projectName, \
             data = json.dumps(projectDefinition), \
             headers = { 'Content-Type': 'application/json' }, \
             cookies = { 'bones.token': token } \
         )
 
+        token = self._generateToken()
+        nowTs = self._getNowAsEpochMs()
+        exportDefinition = { \
+            'progress': 0, \
+            'status': 'waiting', \
+            'format': 'mbtiles', \
+            'project': projectName, \
+            'id': projectName, \
+            'zooms': (lowestZoom, highestZoom), \
+            'metatile': 2, \
+            'center': (centre[0], centre[1], lowestZoom), \
+            'bounds': (minX, minY, maxX, maxY), \
+            'static_zoom': lowestZoom, \
+            'filename': '{projectName}.mbtiles'.format(projectName = projectName), \
+            'note': '', \
+            'bbox': (minX, minY, maxX, maxY), \
+            'minzoom': lowestZoom, \
+            'maxzoom': highestZoom, \
+            'bones.token': token
+        }
+        session.put( \
+            environmentConfig['tilemillUrl'] + 'api/Export/' + str(nowTs), \
+            data = json.dumps(exportDefinition), \
+            headers = { 'Content-Type': 'application/json' }, \
+            cookies = { 'bones.token': token } \
+        )
 
+        isComplete = False
+        while isComplete == False:
+            try:
+                statuses = session.get(environmentConfig['tilemillUrl'] + 'api/Export').json()
+                remaining = None
+                for status in statuses:
+                    statusProject = status.get('project', None)
+                    if statusProject == projectName:
+                        remaining = status.get('remaining', sys.maxsize)
+                        print ('project {projectName} remaining: {remaining}ms'.format(projectName = projectName, remaining = str(remaining)))
+                        if remaining == 0:
+                            isComplete = True
+                        else:
+                            time.sleep(min(5, remaining / 1000))
+                if remaining == None:
+                    print ('no status available for current project, something went wrong')
+                    break
+            except:
+                print ('api rejected request for update')
+                break
+        print ('export complete')
 
-        # PUT to http://localhost:20009/api/Project/-127_657_54_6035_-126_579_54_9548_canvec_en (replae all commas & periods with underscores)
-        # Payload: {"bounds":[-180,-85.05112877980659,180,85.05112877980659],"center":[0,0,2],"format":"png8","interactivity":false,"minzoom":0,"maxzoom":22,"srs":"+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over","Stylesheet":[{"data":"Map {\n  background-color: #b8dee6;\n}\n\n","id":"style.mss"}],"Layer":[],"scale":1,"metatile":2,"id":"-127_657_54_6035_-126_579_54_9548_canvec_en","name":"","description":"","use-default":false,"bones.token":"PcNzNpHzFaB8TKIIWos902OfhPfWPbEv"}
-        # Token generated with following JavaScript
-# Backbone.csrf = function(path, timeout) {
-#     var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZY0123456789';
-#     var token = '';
-#     while (token.length < 32) {
-#         token += chars.charAt(Math.floor(Math.random() * chars.length));
-#     }
-
-#     // Remove hashes, query strings from cookie path.
-#     path = path || '/';
-#     path = path.split('#')[0].split('?')[0];
-
-#     var expires = new Date(+new Date + (timeout || 2000)).toGMTString();
-#     document.cookie = 'bones.token=' + token
-#         + ';expires=' + expires
-#         + ';path=' + path + ';';
-#     return token;
-# };
-        # first have to query projects with GET http://localhost:20009/api/Project, "name" property important
-        # Add Layer in the UI doesn't change anything, clicking "Save" PUTs the entire project like this:
-# {"bounds":[-180,-85.05112877980659,180,85.05112877980659],"center":[0,0,2],"format":"png8","interactivity":false,"minzoom":0,"maxzoom":22,"srs":"+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over","Stylesheet":[{"data":"Map {\n  background-color: #b8dee6;\n}\n\n.35000 { raster-opacity: 1; }","id":"style.mss"}],"Layer":[{"geometry":"raster","extent":[-127.65700686135976,54.60349625574196,-127.31626988532467,54.80038381567145],"id":"col0row0","class":"35000","Datasource":{"file":"/root/Documents/tile/input/col0_row0.png.tiff"},"layer":null,"srs-name":"900913","srs":"+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over","advanced":{},"name":"col0row0"},{"geometry":"raster","extent":[-127.65700686135976,54.80038381567145,-127.31626988532467,54.95480179615438],"id":"col0row1","class":"35000","Datasource":{"file":"/root/Documents/tile/input/col0_row1.png.tiff"},"layer":null,"srs-name":"900913","srs":"+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0.0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs +over","advanced":{},"name":"col0row1"}],"scale":1,"metatile":2,"id":"-127_657_54_6035_-126_579_54_9548_canvec_en","_updated":1585069205000,"name":"","description":"","tilejson":"2.0.0","scheme":"xyz","tiles":["http://0.0.0.0:20008/tile/-127_657_54_6035_-126_579_54_9548_canvec_en/{z}/{x}/{y}.png?updated=1585069205000&metatile=2&scale=1"],"grids":["http://0.0.0.0:20008/tile/-127_657_54_6035_-126_579_54_9548_canvec_en/{z}/{x}/{y}.grid.json?updated=1585069205000&metatile=2&scale=1"],"template":"","lastBrowsedFolder":"/root/Documents/tile/input","bones.token":"z0yy2brjLBfQQDFYgqumAAKTWzwmrAlU"}
-        # So I should actually be able to create the project in one shot with all layers and styles
-
-        # export request is a PUT to http://localhost:20009/api/Export/1585069712593
-        # PUT payload: {"progress":0,"status":"waiting","format":"mbtiles","project":"-127_657_54_6035_-126_579_54_9548_canvec_en","id":"1585069712593","zooms":[12,16],"metatile":2,"center":[-127.4785,54.7833,10],"bounds":[-180,-85.05112877980659,180,85.05112877980659],"static_zoom":2,"tiles":["http://0.0.0.0:20008/tile/-127_657_54_6035_-126_579_54_9548_canvec_en/{z}/{x}/{y}.png?updated=1585069600000&metatile=2&scale=1"],"filename":"-127_657_54_6035_-126_579_54_9548_canvec_en.mbtiles","note":"","bbox":[-127.6529,54.6087,-127.3192,54.9508],"minzoom":12,"maxzoom":16,"bones.token":"5BevHDNLaP3i2wC0lbPgjBupktyEAuF7"}
-        # this one failed, perhaps due to special characters in filename?
+        response = requests.get('{baseUrl}export/download/{projectName}.mbtiles'.format(baseUrl = environmentConfig['tilemillUrl'], projectName = projectName))
+        with open(os.path.join(parentDirectory, 'output.mbtiles'), 'wb') as file:
+            file.write(response.content)
+        print ('finished')
 
     def _generateToken(self):
         characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZY0123456789'
@@ -157,10 +175,13 @@ class TileMillManager:
             projectName = projectName \
         )
 
-    def _getProjectNameFromDirectory(self, directory): 
-        pathParts = directory.split(os.path.sep)
-        lastPart = pathParts[len(pathParts) - 1]
-        return re.sub(r"[^a-zA-Z0-9\-]", "_", lastPart)
+    def _getNowAsEpochMs(self):
+        return int(datetime.datetime.now().timestamp())
+
+    # def _getProjectNameFromDirectory(self, directory): 
+    #     pathParts = directory.split(os.path.sep)
+    #     lastPart = pathParts[len(pathParts) - 1]
+    #     return re.sub(r"[^a-zA-Z0-9\-]", "_", lastPart)
 
     def _getExtentFromRaster(self, path):
         image = gdal.Open(path)
@@ -172,3 +193,36 @@ class TileMillManager:
         lowerRight = pyproj.transform(srcCrs, destCrs, lrx, lry)
         upperLeft = pyproj.transform(srcCrs, destCrs, ulx, uly)
         return (upperLeft[0], lowerRight[1], lowerRight[0], upperLeft[1])
+
+    def _getLayerFilePaths(self, parentDirectory, scale, environmentConfig):
+        layerFiles = list()
+        srcDirectory = os.path.join(parentDirectory, str(scale))
+        for filename in os.listdir(srcDirectory):
+            if filename.endswith('.tiff'):
+                layerFiles.append({'srcLocation': os.path.join(srcDirectory, filename), 'filename': filename})
+
+        if (environmentConfig['container'] != None):
+            try:
+                import docker
+                alternateLayerFiles = list()
+                client = docker.from_env()
+                containerName = environmentConfig['container']['name']
+                container = client.containers.get(containerName)
+                containerBaseDir = environmentConfig['container']['dataDir']
+                containerFileDir = containerBaseDir + ('' if containerBaseDir.endswith('/') else '/') + str(scale) + '/' # explicitly use unix path separators as container is Ubuntu
+                container.exec_run('rm -rf ' + containerFileDir, stderr = True, stdout = True)
+                container.exec_run('mkdir -p ' + containerFileDir, stderr = True, stdout = True)
+                for layerFile in layerFiles:
+                    containerFile = containerFileDir + layerFile['filename']
+                    subprocess.check_output('docker cp ' + layerFile['srcLocation'] + ' ' + containerName + ':' + containerFile, shell = True)
+                    alternateLayerFile = layerFile.copy()
+                    alternateLayerFile['tilemillLocation'] = containerFile
+                    alternateLayerFiles.append(alternateLayerFile)
+                return alternateLayerFiles
+
+            except ImportError:
+                print ('no docker import available, dev config not possible')
+        
+        return layerFiles
+                
+

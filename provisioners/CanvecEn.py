@@ -1,4 +1,5 @@
 import os
+import re
 import math
 import pyproj
 import requests
@@ -35,7 +36,7 @@ class CanvecEn(Provisioner):
     def __init__(self):
         self.destCrs = pyproj.Proj('+init={self.crsEpsgCode}'.format(self = self))
 
-    def provision(self, boundsMinX, boundsMinY, boundsMaxX, boundsMaxY, outputDirectory):
+    def provision(self, boundsMinX, boundsMinY, boundsMaxX, boundsMaxY, outputDirectory, environmentConfig):
         lowerLeft = pyproj.transform(self.srcCrs, self.destCrs, boundsMinX, boundsMinY)
         upperRight = pyproj.transform(self.srcCrs, self.destCrs, boundsMaxX, boundsMaxY)
         startPoint = list(map(lambda ord: math.floor(ord), lowerLeft))
@@ -134,7 +135,7 @@ class CanvecEn(Provisioner):
                     print ('exception: ' + str(type(exc)))
 
         tilemill = TileMillManager()
-        tilemill.generate(outputDirectory, self.scalesAndZooms, boundsMinX, boundsMinY, boundsMaxX, boundsMaxY)
+        tilemill.generate(outputDirectory, self.scalesAndZooms, boundsMinX, boundsMinY, boundsMaxX, boundsMaxY, environmentConfig)
 
     def getGridAxisAdvanceData(self, remainingMapUnits, scale, maxPixels):
         remainingPixels = self.mapUnitsToPixels(remainingMapUnits, scale)
@@ -157,7 +158,7 @@ class CanvecEn(Provisioner):
             out.close()
             png = gdal.Open(filePath, gdal.GA_ReadOnly)
             gdal.Translate( \
-                '.'.join((filePath, 'tiff')), \
+                re.sub(r'\.png$', '.tiff', filePath), \
                 png, \
                 format = 'GTiff', \
                 noData = 0, \
@@ -171,8 +172,7 @@ class CanvecEn(Provisioner):
 
     def pixelsToMapUnits(self, pixels, scale):
         return ((pixels * scale) / self.dpi) * self.mapUnitsPerInch
-
-
+        
 
 class GridAxisAdvanceData:
 

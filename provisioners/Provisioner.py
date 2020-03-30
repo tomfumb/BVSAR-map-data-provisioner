@@ -7,5 +7,5 @@ class Provisioner(ABC):
     mapUnitsPerInch=0.0254
 
     @abstractmethod
-    def provision(self, minX, minY, maxX, maxY, outputDirectory):
+    def provision(self, minX, minY, maxX, maxY, outputDirectory, environmentConfig):
         pass
