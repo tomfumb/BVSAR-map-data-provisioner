@@ -1,0 +1,25 @@
+entry-point
+
+### truncate values to reasonable precision, don't want outrageously long file / project names for this
+### additional parameter can have create, replace, continue and determines what happens if the provisioning has already occurred
+### add logging library to better control log granularity
+### run service arguments through one or more validators that may be common to multiple sources
+
+WMS TIle Provisioner
+# ** should be determined from WMS GetCapabilities, not hard-coded
+## this can be a ProjectedWMSProvisioner maybe and it first tries to do EPSG:3857 before lookign for a fallback CRS
+## in theory anything projected can be treated as a cartesian grid so this could be fairly generic
+## is it possible to calculate both axes in one block, but then still do grid-filling? 
+
+tilemill
+
+# need to accommodate that this is just one way of providing data - should make specific to tiff data so that e.g. shapefile can do the same
+### need a deterministic way to get projectName - keep creating new projects when not necessary. Perhaps last modified date of a file?
+
+
+requestor
+## would be great to build some heuristics here to find the optimal concurrent request count (with a defined or default limit, e.g. 8)
+# at this point we have determined all file requests that are required to cover the area, should be passed off to a separate component to issue the requests
+# one component executes requests and saves png files if not already existing
+# separate component converts to .tiff if not already existing
+# separate component merges files into big tiff? will have to check effects of merge on text quality

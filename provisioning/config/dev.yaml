@@ -1,0 +1,5 @@
+tilemillUrl: 'http://localhost:20009/'
+container:
+    name: 'tilemill'
+    dataDir: '/root/Documents/provisioner/'
+logLevel: 'debug'
