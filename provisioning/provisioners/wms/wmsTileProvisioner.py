@@ -48,9 +48,6 @@ def provision(sourceConfig, stringUserArgs, environmentConfig, projectDirectoryP
         conversionTypes.get(conversionType)(list(map(lambda request: { 'path': request.get('path'), 'bbox': request.get('bbox') }, requests)), sourceConfig.get('crs'))
     generateTilesFromTiff(sourceConfig, userArgs, projectDirectoryPath, environmentConfig)
 
-    # tilemill = TileMillManager()
-    # tilemill.generate(outputDirectory, self.scalesAndZooms, boundsMinX, boundsMinY, boundsMaxX, boundsMaxY, environmentConfig)
-
 
 def getGetCapabilitiesXml(sourceConfig):
     wmsConfig = sourceConfig.get('wms')

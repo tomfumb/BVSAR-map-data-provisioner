@@ -1,4 +1,6 @@
-FROM ubuntu:18.04 
+
+    # tilemill = TileMillManager()
+    # tilemill.generate(outputDirectory, self.scalesAndZooms, boundsMinX, boundsMinY, boundsMaxX, boundsMaxY, environmentConfig)FROM ubuntu:18.04 
 MAINTAINER juca <juca@juan-carlos.info>
 
 ENV APP_NAME="tilemill"
@@ -29,7 +31,6 @@ ENV TILE_INPUT=/root/Documents/tile/input
 ENV TILE_OUTPUT=/root/Documents/tile/output
 
 COPY run_tilemill.sh /opt/tilemill/run_tilemill.sh
-COPY get-20000-for-area.sh /root/Documents/tile/scripts/get-20000-for-area.sh
 
 EXPOSE 20008
 EXPOSE 20009
