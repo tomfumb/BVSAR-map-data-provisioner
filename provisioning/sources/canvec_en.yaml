@@ -1,4 +1,5 @@
 type: 'wms'
+crs: 'EPSG:3857'
 arguments:
     - 'minX'
     - 'minY'
@@ -12,9 +13,8 @@ wms:
         style: ''
     }]
     format: 'png'
-    dpi: 92
+    dpi: 96
     transparent: 0
-    crs: 'EPSG:3857'
 conversion:
     type: 'tiff'
 tile:

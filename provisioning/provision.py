@@ -5,7 +5,8 @@ import logging
 import sys
 import base64
 
-from provisioners.wms.wmsTileProvisioner import provision as wmsTileProvisioner, nameProject as wmsTileProjectNamer
+from provisioners.wms.wmsTileProvisioner import provision as wmsTileProvisioner
+from provisioners.namers.sourceAndArgNamer import sourceAndArgNamer
 
 def main():
     parser = argparse.ArgumentParser()
@@ -37,7 +38,7 @@ def main():
     sourceTypes = {
         'wms': {
             'provisioner':  wmsTileProvisioner,
-            'projectNamer': wmsTileProjectNamer
+            'projectNamer': sourceAndArgNamer
         }
     }
 

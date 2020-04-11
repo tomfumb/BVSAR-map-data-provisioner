@@ -3,7 +3,6 @@ import logging
 import xml.etree.ElementTree as ET
 import ogr
 import math
-import base64
 import os
 
 from pyproj import Transformer, CRS
@@ -13,7 +12,9 @@ from provisioners.httpRetriever import httpRetriever
 
 from provisioners.converters.tiffConverter import tiffConverter
 
-def provision(sourceConfig, stringUserArgs, environmentConfig, projectDirectory):
+from provisioners.tilemill.tiffProjectManager import generateTilesFromTiff
+
+def provision(sourceConfig, stringUserArgs, environmentConfig, projectDirectoryPath):
     bboxArgsValidator(stringUserArgs)
     userArgs = {
         'minX': float(stringUserArgs.get('minX')),
@@ -35,7 +36,7 @@ def provision(sourceConfig, stringUserArgs, environmentConfig, projectDirectory)
     # Any errors communicating with the WMS based on source config should be caught by the config developer.
     # If, at some point, source config is entirely provided by the user at runtime it might be necessary to revisit this.
     grid = buildGridForBbox(sourceConfig, userArgs, wmsParameters)
-    requests = buildHttpRequestsForGrid(sourceConfig, grid, projectDirectory)
+    requests = buildHttpRequestsForGrid(sourceConfig, grid, projectDirectoryPath)
     httpRetriever(requests)
     conversionConfig = sourceConfig.get('conversion')
     if conversionConfig != None:
@@ -44,18 +45,11 @@ def provision(sourceConfig, stringUserArgs, environmentConfig, projectDirectory)
         conversionTypes = {
             'tiff': tiffConverter
         }
-        conversionTypes.get(conversionType)(list(map(lambda request: { 'path': request.get('path'), 'bbox': request.get('bbox') }, requests)), sourceConfig.get('wms').get('crs'))
-
+        conversionTypes.get(conversionType)(list(map(lambda request: { 'path': request.get('path'), 'bbox': request.get('bbox') }, requests)), sourceConfig.get('crs'))
+    generateTilesFromTiff(sourceConfig, userArgs, projectDirectoryPath, environmentConfig)
 
     # tilemill = TileMillManager()
     # tilemill.generate(outputDirectory, self.scalesAndZooms, boundsMinX, boundsMinY, boundsMaxX, boundsMaxY, environmentConfig)
-
-
-def nameProject(source, stringUserArgs):
-    return '{source}_{encodedBbox}'.format(
-        source = source,
-        encodedBbox = base64.b64encode(''.join(list(stringUserArgs.values())).encode()).decode()
-    )
 
 
 def getGetCapabilitiesXml(sourceConfig):
@@ -119,7 +113,7 @@ def updateConfigToAvailableLayers(sourceConfig, userArgs, wmsParameters):
 
 def buildGridForBbox(sourceConfig, userArgs, wmsParameters):
     bboxCrs = CRS('EPSG:4326')
-    wmsCrs = CRS(sourceConfig.get('wms').get('crs'))
+    wmsCrs = CRS(sourceConfig.get('crs'))
     transformer = Transformer.from_crs(bboxCrs, wmsCrs, always_xy = True)
     lowerLeft = transformer.transform(userArgs.get('minX'), userArgs.get('minY'))
     upperRight = transformer.transform(userArgs.get('maxX'), userArgs.get('maxY'))
@@ -204,7 +198,7 @@ def getMapUnitsInOneInch(mapCrs):
     mapCrsMetreConversionFactor = mapCrs.axis_info[0].unit_conversion_factor
     return metersInOneInch * mapCrsMetreConversionFactor
 
-def buildHttpRequestsForGrid(sourceConfig, grid, projectDirectory):
+def buildHttpRequestsForGrid(sourceConfig, grid, projectDirectoryPath):
     requests = list()
     wmsConfig = sourceConfig.get('wms')
     layers = ','.join(list(map(lambda layer: layer.get('name'), wmsConfig.get('layers'))))
@@ -221,7 +215,7 @@ def buildHttpRequestsForGrid(sourceConfig, grid, projectDirectory):
                     'VERSION={version}&'.format(version = wmsVersion) + \
                     'REQUEST=GetMap&' + \
                     'BBOX={minX},{minY},{maxX},{maxY}&'.format(minX = cell.get('minX'), minY = cell.get('minY'), maxX = cell.get('maxX'), maxY = cell.get('maxY')) + \
-                    '{crsIdentifier}={epsgCode}&'.format(crsIdentifier = 'SRS' if wmsVersion == '1.1.0' else 'CRS', epsgCode = wmsConfig.get('crs')) + \
+                    '{crsIdentifier}={epsgCode}&'.format(crsIdentifier = 'SRS' if wmsVersion == '1.1.0' else 'CRS', epsgCode = sourceConfig.get('crs')) + \
                     'WIDTH={width}&HEIGHT={height}&'.format(width = cell.get('width'), height = cell.get('height')) + \
                     'LAYERS={layers}&'.format(layers = layers) + \
                     'STYLES={styles}&'.format(styles = styles) + \
@@ -230,7 +224,7 @@ def buildHttpRequestsForGrid(sourceConfig, grid, projectDirectory):
                     'TRANSPARENT={transparent}'.format(transparent = True if int(wmsConfig.get('transparent')) == 1 else False)
                 requests.append({
                     'path': os.path.join(
-                        projectDirectory,
+                        projectDirectoryPath,
                         str(scale),
                         'col{i}_row{j}.png'.format(i = i, j = j)
                     ),
