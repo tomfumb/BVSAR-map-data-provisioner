@@ -3,8 +3,9 @@ import os
 import yaml
 import logging
 import sys
+import base64
 
-from provisioners.wms.wmsTileProvisioner import wmsTileProvisioner
+from provisioners.wms.wmsTileProvisioner import provision as wmsTileProvisioner, nameProject as wmsTileProjectNamer
 
 def main():
     parser = argparse.ArgumentParser()
@@ -33,11 +34,20 @@ def main():
         argPairParts = argPair.split('=')
         sourceArgs[argPairParts[0]] = argPairParts[1]
 
-    sourceTypes = { \
-        'wms': wmsTileProvisioner \
+    sourceTypes = {
+        'wms': {
+            'provisioner':  wmsTileProvisioner,
+            'projectNamer': wmsTileProjectNamer
+        }
     }
 
-    sourceTypes[sourceConfig['type']](sourceConfig, sourceArgs, environmentConfig)
+    sourceType = sourceTypes.get(sourceConfig['type'])
+    projectName = sourceType.get('projectNamer')(args.get('src'), sourceArgs)
+    projectDirectory = getAbsolutePath(os.path.join('output', projectName))
+    if os.path.exists(projectDirectory):
+        logging.info('Project %s already exists, no work to do', projectName)
+    os.makedirs(projectDirectory, exist_ok = True)
+    sourceType.get('provisioner')(sourceConfig, sourceArgs, environmentConfig, projectDirectory)
     
 
 def getAbsolutePath(relativePath):

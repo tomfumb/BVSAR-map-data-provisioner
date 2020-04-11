@@ -23,3 +23,7 @@ requestor
 # one component executes requests and saves png files if not already existing
 # separate component converts to .tiff if not already existing
 # separate component merges files into big tiff? will have to check effects of merge on text quality
+
+general
+# see if it's a ggood idea to be using dictionaries over objects
+# similarly, list vs array vs tuple

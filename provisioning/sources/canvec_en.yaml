@@ -14,7 +14,9 @@ wms:
     format: 'png'
     dpi: 92
     transparent: 0
-    crs: 'EPSG:900913'
+    crs: 'EPSG:3857'
+conversion:
+    type: 'tiff'
 tile:
     scales: {
         250000: [9, 10, 11],
@@ -22,5 +24,3 @@ tile:
         70000: [13],
         35000: [14, 15, 16, 17]
     }
-conversion:
-    type: 'tiff'
