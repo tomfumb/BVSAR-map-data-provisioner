@@ -4,6 +4,7 @@ import yaml
 import logging
 import sys
 import base64
+import datetime
 
 from provisioners.wms.wmsTileProvisioner import provision as wmsTileProvisioner
 from provisioners.namers.sourceAndArgNamer import sourceAndArgNamer
@@ -22,9 +23,6 @@ def main():
     configPath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config', '.'.join((environmentConfigFile, 'yaml')))
     with open(configPath, 'r') as configFile:
         environmentConfig = yaml.safe_load(configFile)
-    logger = getConfiguredLogger(environmentConfig)
-
-    logger.debug('called with %s', str(args))
 
     sourceConfigFileName = getAbsolutePath(os.path.join('sources', '.'.join((args['src'], 'yaml'))))
     with open(sourceConfigFileName, 'r') as sourceConfigFile:
@@ -45,9 +43,10 @@ def main():
     sourceType = sourceTypes.get(sourceConfig['type'])
     projectName = sourceType.get('projectNamer')(args.get('src'), sourceArgs)
     projectDirectory = getAbsolutePath(os.path.join('output', projectName))
-    if os.path.exists(projectDirectory):
-        logging.info('Project %s already exists, no work to do', projectName)
     os.makedirs(projectDirectory, exist_ok = True)
+    configureLogger(environmentConfig, projectDirectory)
+    logging.debug('Called with %s', str(sourceArgs))
+
     sourceType.get('provisioner')(sourceConfig, sourceArgs, environmentConfig, projectDirectory)
     
 
@@ -55,7 +54,9 @@ def getAbsolutePath(relativePath):
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), relativePath)
 
 
-def getConfiguredLogger(environmentConfig):
+def configureLogger(environmentConfig, projectDirectory):
+    logDirectory = os.path.join(projectDirectory, 'log')
+    os.makedirs(logDirectory, exist_ok = True)
     requestedLogLevel = environmentConfig.get('logLevel', 'error')
     logLevelMapping = {
         'debug': logging.DEBUG,
@@ -65,10 +66,9 @@ def getConfiguredLogger(environmentConfig):
     }
     handlers = [
         logging.StreamHandler(stream = sys.stdout),
-        logging.FileHandler(getAbsolutePath(os.path.join('log', 'out.log')))
+        logging.FileHandler(os.path.join(logDirectory, '{nowTs}.log'.format(nowTs = str(int(datetime.datetime.now().timestamp())))))
     ]
     logging.basicConfig(handlers = handlers, level = logLevelMapping.get(requestedLogLevel, logging.ERROR), format = '%(levelname)s %(asctime)s %(message)s')
-    return logging.getLogger(__name__)
 
 
 if __name__ == '__main__':

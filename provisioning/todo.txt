@@ -1,18 +1,18 @@
-entry-point
-
-### truncate values to reasonable precision, don't want outrageously long file / project names for this
-### additional parameter can have create, replace, continue and determines what happens if the provisioning has already occurred
+Entry Point
+- truncate bbox values to reasonable precision
+- additional parameter could have create, replace, continue and determines what happens if the provisioning has already occurred
+- allow path to .yaml file, validated against a .yaml schema
+- allow user args to override .yaml properties, ultimately everything merged to a single 'sourceConfig', no 'userArgs'
 
 WMS TIle Provisioner
-## in theory anything projected can be treated as a cartesian grid so this could be fairly generic
-    # can check is_projected() in CRS
-## is it possible to calculate both axes in one block, but then still do grid-filling? 
+- check is_projected() in CRS
+- is it possible to calculate both axes in one block, but then still do grid-filling? 
 
-requestor
-## would be great to build some heuristics here to find the optimal concurrent request count (with a defined or default limit, e.g. 8)
+HTTP
+- build some heuristics to find the optimal concurrent request count (with a defined or default limit, e.g. 8)
 
-general
-# see if it's a good idea to be using dictionaries over objects
-# similarly, list vs array vs tuple
-# ensure _ prefix on private functions
-# look for remaining \ line endings
+Style
+- see if it's a good idea to be using dictionaries over objects
+- similarly, list vs array vs tuple
+- ensure _ prefix on private functions
+- look for remaining \ line endings

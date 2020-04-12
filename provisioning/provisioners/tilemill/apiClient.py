@@ -1,5 +1,7 @@
 import os
+import sys
 import json
+import time
 import random
 import logging
 import datetime
@@ -40,7 +42,7 @@ def requestExport(userArgs, projectDefinition, projectDirectoryPath, environment
     lowestZoom = projectDefinition.get('lowestZoom')
     highestZoom = projectDefinition.get('highestZoom')
     minX, minY, maxX, maxY = userArgs.get('minX'), userArgs.get('minY'), userArgs.get('maxX'), userArgs.get('maxY')
-    centreX, centreY = userArgs.get('centreX'), userArgs.get('centreY')
+    centreX, centreY = projectDefinition.get('centreX'), projectDefinition.get('centreY')
     exportDefinition = {
         'progress': 0,
         'status': 'waiting',
@@ -82,8 +84,8 @@ def requestExport(userArgs, projectDefinition, projectDirectoryPath, environment
             if remaining == None:
                 logging.warn('No status available for current project, something went wrong')
                 break
-        except:
-            logging.warn('API rejected request for update')
+        except Exception as ex:
+            logging.error('API rejected request for update or error processing: %s', str(ex))
             break
     logging.info('Export complete')
 
