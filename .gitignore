@@ -3,4 +3,3 @@
 **/.cache/*
 **/*.pyc
 **/output/**
-**/log/**
