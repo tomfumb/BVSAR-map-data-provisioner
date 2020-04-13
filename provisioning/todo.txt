@@ -3,6 +3,7 @@ Entry Point
 - additional parameter could have create, replace, continue and determines what happens if the provisioning has already occurred
 - allow path to .yaml file, validated against a .yaml schema
 - allow user args to override .yaml properties, ultimately everything merged to a single 'sourceConfig', no 'userArgs'
+- md5 hash of all arguments after soure yaml and user args combined, instead of base64 or user args
 
 WMS TIle Provisioner
 - check is_projected() in CRS
@@ -10,6 +11,10 @@ WMS TIle Provisioner
 
 HTTP
 - build some heuristics to find the optimal concurrent request count (with a defined or default limit, e.g. 8)
+
+Export
+- would be good to check for in-progress exports before proceeding, can we determine if the same export is already in progress?
+- seems like sometimes export will use pre-existing output, e.g. "[tilemill] [tilemill-ui] found previous export with same name, so renamed to: truview_LTEyMy4xNzI5NTk0OS4xOTA5MDUtMTIyLjk5MDE0MDQ5LjMzOTc3OA_bea4cd.mbtiles"
 
 Style
 - see if it's a good idea to be using dictionaries over objects

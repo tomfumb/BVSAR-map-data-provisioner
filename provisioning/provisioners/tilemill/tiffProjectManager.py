@@ -108,7 +108,7 @@ def _getLayerFilePaths(parentDirectory, scale, environmentConfig):
             containerName = containerConfig.get('name')
             container = client.containers.get(containerName)
             containerBaseDir = containerConfig.get('dataDir')
-            containerFileDir = containerBaseDir + ('' if containerBaseDir.endswith('/') else '/') + str(scale) + '/' # explicitly use unix path separators as container is Ubuntu
+            containerFileDir = containerBaseDir + ('' if containerBaseDir.endswith('/') else '/') + parentDirectory.split(os.path.sep).pop() + '/' + str(scale) + '/' # explicitly use unix path separators as container is Ubuntu
             container.exec_run('rm -rf ' + containerFileDir, stderr = True, stdout = True)
             container.exec_run('mkdir -p ' + containerFileDir, stderr = True, stdout = True)
             for layerFile in layerFiles:

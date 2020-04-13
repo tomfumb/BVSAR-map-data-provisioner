@@ -168,10 +168,12 @@ def buildGridForBbox(sourceConfig, userArgs, wmsParameters):
 def getGridAxisAdvanceData(remainingMapUnits, scale, dpi, maxPixels, mapCrs):
     remainingPixels = mapUnitsToPixels(remainingMapUnits, scale, dpi, mapCrs)
     if remainingPixels < maxPixels:
+        roundedRemainingPixels = math.ceil(remainingPixels)
+        updatedRemainingMapUnits = pixelsToMapUnits(roundedRemainingPixels, scale, dpi, mapCrs)
         return {
-            'nextImagePixels': remainingPixels,
-            'nextImageMapUnits': remainingMapUnits,
-            'remainingMapUnitReduction': remainingMapUnits
+            'nextImagePixels': roundedRemainingPixels,
+            'nextImageMapUnits': updatedRemainingMapUnits,
+            'remainingMapUnitReduction': updatedRemainingMapUnits
         }
     else:
         maxPixelsInMapUnits = pixelsToMapUnits(maxPixels, scale, dpi, mapCrs)
@@ -223,9 +225,10 @@ def buildHttpRequestsForGrid(sourceConfig, grid, projectDirectoryPath):
                     'path': os.path.join(
                         projectDirectoryPath,
                         str(scale),
-                        'col{i}_row{j}.png'.format(i = i, j = j)
+                        'col{i}_row{j}.{format}'.format(i = i, j = j, format = wmsConfig.get('format'))
                     ),
                     'url': url,
+                    'expectedType': 'image/{format}'.format(format = wmsConfig.get('format')),
                     'bbox': cell
                 })
                 j = j + 1
