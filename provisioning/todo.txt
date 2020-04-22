@@ -1,18 +1,35 @@
+SAR Priorities
+- address quality issues with .tiff conversion (e.g. "Smithers" name text)
+- update Dockerfile so that docker image can do everything
+- configuration can exclude tiling then job just finishes after data download
+- HTTP heuristics
+- Once done, can
+    - WMS for all BVSAR area (canvec, transmission)
+    - crop hillshading / slope to BVSAR area
+    - manually build tilemill and initiate export
+
 Entry Point
 - truncate bbox values to reasonable precision
 - additional parameter could have create, replace, continue and determines what happens if the provisioning has already occurred
 - allow path to .yaml file, validated against a .yaml schema
-- allow user args to override .yaml properties, ultimately everything merged to a single 'sourceConfig', no 'userArgs'
+- allow user args to override .yaml properties, ultimately everything merged to a single 'sourceConfig', no 'userArgs',
+    - how will this affect the validators?
 - md5 hash of all arguments after soure yaml and user args combined, instead of base64 or user args
 
 WMS TIle Provisioner
 - check is_projected() in CRS
 - is it possible to calculate both axes in one block, but then still do grid-filling? 
 
+TIFF Provisioner
+- permit optional bounds in case you don't want to use all .tiff files as bbox
+    - test with DEM
+
 HTTP
 - build some heuristics to find the optimal concurrent request count (with a defined or default limit, e.g. 8)
 
 Export
+- everything not a provisioner (e.g. the export manager should be ignorant of source / user configuration. It should accept source-agnostic parameters and not name them to indicate otherwise)
+- dependency on scales / zooms object requires jumping through hoops in tiff provisioner, would be good to remove this
 - would be good to check for in-progress exports before proceeding, can we determine if the same export is already in progress?
 - seems like sometimes export will use pre-existing output, e.g. "[tilemill] [tilemill-ui] found previous export with same name, so renamed to: truview_LTEyMy4xNzI5NTk0OS4xOTA5MDUtMTIyLjk5MDE0MDQ5LjMzOTc3OA_bea4cd.mbtiles"
 

@@ -6,6 +6,7 @@ import sys
 import base64
 import datetime
 
+from provisioners.tiff.tiffProvisioner import provision as tiffProvisioner
 from provisioners.wms.wmsTileProvisioner import provision as wmsTileProvisioner
 from provisioners.namers.sourceAndArgNamer import sourceAndArgNamer
 
@@ -13,7 +14,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('src', type = str, help = 'Data source name')
     parser.add_argument('--dev', default = False, const = True, dest='dev', action='store_const', help = 'Whether to execute in dev mode (Python executing outside Docker container)')
-    parser.add_argument('--sourceArgs', type = str, help = 'Arguments specific to the type of the data source. Comma-separated, key=value format. E.g. sourceArgs=a=1,b=2,c=3)')
+    parser.add_argument('--sourceArgs', default = '', type = str, help = 'Arguments specific to the type of the data source. Comma-separated, key=value format. E.g. sourceArgs=a=1,b=2,c=3)')
     args = vars(parser.parse_args())
 
     if args['dev']:
@@ -29,13 +30,17 @@ def main():
         sourceConfig = yaml.safe_load(sourceConfigFile)
 
     sourceArgs = {}
-    for argPair in str(args.get('sourceArgs', '')).split(','):
+    for argPair in list(filter(lambda entry: entry if entry != '' else None, str(args.get('sourceArgs', '')).split(','))):
         argPairParts = argPair.split('=')
         sourceArgs[argPairParts[0]] = argPairParts[1]
 
     sourceTypes = {
         'wms': {
             'provisioner':  wmsTileProvisioner,
+            'projectNamer': sourceAndArgNamer
+        },
+        'tiff': {
+            'provisioner': tiffProvisioner,
             'projectNamer': sourceAndArgNamer
         }
     }

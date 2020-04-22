@@ -12,22 +12,22 @@ from provisioners.namers.sourceAndArgNamer import sourceAndArgNamer
 
 from provisioners.tilemill.apiClient import createOrUpdateProject, requestExport
 
-def generateTilesFromTiff(sourceConfig, userArgs, projectDirectoryPath, environmentConfig):
-    projectDefinition = getProjectDefinition(sourceConfig, userArgs, projectDirectoryPath, environmentConfig)
+def generateTilesFromTiff(sourceConfig, bounds, projectDirectoryPath, environmentConfig):
+    projectDefinition = getProjectDefinition(sourceConfig, bounds, projectDirectoryPath, environmentConfig)
     createOrUpdateProject(projectDefinition, environmentConfig)
-    requestExport(userArgs, projectDefinition, projectDirectoryPath, environmentConfig)
+    requestExport(bounds, projectDefinition, projectDirectoryPath, environmentConfig)
 
-def getProjectDefinition(sourceConfig, userArgs, projectDirectoryPath, environmentConfig):
+def getProjectDefinition(sourceConfig, bounds, projectDirectoryPath, environmentConfig):
     session = requests.session()
     projectName = projectDirectoryPath.split(os.path.sep).pop()
     existingProjects = list(filter(lambda project: project.get('id') == projectName, session.get('{url}/api/Project'.format(url = environmentConfig.get('tilemillUrl'))).json()))
     if len(existingProjects) > 0:
         logging.info('Project {projectName} already in use, will be replaced'.format(projectName = projectName))
     centre = ogr.CreateGeometryFromWkt('POLYGON (({minX} {minY}, {maxX} {minY}, {maxX} {maxY}, {minX} {maxY}, {minX} {minY}))'.format(
-        minX = userArgs.get('minX'),
-        minY = userArgs.get('minY'),
-        maxX = userArgs.get('maxX'),
-        maxY = userArgs.get('maxY')
+        minX = bounds.get('minX'),
+        minY = bounds.get('minY'),
+        maxX = bounds.get('maxX'),
+        maxY = bounds.get('maxY')
     )).Centroid().GetPoint()
     zoomLevels = list()
     scalesAndZooms = sourceConfig.get('tile').get('scales')
@@ -47,7 +47,7 @@ def getProjectDefinition(sourceConfig, userArgs, projectDirectoryPath, environme
     for scale in scales:
         for fileLocations in _getLayerFilePaths(projectDirectoryPath, scale, environmentConfig):
             srcLocation = fileLocations.get('tilemillLocation', fileLocations['srcLocation'])
-            fileIdentifier = '{scale}_{filename}'.format(scale = str(scale), filename = re.sub(r'\.tiff$', '', fileLocations.get('filename')))
+            fileIdentifier = '{scale}_{filename}'.format(scale = str(scale), filename = re.sub(r'\.tif(f)?$', '', fileLocations.get('filename')))
             layers.append({
                 'geometry': 'raster',
                 'extent': _getExtentFromRaster(sourceConfig, fileLocations.get('srcLocation')),
@@ -61,10 +61,10 @@ def getProjectDefinition(sourceConfig, userArgs, projectDirectoryPath, environme
                 'name': fileIdentifier
             })
     return {
-        'minX': userArgs.get('minX'),
-        'minY': userArgs.get('minY'),
-        'maxX': userArgs.get('maxX'),
-        'maxY': userArgs.get('maxY'),
+        'minX': bounds.get('minX'),
+        'minY': bounds.get('minY'),
+        'maxX': bounds.get('maxX'),
+        'maxY': bounds.get('maxY'),
         'centreX': centre[0],
         'centreY': centre[1],
         'lowestZoom': lowestZoom,
@@ -97,7 +97,7 @@ def _getLayerFilePaths(parentDirectory, scale, environmentConfig):
     layerFiles = list()
     srcDirectory = os.path.join(parentDirectory, str(scale))
     for filename in os.listdir(srcDirectory):
-        if filename.endswith('.tiff'):
+        if re.search(r'\.tif(f)?$', filename, re.IGNORECASE):
             layerFiles.append({ 'srcLocation': os.path.join(srcDirectory, filename), 'filename': filename })
     containerConfig = environmentConfig.get('container')
     if containerConfig != None:
