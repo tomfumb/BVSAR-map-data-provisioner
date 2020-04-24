@@ -12,7 +12,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
  && apt-get install -y curl \
  && curl -sL https://deb.nodesource.com/setup_8.x | bash - \
  && apt-get update -y \
- && apt-get install -y nodejs git gdal-bin python-gdal wget unzip \
+ && apt-get install -y nodejs git gdal-bin python-gdal wget unzip pip3 \
  && mkdir -p /opt/tilemill /root/Documents/tile/scripts /root/Documents/tile/input /root/Documents/tile/output \
  && cd /opt/tilemill \
  && git clone https://github.com/tilemill-project/tilemill.git \
@@ -20,12 +20,15 @@ RUN export DEBIAN_FRONTEND=noninteractive \
  && npm install \
  && npm cache clean --force \
  && mkdir /opt/gdal-postmates \
- && cd /opt/gdal-postmates \
- && git clone https://github.com/postmates/gdal.git . \
+ && git clone https://github.com/postmates/gdal.git /opt/gdal-postmates \
+ && mkdir /opt/mbutil \
+ && git clone https://github.com/mapbox/mbutil.git /opt/mbutil \
  && apt-get clean \
- && apt-get update
+ && apt-get update \
+ && pip3 install pyproj
 
 ENV GDAL_SCRIPTS=/opt/gdal-postmates/scripts
+ENV MB_UTIL=/opt/mbutil/mb-util
 ENV TILE_SCRIPTS=/root/Documents/tile/scripts
 ENV TILE_INPUT=/root/Documents/tile/input
 ENV TILE_OUTPUT=/root/Documents/tile/output

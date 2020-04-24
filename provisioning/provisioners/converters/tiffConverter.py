@@ -18,7 +18,7 @@ def tiffConverter(filesToConvert, srsCode):
                     destinationPath,
                     sourceFile,
                     format = 'GTiff',
-                    noData = 0,
+                    noData = None,
                     outputSRS = srsCode,
                     # Translate expects bounds in format ulX, ulY, lrX, lrY so flip minY and maxY
                     outputBounds = (bbox.get('minX'), bbox.get('maxY'), bbox.get('maxX'), bbox.get('minY'))
