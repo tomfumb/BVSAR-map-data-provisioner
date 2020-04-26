@@ -13,7 +13,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
  && curl -sL https://deb.nodesource.com/setup_8.x | bash - \
  && apt-get update -y \
  && apt-get install -y nodejs git gdal-bin python-gdal wget unzip pip3 \
- && mkdir -p /opt/tilemill /root/Documents/tile/scripts /root/Documents/tile/input /root/Documents/tile/output \
+ && mkdir -p /root/Documents/provisioning \
  && cd /opt/tilemill \
  && git clone https://github.com/tilemill-project/tilemill.git \
  && cd tilemill \
@@ -29,9 +29,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
 
 ENV GDAL_SCRIPTS=/opt/gdal-postmates/scripts
 ENV MB_UTIL=/opt/mbutil/mb-util
-ENV TILE_SCRIPTS=/root/Documents/tile/scripts
-ENV TILE_INPUT=/root/Documents/tile/input
-ENV TILE_OUTPUT=/root/Documents/tile/output
+ENV PROVISIONING_HOME=/root/Documents/provisioning
 
 COPY run_tilemill.sh /opt/tilemill/run_tilemill.sh
 

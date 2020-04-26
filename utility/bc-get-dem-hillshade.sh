@@ -1,13 +1,16 @@
 #!/bin/bash
 
-mkdir -p data
-pushd data
+DATA_DIR=./data/bc-dem
+BASE_URL=https://pub.data.gov.bc.ca/datasets/175624/
 
-curl -s https://pub.data.gov.bc.ca/datasets/175624/ | sed -rn 's/.*>([0-9]{2,3}[a-z])\/<.*/\1/p' | while read area
+mkdir -p $DATA_DIR
+pushd $DATA_DIR
+
+curl -s $BASE_URL | sed -rn 's/.*>([0-9]{2,3}[a-z])\/<.*/\1/p' | while read area
 do
-	curl -s https://pub.data.gov.bc.ca/datasets/175624/$area/ | sed -rn 's/.*>([0-9a-z_]+\.dem\.zip)<.*/\1/p' | while read file
+	curl -s $BASE_URL$area/ | sed -rn 's/.*>([0-9a-z_]+\.dem\.zip)<.*/\1/p' | while read file
 	do
-		wget https://pub.data.gov.bc.ca/datasets/175624/$area/$file
+		wget $BASE_URL$area/$file
 	done
 	ls -1 *.zip | xargs -I{} unzip {}
 	rm *.zip
