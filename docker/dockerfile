@@ -24,13 +24,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
  && git clone https://github.com/postmates/gdal.git ${GDAL_SCRIPTS_HOME} \
  && mkdir -p ${MB_UTIL_HOME} \
  && git clone https://github.com/mapbox/mbutil.git ${MB_UTIL_HOME} \
- && mkdir -p ${SCRIPTS_HOME} \
  && pip3 install pyproj
 
-COPY run_tilemill.sh ${SCRIPTS_HOME}/
 COPY update.sh /root/firstrun.sh
-
-RUN /root/firstrun.sh
 
 EXPOSE 20008
 EXPOSE 20009
@@ -39,5 +35,7 @@ VOLUME ${PROVISIONING_HOME}
 VOLUME ${PROVISIONED_DATA}
 
 WORKDIR ${PROVISIONING_HOME}
+
+RUN /root/firstrun.sh
 
 CMD $PROVISIONING_HOME/docker/run_tilemill.sh
