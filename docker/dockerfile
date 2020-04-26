@@ -23,7 +23,7 @@ RUN mkdir -p ${GDAL_SCRIPTS_HOME}
 RUN git clone https://github.com/postmates/gdal.git ${GDAL_SCRIPTS_HOME}
 RUN mkdir -p ${MB_UTIL_HOME}
 RUN git clone https://github.com/mapbox/mbutil.git ${MB_UTIL_HOME}
-RUN pip3 install pyproj
+RUN pip3 install pyproj pyyaml requests
 RUN mkdir -p ${PROVISIONING_HOME}
 RUN git clone --depth=1 --branch=master git://github.com/tomfumb/BVSAR-map-data-provisioner ${PROVISIONING_HOME}
 RUN rm -rf $PROVISIONING_HOME/.git*
