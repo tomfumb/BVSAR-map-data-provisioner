@@ -1,5 +1,5 @@
 SAR Priorities
-- update Dockerfile so that docker image can do everything
+- update code to use $PROVISIONED_DATA directory instead of local to code (also update .gitignore)
 - configuration can exclude tiling then job just finishes after data download
 - HTTP heuristics
 - Once done, can

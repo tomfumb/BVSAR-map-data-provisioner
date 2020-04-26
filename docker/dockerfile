@@ -27,7 +27,6 @@ RUN pip3 install pyproj pyyaml requests
 RUN mkdir -p ${PROVISIONING_HOME}
 RUN git clone --depth=1 --branch=master git://github.com/tomfumb/BVSAR-map-data-provisioner ${PROVISIONING_HOME}
 RUN rm -rf $PROVISIONING_HOME/.git*
-RUN rm -rf /root/Documents/MapBox/project/*
 RUN mkdir -p ${PROVISIONED_DATA}
 
 EXPOSE 20008
