@@ -1,0 +1,43 @@
+FROM ubuntu:18.04
+
+ENV PROVISIONING_HOME=/root/provisioning
+ENV PROVISIONED_DATA=/root/data
+ENV TILEMILL_HOME=/opt/tilemill
+ENV GDAL_SCRIPTS_HOME=/opt/gdal-postmates
+ENV MB_UTIL_HOME=/opt/mbutil
+
+RUN export DEBIAN_FRONTEND=noninteractive \
+ && apt-get update -y \
+ && apt-get install -y --no-install-recommends apt-utils \
+ && apt-get install -y locales && locale-gen en_US.UTF-8 \
+ && apt-get install -y curl \
+ && curl -sL https://deb.nodesource.com/setup_8.x | bash - \
+ && apt-get update -y \
+ && apt-get install -y nodejs git gdal-bin python3-gdal wget unzip python3-pip \
+ && mkdir -p ${PROVISIONING_HOME} \
+ && mkdir -p ${PROVISIONED_DATA} \
+ && mkdir -p ${TILEMILL_HOME} \
+ && git clone https://github.com/tilemill-project/tilemill.git ${TILEMILL_HOME} \
+ && cd ${TILEMILL_HOME} \
+ && npm install \
+ && mkdir -p ${GDAL_SCRIPTS_HOME} \
+ && git clone https://github.com/postmates/gdal.git ${GDAL_SCRIPTS_HOME} \
+ && mkdir -p ${MB_UTIL_HOME} \
+ && git clone https://github.com/mapbox/mbutil.git ${MB_UTIL_HOME} \
+ && mkdir -p ${SCRIPTS_HOME} \
+ && pip3 install pyproj
+
+COPY run_tilemill.sh ${SCRIPTS_HOME}/
+COPY update.sh /root/firstrun.sh
+
+RUN /root/firstrun.sh
+
+EXPOSE 20008
+EXPOSE 20009
+
+VOLUME ${PROVISIONING_HOME}
+VOLUME ${PROVISIONED_DATA}
+
+WORKDIR ${PROVISIONING_HOME}
+
+CMD $PROVISIONING_HOME/docker/run_tilemill.sh
