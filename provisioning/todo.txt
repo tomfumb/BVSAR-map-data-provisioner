@@ -1,11 +1,13 @@
 SAR Priorities
 - update code to use $PROVISIONED_DATA directory instead of local to code (also update .gitignore)
+- why is container not recognising pre-existing files?
 - configuration can exclude tiling then job just finishes after data download
 - HTTP heuristics
 - Once done, can
     - WMS for all BVSAR area (canvec, transmission)
     - crop hillshading / slope to BVSAR area
     - manually build tilemill and initiate export
+- extract for XYZ tile services, test
 
 Entry Point
 - truncate bbox values to reasonable precision
@@ -17,7 +19,8 @@ Entry Point
 
 WMS TIle Provisioner
 - check is_projected() in CRS
-- is it possible to calculate both axes in one block, but then still do grid-filling? 
+- is it possible to calculate both axes in one block, but then still do grid-filling?
+    - algorithm could be a lot simpler: per scale, column count = ceil(widthInMetres / maxImageWidthInMetres)
 
 TIFF Provisioner
 - permit optional bounds in case you don't want to use all .tiff files as bbox

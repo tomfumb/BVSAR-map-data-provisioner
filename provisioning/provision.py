@@ -8,6 +8,7 @@ import datetime
 
 from provisioners.tiff.tiffProvisioner import provision as tiffProvisioner
 from provisioners.wms.wmsTileProvisioner import provision as wmsTileProvisioner
+from provisioners.xyz.xyzTileProvisioner import provision as xyzTileProvisioner
 from provisioners.namers.sourceAndArgNamer import sourceAndArgNamer
 
 def main():
@@ -41,6 +42,10 @@ def main():
         },
         'tiff': {
             'provisioner': tiffProvisioner,
+            'projectNamer': sourceAndArgNamer
+        },
+        'xyz': {
+            'provisioner': xyzTileProvisioner,
             'projectNamer': sourceAndArgNamer
         }
     }
