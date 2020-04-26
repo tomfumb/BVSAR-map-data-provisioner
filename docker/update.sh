@@ -6,7 +6,6 @@ then
       exit 0
 fi
 
-pushd /
 BACKUP_DIR="$PROVISIONING_HOME"_previous
 if [ -d "$BACKUP_DIR" ]; then
       echo "Removing previous backup"
@@ -15,9 +14,12 @@ fi
 CURRENT_FILE_COUNT=`ls -1 $PROVISIONING_HOME/ | wc -l`
 if [ $CURRENT_FILE_COUNT -ne 0 ]; then
       echo "Backing up current code"
-      mv $PROVISIONING_HOME $BACKUP_DIR
+      cp -r $PROVISIONING_HOME $BACKUP_DIR
 fi
+pushd $PROVISIONING_HOME
+echo "Removing current code"
+rm -rf *
 echo "Retrieving latest code"
-git clone --depth=1 --branch=master git://github.com/tomfumb/BVSAR-map-data-provisioner $PROVISIONING_HOME
-rm -rf $PROVISIONING_HOME/.git*
+git clone --depth=1 --branch=master git://github.com/tomfumb/BVSAR-map-data-provisioner .
+rm -rf .git*
 popd
