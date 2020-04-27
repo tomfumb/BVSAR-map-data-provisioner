@@ -19,7 +19,7 @@ def provision(sourceConfig, stringUserArgs, environmentConfig, projectDirectoryP
         'maxZ': int(stringUserArgs.get('maxZ'))
     }
     requests = buildHttpRequestsForGrid(sourceConfig, userArgs, projectDirectoryPath)
-    httpRetriever(requests)
+    httpRetriever(requests, sourceConfig.get('maxConcurrentRequests'))
 
 def buildHttpRequestsForGrid(sourceConfig, userArgs, projectDirectoryPath):
     requests = list()

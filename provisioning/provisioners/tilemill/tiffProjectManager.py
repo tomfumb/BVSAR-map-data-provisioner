@@ -12,10 +12,11 @@ from provisioners.namers.sourceAndArgNamer import sourceAndArgNamer
 
 from provisioners.tilemill.apiClient import createOrUpdateProject, requestExport
 
-def generateTilesFromTiff(sourceConfig, bounds, projectDirectoryPath, environmentConfig):
+def generateTilesFromTiff(sourceConfig, bounds, projectDirectoryPath, environmentConfig, export = True):
     projectDefinition = getProjectDefinition(sourceConfig, bounds, projectDirectoryPath, environmentConfig)
     createOrUpdateProject(projectDefinition, environmentConfig)
-    requestExport(bounds, projectDefinition, projectDirectoryPath, environmentConfig)
+    if export:
+        requestExport(bounds, projectDefinition, projectDirectoryPath, environmentConfig)
 
 def getProjectDefinition(sourceConfig, bounds, projectDirectoryPath, environmentConfig):
     session = requests.session()

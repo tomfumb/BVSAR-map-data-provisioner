@@ -46,7 +46,7 @@ def provision(sourceConfig, stringUserArgs, environmentConfig, projectDirectoryP
             'tiff': tiffConverter
         }
         conversionTypes.get(conversionType)(list(map(lambda request: { 'path': request.get('path'), 'bbox': request.get('bbox') }, requests)), sourceConfig.get('crs'))
-    generateTilesFromTiff(sourceConfig, userArgs, projectDirectoryPath, environmentConfig)
+    generateTilesFromTiff(sourceConfig, userArgs, projectDirectoryPath, environmentConfig, False)
 
 
 def getGetCapabilitiesXml(sourceConfig):

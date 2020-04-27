@@ -1,21 +1,55 @@
 import re
 import os
+import sys
 import random
 import requests
 import logging
 
 from concurrent import futures
+from timeit import default_timer as timer
 
-from osgeo import gdal
+def httpRetriever(requests, maxConcurrentRequests = 10):
+    bestTimePerRequest = sys.maxsize
+    modifiableRequests = requests.copy()
+    bestConcurrency = 1
+    concurrency = 1
+    while concurrency <= maxConcurrentRequests:
+        logging.debug('Testing request speed with %d concurrent requests', concurrency)
+        bestConcurrency = concurrency
+        numRequestsToTest = min(concurrency, len(modifiableRequests))
+        logging.debug('Got %d requests to test with', numRequestsToTest)
+        if numRequestsToTest > 0:
+            testRequests = modifiableRequests[:numRequestsToTest]
+            del modifiableRequests[:numRequestsToTest]
+            start = timer()
+            with futures.ThreadPoolExecutor(max_workers = numRequestsToTest) as executor:
+                executeRequests(executor, testRequests)
+            end = timer()
+            testTimePerRequest = (end - start) / numRequestsToTest
+            logging.debug('Time per request %s', testTimePerRequest)
+            if testTimePerRequest < bestTimePerRequest:
+                logging.debug('Got new best time')
+                bestTimePerRequest = testTimePerRequest
+            else:
+                bestConcurrency = concurrency - 1
+                logging.debug('Previous time per request was better, exit and use %d', bestConcurrency)
+                break
+            concurrency += 1
+        else:
+            break
+    
+    logging.info('Issuing requests with %d concurrency', bestConcurrency)
+    with futures.ThreadPoolExecutor(max_workers = bestConcurrency) as executor:
+        executeRequests(executor, modifiableRequests)
 
-def httpRetriever(requests):
-    with futures.ThreadPoolExecutor(max_workers = 1) as executor:
-        requestFutures = (executor.submit(issueFileRequest, request) for request in requests)
-        for future in futures.as_completed(requestFutures):
-            try:
-                future.result()
-            except Exception as exc:
-                logging.info('Exception: %s', str(type(exc)))
+
+def executeRequests(executor, requests):
+    requestFutures = (executor.submit(issueFileRequest, request) for request in requests)
+    for future in futures.as_completed(requestFutures):
+        try:
+            future.result()
+        except Exception as exc:
+            logging.info('Exception: %s', str(type(exc)))
 
 
 def issueFileRequest(request):
