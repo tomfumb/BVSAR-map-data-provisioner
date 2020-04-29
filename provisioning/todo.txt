@@ -19,15 +19,15 @@ Entry Point
 
 WMS TIle Provisioner
 - check is_projected() in CRS
-- is it possible to calculate both axes in one block, but then still do grid-filling?
-    - algorithm could be a lot simpler: per scale, column count = ceil(widthInMetres / maxImageWidthInMetres)
 
 TIFF Provisioner
 - permit optional bounds in case you don't want to use all .tiff files as bbox
     - test with DEM
 
 HTTP
-- build some heuristics to find the optimal concurrent request count (with a defined or default limit, e.g. 8)
+- expand on heuristics to periodically check if we still have the optimal concurrency
+- attempt to accommodate 429 "too many requests"
+- exclude "file already exists" scenario from concurrency test, e.g. first filter requests to only files that do not exist
 
 Export
 - everything not a provisioner (e.g. the export manager should be ignorant of source / user configuration. It should accept source-agnostic parameters and not name them to indicate otherwise)

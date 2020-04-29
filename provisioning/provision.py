@@ -52,13 +52,22 @@ def main():
 
     sourceType = sourceTypes.get(sourceConfig['type'])
     projectName = sourceType.get('projectNamer')(args.get('src'), sourceArgs)
-    projectDirectory = getAbsolutePath(os.path.join('output', projectName))
+    projectDirectory = getProjectDirectory(projectName)
     os.makedirs(projectDirectory, exist_ok = True)
     configureLogger(environmentConfig, projectDirectory)
+    logging.info('Data location %s', projectDirectory)
     logging.debug('Called with %s', str(sourceArgs))
 
     sourceType.get('provisioner')(sourceConfig, sourceArgs, environmentConfig, projectDirectory)
-    
+
+
+def getProjectDirectory(projectName): 
+    provisionedDataLocation = os.environ.get('PROVISIONED_DATA')
+    if provisionedDataLocation is None:
+        return getAbsolutePath(os.path.join('output', projectName))
+    else:
+        return os.path.join(provisionedDataLocation, projectName)
+
 
 def getAbsolutePath(relativePath):
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), relativePath)

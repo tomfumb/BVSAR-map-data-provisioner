@@ -112,76 +112,31 @@ def buildGridForBbox(sourceConfig, userArgs, wmsParameters):
     bboxCrs = CRS('EPSG:4326')
     wmsCrs = CRS(sourceConfig.get('crs'))
     transformer = Transformer.from_crs(bboxCrs, wmsCrs, always_xy = True)
-    lowerLeft = transformer.transform(userArgs.get('minX'), userArgs.get('minY'))
-    upperRight = transformer.transform(userArgs.get('maxX'), userArgs.get('maxY'))
-    startPoint = list(map(lambda ord: math.floor(ord), lowerLeft))
-    endPoint = list(map(lambda ord: math.ceil(ord), upperRight))
-    totalWidthMetres = endPoint[0] - startPoint[0]
-    totalHeightMetres = endPoint[1] - startPoint[1]
-    dpi = sourceConfig.get('wms').get('dpi', 92)
+    lowerLeft = list(map(lambda ord: math.floor(ord), transformer.transform(userArgs.get('minX'), userArgs.get('minY'))))
+    upperRight = list(map(lambda ord: math.ceil(ord), transformer.transform(userArgs.get('maxX'), userArgs.get('maxY'))))
+    totalWidthMapUnits = upperRight[0] - lowerLeft[0]
+    totalHeightMapUnits = upperRight[1] - lowerLeft[1]
+    maxImagePixelWidth, maxImagePixelHeight = wmsParameters.get('maxWidth'), wmsParameters.get('maxHeight')
+    dpi = sourceConfig.get('wms').get('dpi', 96)
     scales = sourceConfig.get('tile').get('scales').keys()
     imageRequests = dict()
     for scale in scales:
         imageRequests[scale] = list()
-        remainingWidthMetres = totalWidthMetres
-        remainingHeightMetres = totalHeightMetres
-        nextImageData = getGridAxisAdvanceData(remainingHeightMetres, scale, dpi, wmsParameters.get('maxHeight'), wmsCrs)
-        nextImageHeightPixels, nextImageHeightMetres = nextImageData.get('nextImagePixels'), nextImageData.get('nextImageMapUnits')
-        lastStartPoint = startPoint.copy()
-        # advance along X axis from lower-left. Calculate all column dimensions for a single row
-        while remainingWidthMetres > 0:
-            nextImageData = getGridAxisAdvanceData(remainingWidthMetres, scale, dpi, wmsParameters.get('maxWidth'), wmsCrs)
-            nextImageWidthPixels, nextImageWidthMetres, remainingWidthMetres = nextImageData.get('nextImagePixels'), nextImageData.get('nextImageMapUnits'), remainingWidthMetres - nextImageData.get('remainingMapUnitReduction')
-            minX, minY = lastStartPoint[0], lastStartPoint[1]
-            maxX, maxY = minX + nextImageWidthMetres, minY + nextImageHeightMetres
-            imageRequests[scale].append([{'minX': minX, 'minY': minY, 'maxX': maxX, 'maxY': maxY, 'width': nextImageWidthPixels, 'height': nextImageHeightPixels}])
-            lastStartPoint = (maxX, minY)
-        remainingHeightMetres = remainingHeightMetres - (imageRequests[scale][0][0].get('maxY') - imageRequests[scale][0][0].get('minY'))
-        # advance along Y axis from lower-left. Calculate all row dimensions for a single column
-        while remainingHeightMetres > 0:
-            baseImageRequest = imageRequests[scale][0][0]
-            nextImageData = getGridAxisAdvanceData(remainingHeightMetres, scale, dpi, wmsParameters.get('maxHeight'), wmsCrs)
-            nextImageHeightPixels, nextImageHeightMetres, remainingHeightMetres = nextImageData.get('nextImagePixels'), nextImageData.get('nextImageMapUnits'), remainingHeightMetres - nextImageData.get('remainingMapUnitReduction')
-            minX, minY = baseImageRequest.get('minX'), baseImageRequest.get('maxY')
-            maxX, maxY = baseImageRequest.get('maxX'), baseImageRequest.get('maxY') + nextImageHeightMetres
-            imageRequests[scale][0].append({'minX': minX, 'minY': minY, 'maxX': maxX, 'maxY': maxY, 'width': baseImageRequest.get('width'), 'height': nextImageHeightPixels})
-        # fill gaps using single row and column to make a complete grid
-        i = 1
-        while i < len(imageRequests[scale]):
-            j = 1
-            while j < len(imageRequests[scale][0]):
-                xReference = imageRequests[scale][i][0]
-                yReference = imageRequests[scale][0][j]
-                imageRequests[scale][i].append({
-                    'minX': xReference.get('minX'),
-                    'minY': yReference.get('minY'),
-                    'maxX': xReference.get('maxX'),
-                    'maxY': yReference.get('maxY'),
-                    'width': xReference.get('width'),
-                    'height': yReference.get('height')
-                })
-                j = j + 1
-            i = i + 1
+        mapWidthInPixels, mapHeightInPixels = mapUnitsToPixels(totalWidthMapUnits, scale, dpi, wmsCrs), mapUnitsToPixels(totalHeightMapUnits, scale, dpi, wmsCrs)
+        maxImageMapUnitWidth, maxImageMapUnitHeight = pixelsToMapUnits(maxImagePixelWidth, scale, dpi, wmsCrs), pixelsToMapUnits(maxImagePixelHeight, scale, dpi, wmsCrs)
+        xImageCount, yImageCount = mapWidthInPixels / maxImagePixelWidth, mapHeightInPixels / maxImagePixelHeight
+        gridColCount, gridRowCount = math.ceil(xImageCount), math.ceil(yImageCount)
+        for i in range(gridColCount):
+            pixelWidthThisImage = maxImagePixelWidth if i < gridColCount - 1 or gridColCount == xImageCount else mapWidthInPixels % maxImagePixelWidth
+            startX = lowerLeft[0] if i == 0 else imageRequests[scale][-1][-1].get('maxX')
+            endX = startX + (maxImageMapUnitWidth if pixelWidthThisImage == maxImagePixelWidth else pixelsToMapUnits(pixelWidthThisImage, scale, dpi, wmsCrs))
+            imageRequests[scale].append(list())
+            for j in range(gridRowCount):
+                pixelHeightThisImage = maxImagePixelHeight if i < gridRowCount - 1 or gridRowCount == yImageCount else mapHeightInPixels % maxImagePixelHeight
+                startY = lowerLeft[1] if j == 0 else imageRequests[scale][-1][-1].get('maxY')
+                endY = startY + (maxImageMapUnitHeight if pixelHeightThisImage == maxImagePixelHeight else pixelsToMapUnits(pixelHeightThisImage, scale, dpi, wmsCrs))
+                imageRequests[scale][i].append({ 'minX': startX, 'minY': startY, 'maxX': endX, 'maxY': endY, 'width': pixelWidthThisImage, 'height': pixelHeightThisImage })
     return imageRequests
-
-
-def getGridAxisAdvanceData(remainingMapUnits, scale, dpi, maxPixels, mapCrs):
-    remainingPixels = mapUnitsToPixels(remainingMapUnits, scale, dpi, mapCrs)
-    if remainingPixels < maxPixels:
-        roundedRemainingPixels = math.ceil(remainingPixels)
-        updatedRemainingMapUnits = pixelsToMapUnits(roundedRemainingPixels, scale, dpi, mapCrs)
-        return {
-            'nextImagePixels': roundedRemainingPixels,
-            'nextImageMapUnits': updatedRemainingMapUnits,
-            'remainingMapUnitReduction': updatedRemainingMapUnits
-        }
-    else:
-        maxPixelsInMapUnits = pixelsToMapUnits(maxPixels, scale, dpi, mapCrs)
-        return {
-            'nextImagePixels': maxPixels,
-            'nextImageMapUnits': maxPixelsInMapUnits,
-            'remainingMapUnitReduction': maxPixelsInMapUnits
-        }
 
 
 def mapUnitsToPixels(mapUnits, scale, dpi, mapCrs):
