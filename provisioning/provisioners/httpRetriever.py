@@ -9,38 +9,45 @@ from concurrent import futures
 from timeit import default_timer as timer
 
 def httpRetriever(requests, maxConcurrentRequests = 10):
-    bestTimePerRequest = sys.maxsize
-    modifiableRequests = requests.copy()
-    bestConcurrency = 1
-    concurrency = 1
-    while concurrency <= maxConcurrentRequests:
-        logging.debug('Testing request speed with %d concurrent requests', concurrency)
-        bestConcurrency = concurrency
-        numRequestsToTest = min(concurrency, len(modifiableRequests))
-        logging.debug('Got %d requests to test with', numRequestsToTest)
-        if numRequestsToTest > 0:
-            testRequests = modifiableRequests[:numRequestsToTest]
-            del modifiableRequests[:numRequestsToTest]
-            start = timer()
-            with futures.ThreadPoolExecutor(max_workers = numRequestsToTest) as executor:
-                executeRequests(executor, testRequests)
-            end = timer()
-            testTimePerRequest = (end - start) / numRequestsToTest
-            logging.debug('Time per request %s', testTimePerRequest)
-            if testTimePerRequest < bestTimePerRequest:
-                logging.debug('Got new best time')
-                bestTimePerRequest = testTimePerRequest
+    logging.debug('Removing requests for files that already exist')
+    outstandingRequests = removeExistingFiles(requests)
+    logging.info('Ignoring %d of %d requests as files already exist', len(requests) - len(outstandingRequests), len(requests))
+    if len(outstandingRequests) > 0:
+        bestTimePerRequest = sys.maxsize
+        bestConcurrency = 1
+        concurrency = 1
+        while concurrency <= maxConcurrentRequests:
+            logging.debug('Testing request speed with %d concurrent requests', concurrency)
+            bestConcurrency = concurrency
+            numRequestsToTest = min(concurrency, len(outstandingRequests))
+            logging.debug('Got %d requests to test with', numRequestsToTest)
+            if numRequestsToTest > 0:
+                testRequests = outstandingRequests[:numRequestsToTest]
+                del outstandingRequests[:numRequestsToTest]
+                start = timer()
+                with futures.ThreadPoolExecutor(max_workers = numRequestsToTest) as executor:
+                    executeRequests(executor, testRequests)
+                end = timer()
+                testTimePerRequest = (end - start) / numRequestsToTest
+                logging.debug('Time per request %s', testTimePerRequest)
+                if testTimePerRequest < bestTimePerRequest:
+                    logging.debug('Got new best time')
+                    bestTimePerRequest = testTimePerRequest
+                else:
+                    bestConcurrency = concurrency - 1
+                    logging.debug('Previous time per request was better, exit and use %d', bestConcurrency)
+                    break
+                concurrency += 1
             else:
-                bestConcurrency = concurrency - 1
-                logging.debug('Previous time per request was better, exit and use %d', bestConcurrency)
                 break
-            concurrency += 1
-        else:
-            break
-    
-    logging.info('Issuing requests with %d concurrency', bestConcurrency)
-    with futures.ThreadPoolExecutor(max_workers = bestConcurrency) as executor:
-        executeRequests(executor, modifiableRequests)
+        
+        logging.info('Issuing requests with %d concurrency', bestConcurrency)
+        with futures.ThreadPoolExecutor(max_workers = bestConcurrency) as executor:
+            executeRequests(executor, outstandingRequests)
+
+
+def removeExistingFiles(requests):
+    return list(filter(lambda request: not os.path.exists(request.get('path')) or os.stat(request.get('path')).st_size == 0, requests))
 
 
 def executeRequests(executor, requests):
@@ -54,24 +61,21 @@ def executeRequests(executor, requests):
 
 def issueFileRequest(request):
     filePath = request.get('path')
-    if os.path.exists(filePath) and os.stat(filePath).st_size > 0:
-        logging.debug('Skipping %s as it already exists', filePath)
+    os.makedirs(os.path.dirname(filePath), exist_ok = True)
+    url = request.get('url')
+    logging.debug('Requesting %s from %s', filePath, url)
+    response = requests.get(url, headers = { 'User-Agent': getRandomUserAgent() })
+    isExpectedType = isExpectedResponseType(response, request.get('expectedType'))
+    if isExpectedType is None:
+        logging.info('Cannot determine response type, may not be the desired response')
     else:
-        os.makedirs(os.path.dirname(filePath), exist_ok = True)
-        url = request.get('url')
-        logging.debug('Requesting %s from %s', filePath, url)
-        response = requests.get(url, headers = { 'User-Agent': getRandomUserAgent() })
-        isExpectedType = isExpectedResponseType(response, request.get('expectedType'))
-        if isExpectedType is None:
-            logging.info('Cannot determine response type, may not be the desired response')
+        if isExpectedType:
+            logging.debug('Response is of expected type')
+            out = open(filePath, 'wb') 
+            out.write(response.content)
+            out.close()
         else:
-            if isExpectedType:
-                logging.debug('Response is of expected type')
-                out = open(filePath, 'wb') 
-                out.write(response.content)
-                out.close()
-            else:
-                logging.error('Response is not of expected type "%s", result will not be stored', request.get('expectedType'))
+            logging.error('Response is not of expected type "%s", result will not be stored', request.get('expectedType'))
    
 
 def isExpectedResponseType(response, expectedType):

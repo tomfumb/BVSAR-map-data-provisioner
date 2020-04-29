@@ -1,9 +1,6 @@
 SAR Priorities
-- update code to use $PROVISIONED_DATA directory instead of local to code (also update .gitignore)
 - why is container not recognising pre-existing files?
 - configuration can exclude tiling then job just finishes after data download
-- HTTP heuristics
-    - interesting feature - if file already exists for test requests it looks like those requests were blazing fast. Do I need to worry about it?
 - Once done, can
     - WMS for all BVSAR area (canvec, transmission)
     - crop hillshading / slope to BVSAR area
