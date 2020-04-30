@@ -1,4 +1,6 @@
 SAR Priorities
+- newer version of gdal
+- fix versions of all dependencies
 - make image names better - use geographic data so it's obvious if they cover the same area
 - why is container not recognising pre-existing files?
 - configuration can exclude tiling then job just finishes after data download
