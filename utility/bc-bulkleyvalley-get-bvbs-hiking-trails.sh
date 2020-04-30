@@ -1,6 +1,12 @@
 #!/bin/bash
 
-DATA_DIR=./data/bc-bulkleyvalley-bvbs
+if [ -z "$PROVISIONED_DATA" ]; then
+	DATA_BASE_DIR=./data
+else
+	DATA_BASE_DIR=$PROVISIONED_DATA
+fi
+
+DATA_DIR=$DATA_BASE_DIR/bc-bulkleyvalley-bvbs
 BASE_URL=http://www.bvbackpackers.ca/google-earth-maps/
 
 mkdir -p $DATA_DIR
