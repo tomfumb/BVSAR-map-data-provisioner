@@ -16,6 +16,7 @@ Entry Point
 
 WMS TIle Provisioner
 - check is_projected() in CRS
+- lower priority: am I naming the images incorrectly according to x / y position?
 
 TIFF Provisioner
 - permit optional bounds in case you don't want to use all .tiff files as bbox
