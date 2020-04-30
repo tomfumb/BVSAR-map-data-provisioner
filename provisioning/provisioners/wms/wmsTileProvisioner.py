@@ -132,10 +132,10 @@ def buildGridForBbox(sourceConfig, userArgs, wmsParameters):
             endX = startX + (maxImageMapUnitWidth if pixelWidthThisImage == maxImagePixelWidth else pixelsToMapUnits(pixelWidthThisImage, scale, dpi, wmsCrs))
             imageRequests[scale].append(list())
             for j in range(gridRowCount):
-                pixelHeightThisImage = maxImagePixelHeight if i < gridRowCount - 1 or gridRowCount == yImageCount else mapHeightInPixels % maxImagePixelHeight
+                pixelHeightThisImage = maxImagePixelHeight if j < gridRowCount - 1 or gridRowCount == yImageCount else mapHeightInPixels % maxImagePixelHeight
                 startY = lowerLeft[1] if j == 0 else imageRequests[scale][-1][-1].get('maxY')
                 endY = startY + (maxImageMapUnitHeight if pixelHeightThisImage == maxImagePixelHeight else pixelsToMapUnits(pixelHeightThisImage, scale, dpi, wmsCrs))
-                imageRequests[scale][i].append({ 'minX': startX, 'minY': startY, 'maxX': endX, 'maxY': endY, 'width': pixelWidthThisImage, 'height': pixelHeightThisImage })
+                imageRequests[scale][-1].append({ 'minX': startX, 'minY': startY, 'maxX': endX, 'maxY': endY, 'width': pixelWidthThisImage, 'height': pixelHeightThisImage })
     return imageRequests
 
 
