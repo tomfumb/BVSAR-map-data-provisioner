@@ -35,7 +35,7 @@ def buildHttpRequestsForGrid(sourceConfig, userArgs, projectDirectoryPath):
                 requests.append({
                     'url': urlTemplate.format(z = currentZoom, x = currentX, y = currentY),
                     'path': os.path.join(projectDirectoryPath, str(currentZoom), str(currentX), '{y}.png'.format(y = currentY)),
-                    'expectedType': 'image/png'
+                    'expectedType': sourceConfig.get('format', 'image/png')
                 })
                 currentY -= 1
             currentX += 1
