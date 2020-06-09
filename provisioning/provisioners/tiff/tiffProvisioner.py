@@ -1,6 +1,5 @@
 import os
-import ogr
-import gdal
+from osgeo import ogr, gdal
 import glob
 import logging
 

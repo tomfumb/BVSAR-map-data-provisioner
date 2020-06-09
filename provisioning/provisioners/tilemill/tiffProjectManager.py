@@ -47,7 +47,7 @@ def getProjectDefinition(sourceConfig, bounds, projectDirectoryPath, environment
     srcCrs = CRS(sourceConfig.get('crs'))
     for scale in scales:
         for fileLocations in _getLayerFilePaths(projectDirectoryPath, scale, environmentConfig):
-            srcLocation = fileLocations.get('tilemillLocation', fileLocations['srcLocation'])
+            srcLocation = fileLocations.get('containerLocation', fileLocations['srcLocation'])
             fileIdentifier = '{scale}_{filename}'.format(scale = str(scale), filename = re.sub(r'\.tif(f)?$', '', fileLocations.get('filename')))
             layers.append({
                 'geometry': 'raster',
@@ -104,19 +104,19 @@ def _getLayerFilePaths(parentDirectory, scale, environmentConfig):
     if containerConfig != None:
         try:
             import docker
-            alternateLayerFiles = list()
             client = docker.from_env()
-            containerName = containerConfig.get('name')
-            container = client.containers.get(containerName)
-            containerBaseDir = containerConfig.get('dataDir')
-            containerFileDir = containerBaseDir + ('' if containerBaseDir.endswith('/') else '/') + parentDirectory.split(os.path.sep).pop() + '/' + str(scale) + '/' # explicitly use unix path separators as container is Ubuntu
-            container.exec_run('rm -rf ' + containerFileDir, stderr = True, stdout = True)
-            container.exec_run('mkdir -p ' + containerFileDir, stderr = True, stdout = True)
+            container = client.containers.get(containerConfig.get('name'))
+            mappedLocalBaseDir = None
+            for bindConfig in container.attrs.get('HostConfig').get('Binds'):
+                parts = bindConfig.split(':')
+                if parts[1] == containerConfig.get('dataDir'):
+                    mappedLocalBaseDir = parts[0]
+            if mappedLocalBaseDir is None:
+                raise EnvironmentError('Bind mount from local output location to container\'s dataDir must be configured')
+            alternateLayerFiles = list()
             for layerFile in layerFiles:
-                containerFile = containerFileDir + layerFile.get('filename')
-                subprocess.check_output('docker cp ' + layerFile.get('srcLocation') + ' ' + containerName + ':' + containerFile, shell = True)
                 alternateLayerFile = layerFile.copy()
-                alternateLayerFile['tilemillLocation'] = containerFile
+                alternateLayerFile['containerLocation'] = alternateLayerFile.get('srcLocation').replace(mappedLocalBaseDir, containerConfig.get('dataDir'))
                 alternateLayerFiles.append(alternateLayerFile)
             return alternateLayerFiles
         except ImportError:

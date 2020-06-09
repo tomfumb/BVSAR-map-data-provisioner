@@ -23,8 +23,8 @@ do
 done
 
 python3 $GDAL_SCRIPTS_HOME/scripts/gdal_merge.py -n -32767 -o bc-4269.dem *.dem
-gdalwarp -s_srs EPSG:4269 -t_srs EPSG:3857 -r cubic bc-4269.dem bc-3857.dem
+gdalwarp -s_srs EPSG:4269 -t_srs EPSG:3857 -r cubic bc-4269.dem bc-3857.tiff
 rm bc-4269.dem
-gdaldem hillshade bc-3857.dem bc-hillshade-225-45.tiff -of GTiff -b 1 -z 1.0 -s 1.0 -az 225 -alt 45
+gdaldem hillshade bc-3857.tiff bc-hillshade-225-45.tiff -of GTiff -b 1 -z 1.0 -s 1.0 -az 225 -alt 45
 
 popd
