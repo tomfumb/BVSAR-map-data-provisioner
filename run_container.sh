@@ -1,1 +1,0 @@
-docker run --name=provisioner -e CORE_URL=0.0.0.0:20009 -e TILE_URL=0.0.0.0:20008 -v $PROVISIONED_DATA:/root/data -v `pwd`:/root/provisioning -p 20008:20008 -p 20009:20009 -d -t provisioner

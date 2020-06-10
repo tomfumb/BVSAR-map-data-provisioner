@@ -1,0 +1,43 @@
+General
+- driver modules define specific process and not everything is configurable
+    - small number of features are configurable
+- 'sources' conform to a pattern where standard input & output
+
+Data Sources
+- Canvec WMS
+- BC DEM -> Hillshade
+- Google / Bing
+    - if URL provided, otherwise Canvec all the way down
+- Resource Roads
+- Trails
+    - integrate from InReach
+    - check BVSAR KML for non-duplicates
+- Cabins
+- Transmission Lines
+    - only when overlaid on non-Canvec, as Canvec already shows transmission lines
+
+    Possible Data Sources
+    - Look for data on old mining roads
+    - Snowmobile club trails
+    - Google Earth's peaks
+
+Approach Notes
+- All source files downloaded to common location and in common grid
+    - For Canvec count grids at scale and CRS from 0,0 and name accordingly
+- Source data grouped into directories showing year of acquisition
+- Outlines of cached areas should be visible at zoom-level 1
+- SARM team wants logging roads / trails visible at more zoom levels
+- Generated content (from tilemill and merged Google / Bing) always generated fresh, overwrite existing
+
+Hosting
+- Raspberry Pi should only require 1.2A if no peripherals
+- Battery pack may be more reliable / simpler than car charger with UPS
+    - check how much battery power can be expected
+    - webpage could show remaining battery
+    - e.g. Pi Juice
+- Ruggedised case could be appropriate
+- External wifi antenna may be necessary for a good signal when broadcasting
+
+HTTP
+- expand on heuristics to periodically check if we still have the optimal concurrency
+- attempt to accommodate 429 "too many requests"
