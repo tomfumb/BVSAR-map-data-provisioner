@@ -2,6 +2,7 @@ General
 - driver modules define specific process and not everything is configurable
     - small number of features are configurable
 - 'sources' conform to a pattern where standard input & output
+- move all maintained data into repo, should not sit in 'data' directory
 
 Data Sources
 - Canvec WMS
@@ -15,6 +16,7 @@ Data Sources
 - Cabins
 - Transmission Lines
     - only when overlaid on non-Canvec, as Canvec already shows transmission lines
+- ATES terrain (check impact on vis)
 
     Possible Data Sources
     - Look for data on old mining roads
@@ -28,6 +30,8 @@ Approach Notes
 - Outlines of cached areas should be visible at zoom-level 1
 - SARM team wants logging roads / trails visible at more zoom levels
 - Generated content (from tilemill and merged Google / Bing) always generated fresh, overwrite existing
+- Consider moving trails and cabins to a geopackage and generating .shp at generation time
+    - Combine trail name and type abbreviation in export while keeping type denormalised
 
 Hosting
 - Raspberry Pi should only require 1.2A if no peripherals
