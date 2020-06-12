@@ -7,6 +7,7 @@ General
 Data Sources
 - Canvec WMS
 - BC DEM -> Hillshade
+- BC Topo Maps 1:20000
 - Google / Bing
     - if URL provided, otherwise Canvec all the way down
 - Resource Roads
@@ -24,14 +25,18 @@ Data Sources
     - Google Earth's peaks
 
 Approach Notes
+- Sources like BC Topo & BC DEM should check for end product before doing anything so I can delete intermediary files
+    - fn within modules giving names for each stage?
 - All source files downloaded to common location and in common grid
     - For Canvec count grids at scale and CRS from 0,0 and name accordingly
 - Source data grouped into directories showing year of acquisition
 - Outlines of cached areas should be visible at zoom-level 1
+    - Add a new outline as part of data build
 - SARM team wants logging roads / trails visible at more zoom levels
 - Generated content (from tilemill and merged Google / Bing) always generated fresh, overwrite existing
 - Consider moving trails and cabins to a geopackage and generating .shp at generation time
     - Combine trail name and type abbreviation in export while keeping type denormalised
+- Source imagery hillshade & BC Topo not currently reprojected, meaning tilemill might apply defaults to resampling that I don't want
 
 Hosting
 - Raspberry Pi should only require 1.2A if no peripherals

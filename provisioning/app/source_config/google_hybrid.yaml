@@ -1,0 +1,12 @@
+type: 'xyz'
+urlTemplate: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'
+format: 'image/jpeg'
+maxAvailableZoom: 20
+maxConcurrentRequests: 8
+arguments:
+  - 'minX'
+  - 'minY'
+  - 'maxX'
+  - 'maxY'
+  - 'minZ'
+  - 'maxZ'

@@ -1,7 +1,0 @@
-type: 'tiff'
-pathPattern: '/home/tchristian/Downloads/skysattest/*.tif'
-crs: 'EPSG:32616'
-tile:
-    scales: {
-        'all': [9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
-    }

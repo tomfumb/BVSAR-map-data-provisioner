@@ -4,3 +4,4 @@
 **/*.pyc
 **/output/**
 **/.DS_Store
+.envrc

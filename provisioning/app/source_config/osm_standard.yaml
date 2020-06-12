@@ -1,0 +1,11 @@
+type: 'xyz'
+urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+maxAvailableZoom: 20
+maxConcurrentRequests: 4
+arguments:
+  - 'minX'
+  - 'minY'
+  - 'maxX'
+  - 'maxY'
+  - 'minZ'
+  - 'maxZ'
