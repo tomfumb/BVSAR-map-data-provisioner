@@ -29,9 +29,13 @@ Approach Notes
     - fn within modules giving names for each stage?
 - All source files downloaded to common location and in common grid
     - For Canvec count grids at scale and CRS from 0,0 and name accordingly
+- Environmental variable determines whether existing files are used or replaced - this is how updates vs additions are managed
+    - Could be source-specific, if one source is known to have not updated like Google imagery
 - Source data grouped into directories showing year of acquisition
 - Outlines of cached areas should be visible at zoom-level 1
     - Add a new outline as part of data build
+    - Only add if new outline is not completely contained within another outline
+        - Expand existing outline if it intersects
 - SARM team wants logging roads / trails visible at more zoom levels
 - Generated content (from tilemill and merged Google / Bing) always generated fresh, overwrite existing
 - Consider moving trails and cabins to a geopackage and generating .shp at generation time
