@@ -62,22 +62,37 @@ def _build_grid_for_bbox(bbox: BBOX, wms_crs_code: str, scales: Tuple[int], wms_
     transformer = Transformer.from_crs(bbox_crs, wms_crs_code, always_xy = True)
     llx, lly = list(map(lambda ord: math.floor(ord), transformer.transform(bbox.min_x, bbox.min_y)))
     urx, ury = list(map(lambda ord: math.ceil(ord),  transformer.transform(bbox.max_x, bbox.max_y)))
-    total_width_map_units = urx - llx
-    total_height_map_units = ury - lly
+    align_tiles_to_grid = int(os.environ.get("GRID_ALIGNED_WMS", 1)) == 1
     max_image_pixel_width, max_image_pixel_height = wms_properties.max_width, wms_properties.max_height
     partial_coverage_tiles = list()
     for scale in scales:
-        map_width_in_pixels, map_height_in_pixels = _map_units_to_pixels(total_width_map_units, scale, wms_crs), _map_units_to_pixels(total_height_map_units, scale, wms_crs)
         max_image_map_unit_width, max_image_map_unit_height = _pixels_to_map_units(max_image_pixel_width, scale, wms_crs), _pixels_to_map_units(max_image_pixel_height, scale, wms_crs)
+        # 'grid_aligned' logic introduced to promote reuse of previously-downloaded tiles
+        # without grid-alignment we only request exactly what is required to cover the BBOX, however this means
+        # existing files that already partially or completely cover the BBOX are very unlikely to be reused, meaning
+        # new files are downloaded for the same area and saved with different filenames
+        # we align to a grid by default
+
+
+        # this logic is problematic for some scales. e.g. 250000 generates 6 images but 4 are not required
+
+
+        llx_for_scale = max_image_map_unit_width * math.floor(llx / max_image_map_unit_width) if align_tiles_to_grid else llx
+        lly_for_scale = max_image_map_unit_height * math.floor(lly / max_image_map_unit_height) if align_tiles_to_grid else lly
+        urx_for_scale = max_image_map_unit_width * math.ceil(urx / max_image_map_unit_width) if align_tiles_to_grid else urx
+        ury_for_scale = max_image_map_unit_height * math.ceil(ury / max_image_map_unit_height) if align_tiles_to_grid else ury
+        total_width_map_units = urx_for_scale - llx_for_scale
+        total_height_map_units = ury_for_scale - lly_for_scale
+        map_width_in_pixels, map_height_in_pixels = _map_units_to_pixels(total_width_map_units, scale, wms_crs), _map_units_to_pixels(total_height_map_units, scale, wms_crs)
         x_image_count, y_image_count = map_width_in_pixels / max_image_pixel_width, map_height_in_pixels / max_image_pixel_height
         grid_col_count, grid_row_count = math.ceil(x_image_count), math.ceil(y_image_count)
         for i in range(grid_col_count):
-            pixel_width_this_image = max_image_pixel_width if i < grid_col_count - 1 or grid_col_count == x_image_count else map_width_in_pixels % max_image_pixel_width
-            startX = llx if i == 0 else partial_coverage_tiles[-1].x_max
+            pixel_width_this_image = max_image_pixel_width if i < grid_col_count - 1 or grid_col_count == x_image_count or align_tiles_to_grid else map_width_in_pixels % max_image_pixel_width
+            startX = llx_for_scale if i == 0 else partial_coverage_tiles[-1].x_max
             endX = startX + (max_image_map_unit_width if pixel_width_this_image == max_image_pixel_width else _pixels_to_map_units(pixel_width_this_image, scale, wms_crs))
             for j in range(grid_row_count):
-                pixel_height_this_image = max_image_pixel_height if j < grid_row_count - 1 or grid_row_count == y_image_count else map_height_in_pixels % max_image_pixel_height
-                startY = lly if j == 0 else partial_coverage_tiles[-1].y_max
+                pixel_height_this_image = max_image_pixel_height if j < grid_row_count - 1 or grid_row_count == y_image_count or align_tiles_to_grid else map_height_in_pixels % max_image_pixel_height
+                startY = lly_for_scale if j == 0 else partial_coverage_tiles[-1].y_max
                 endY = startY + (max_image_map_unit_height if pixel_height_this_image == max_image_pixel_height else _pixels_to_map_units(pixel_height_this_image, scale, wms_crs))
                 partial_coverage_tiles.append(PartialCoverageTile(
                     x_min=startX,

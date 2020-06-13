@@ -3,7 +3,7 @@ import os
 import logging
 import zipfile
 
-from gdal import ogr, DEMProcessing
+from gdal import ogr, DEMProcessing, Warp
 from typing import Final
 
 from provisioning.app.common.bbox import BBOX
@@ -38,7 +38,9 @@ def provision(bbox: BBOX) -> None:
         if not skip_file_creation(dem_name):
             with zipfile.ZipFile(cell_data["path"], "r") as zip_ref:
                 zip_ref.extractall(get_output_path(CACHE_DIR_NAME))
+        prj_name = get_output_path(CACHE_DIR_NAME, f"{cell_part_name}_prj.tif")
+        if not skip_file_creation(prj_name):
+            Warp(prj_name, dem_name, srcSRS="EPSG:4269", dstSRS="EPSG:3857", resampleAlg="cubic")
         hillshade_name = get_output_path(CACHE_DIR_NAME, f"{cell_part_name}_hs.tif")
         if not skip_file_creation(hillshade_name):
-            DEMProcessing(hillshade_name, dem_name, "hillshade", format="GTiff", band=1, azimuth=225, altitude=45, scale=1, zFactor=1)
-
+            DEMProcessing(hillshade_name, prj_name, "hillshade", format="GTiff", band=1, azimuth=225, altitude=45, scale=1, zFactor=1)
