@@ -7,7 +7,8 @@ from gdal import ogr, Warp
 from typing import Final
 
 from provisioning.app.common.bbox import BBOX
-from provisioning.app.common.httpRetriever import httpRetriever
+from provisioning.app.common.file import skip_file_creation
+from provisioning.app.common.httpRetriever import httpRetriever, RetrievalRequest
 from provisioning.app.util import get_data_path, get_output_path
 
 CACHE_DIR_NAME: Final = "bc-topo-20000"
@@ -21,23 +22,23 @@ def provision(bbox: BBOX):
     while grid_cell := grid_layer.GetNextFeature():
         cell_name = grid_cell.GetFieldAsString("MAP_TILE")
         cell_parent = re.search("^\d{2,3}[a-z]", cell_name, re.IGNORECASE)[0]
-        bbox_cells[cell_name] = {
-            "url": f"https://pub.data.gov.bc.ca/datasets/177864/tif/bcalb/{cell_parent}/{cell_name}.zip",
-            "path": get_output_path(CACHE_DIR_NAME, f"{cell_name}.zip"),
-            "expectedType": "application/zip"
-        }
+        bbox_cells[cell_name] = RetrievalRequest(
+            url=f"https://pub.data.gov.bc.ca/datasets/177864/tif/bcalb/{cell_parent}/{cell_name}.zip",
+            path=get_output_path(CACHE_DIR_NAME, f"{cell_name}.zip"),
+            expected_type="application/zip"
+        )
 
     httpRetriever(bbox_cells.values())
 
     tif_crops = list()
     for cell_name, cell_data in bbox_cells.items():
         tif_name = get_output_path(CACHE_DIR_NAME, f"{cell_name}.tif")
-        if not os.path.exists(tif_name) or os.stat(tif_name).st_size == 0:
+        if not skip_file_creation(tif_name):
             with zipfile.ZipFile(cell_data["path"], "r") as zip_ref:
                 zip_ref.extract(f"{cell_name}.tif", get_output_path(CACHE_DIR_NAME))
         
         tif_crop_name = get_output_path(CACHE_DIR_NAME, f"{cell_name}_crop.tif")
-        if not os.path.exists(tif_crop_name) or os.stat(tif_crop_name).st_size == 0:
+        if not skip_file_creation(tif_crop_name):
             result = Warp(
                 tif_crop_name,
                 tif_name,

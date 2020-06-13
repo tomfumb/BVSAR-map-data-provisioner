@@ -5,10 +5,20 @@ import random
 import requests
 import logging
 
+from pydantic import BaseModel
+from typing import List
+
 from concurrent import futures
 from timeit import default_timer as timer
 
-def httpRetriever(requests, maxConcurrentRequests = 10):
+from provisioning.app.common.file import skip_file_creation
+
+class RetrievalRequest(BaseModel):
+    path: str
+    url: str
+    expected_type: str
+
+def httpRetriever(requests: List[RetrievalRequest], maxConcurrentRequests: int = 10):
     logging.debug('Removing requests for files that already exist')
     outstandingRequests = removeExistingFiles(requests)
     logging.info('Ignoring %d of %d requests as files already exist', len(requests) - len(outstandingRequests), len(requests))
@@ -46,11 +56,11 @@ def httpRetriever(requests, maxConcurrentRequests = 10):
             executeRequests(executor, outstandingRequests)
 
 
-def removeExistingFiles(requests):
-    return list(filter(lambda request: not os.path.exists(request.get('path')) or os.stat(request.get('path')).st_size == 0, requests))
+def removeExistingFiles(requests: List[RetrievalRequest]) -> List[RetrievalRequest]:
+    return list(filter(lambda request: not skip_file_creation(request.path), requests))
 
 
-def executeRequests(executor, requests):
+def executeRequests(executor, requests: List[RetrievalRequest]) -> None:
     requestFutures = (executor.submit(issueFileRequest, request) for request in requests)
     for future in futures.as_completed(requestFutures):
         try:
@@ -59,13 +69,13 @@ def executeRequests(executor, requests):
             logging.info('Exception: %s', str(type(exc)))
 
 
-def issueFileRequest(request):
-    filePath = request.get('path')
+def issueFileRequest(request: RetrievalRequest):
+    filePath = request.path
     os.makedirs(os.path.dirname(filePath), exist_ok = True)
-    url = request.get('url')
+    url = request.url
     logging.info('Requesting %s from %s', filePath, url)
     response = requests.get(url, headers = { 'User-Agent': getRandomUserAgent() })
-    isExpectedType = isExpectedResponseType(response, request.get('expectedType'))
+    isExpectedType = isExpectedResponseType(response, request.expected_type)
     if isExpectedType is None:
         logging.info('Cannot determine response type, may not be the desired response')
     else:
@@ -75,13 +85,13 @@ def issueFileRequest(request):
             out.write(response.content)
             out.close()
         else:
-            logging.error('Response is not of expected type "%s", result will not be stored', request.get('expectedType'))
+            logging.error('Response is not of expected type "%s", result will not be stored', request.expected_type)
    
 
-def isExpectedResponseType(response, expectedType):
+def isExpectedResponseType(response, expectedType: str) -> bool:
     responseType = response.headers.get('Content-Type')
-    if responseType != None:
-        if re.match(re.escape(expectedType), responseType) != None:
+    if responseType:
+        if re.match(re.escape(expectedType), responseType):
             return True
         else:
             return False
@@ -89,7 +99,7 @@ def isExpectedResponseType(response, expectedType):
         return None
 
 # https://www.scrapehero.com/how-to-fake-and-rotate-user-agents-using-python-3/
-def getRandomUserAgent():
+def getRandomUserAgent() -> str:
     userAgentList = (
         #Chrome
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
