@@ -11,29 +11,24 @@ from typing import List
 from concurrent import futures
 from timeit import default_timer as timer
 
-from provisioning.app.common.file import skip_file_creation
-
 class RetrievalRequest(BaseModel):
     path: str
     url: str
     expected_type: str
 
 def httpRetriever(requests: List[RetrievalRequest], maxConcurrentRequests: int = 10):
-    logging.debug('Removing requests for files that already exist')
-    outstandingRequests = removeExistingFiles(requests)
-    logging.info('Ignoring %d of %d requests as files already exist', len(requests) - len(outstandingRequests), len(requests))
-    if len(outstandingRequests) > 0:
+    if len(requests) > 0:
         bestTimePerRequest = sys.maxsize
         bestConcurrency = 1
         concurrency = 1
         while concurrency <= maxConcurrentRequests:
             logging.debug('Testing request speed with %d concurrent requests', concurrency)
             bestConcurrency = concurrency
-            numRequestsToTest = min(concurrency, len(outstandingRequests))
+            numRequestsToTest = min(concurrency, len(requests))
             logging.debug('Got %d requests to test with', numRequestsToTest)
             if numRequestsToTest > 0:
-                testRequests = outstandingRequests[:numRequestsToTest]
-                del outstandingRequests[:numRequestsToTest]
+                testRequests = requests[:numRequestsToTest]
+                del requests[:numRequestsToTest]
                 start = timer()
                 with futures.ThreadPoolExecutor(max_workers = numRequestsToTest) as executor:
                     executeRequests(executor, testRequests)
@@ -53,11 +48,7 @@ def httpRetriever(requests: List[RetrievalRequest], maxConcurrentRequests: int =
         
         logging.info('Issuing requests with %d concurrency', bestConcurrency)
         with futures.ThreadPoolExecutor(max_workers = bestConcurrency) as executor:
-            executeRequests(executor, outstandingRequests)
-
-
-def removeExistingFiles(requests: List[RetrievalRequest]) -> List[RetrievalRequest]:
-    return list(filter(lambda request: not skip_file_creation(request.path), requests))
+            executeRequests(executor, requests)
 
 
 def executeRequests(executor, requests: List[RetrievalRequest]) -> None:

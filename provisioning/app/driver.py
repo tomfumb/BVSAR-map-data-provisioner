@@ -6,9 +6,9 @@ import os
 from gdal import ConfigurePythonLogging, UseExceptions
 
 from provisioning.app.common.bbox import BBOX
-from provisioning.app.sources.bc_hillshade import provision as bc_hillshade_provisioner
-from provisioning.app.sources.bc_topo_20000 import provision as bc_topo_20000_provisioner
-from provisioning.app.sources.canvec_wms import provision as canvec_wms_provisioner
+from provisioning.app.sources.bc_hillshade import provision as bc_hillshade_provisioner, CACHE_DIR_NAME as bc_hillshade_dir
+from provisioning.app.sources.bc_topo_20000 import provision as bc_topo_20000_provisioner, CACHE_DIR_NAME as bc_topo_dir
+from provisioning.app.sources.canvec_wms import provision as canvec_wms_provisioner, CACHE_DIR_NAME as canvec_dir
 
 UseExceptions()
 
@@ -36,9 +36,10 @@ logging.basicConfig(handlers = handlers, level = logLevelMapping.get(requestedLo
 ConfigurePythonLogging(logging.getLogger().name, logging.getLogger().level == logging.DEBUG)
 
 bbox = BBOX(**args)
-bc_topo_20000_provisioner(bbox)
-bc_hillshade_provisioner(bbox)
-canvec_wms_provisioner(bbox, (
+files = dict()
+files[bc_topo_dir] = bc_topo_20000_provisioner(bbox)
+files[bc_hillshade_dir] = bc_hillshade_provisioner(bbox)
+files[canvec_dir] = canvec_wms_provisioner(bbox, (
     10000000,
     4000000,
     2000000,
@@ -50,3 +51,4 @@ canvec_wms_provisioner(bbox, (
     35000,
     20000
 ))
+
