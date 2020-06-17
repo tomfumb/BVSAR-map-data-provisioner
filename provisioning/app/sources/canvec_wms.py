@@ -2,7 +2,7 @@ from typing import Dict, Final, List, Tuple
 
 from provisioning.app.common.bbox import BBOX
 from provisioning.app.util import get_output_path
-from provisioning.app.sources.wms import provision as wms_provisioner
+from provisioning.app.sources.common.wms import provision as wms_provisioner
 
 CACHE_DIR_NAME: Final = "canvec"
 

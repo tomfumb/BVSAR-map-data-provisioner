@@ -135,7 +135,7 @@ def _filter_grid_for_missing(grid: List[PartialCoverageTile]) -> List[PartialCov
 def _convert_grid_to_requests(grid: List[PartialCoverageTile], image_format: str) -> List[RetrievalRequest]:
     return list(map(lambda tile: RetrievalRequest(path=tile.wms_path, url=tile.wms_url, expected_type=f"image/{image_format}"), grid))
 
-def _convert_grid_to_file_list(grid: List[PartialCoverageTile]) -> List[str]:
+def _convert_grid_to_file_list(grid: List[PartialCoverageTile]) -> Dict[int, List[str]]:
     file_list = dict()
     for tile in grid:
         if not tile.scale in file_list:

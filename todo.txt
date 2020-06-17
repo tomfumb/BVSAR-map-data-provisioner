@@ -42,6 +42,7 @@ Approach Notes
     - Combine trail name and type abbreviation in export while keeping type denormalised
 - Source imagery hillshade & BC Topo not currently reprojected, meaning tilemill might apply defaults to resampling that I don't want
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
+- need some consistency in class file names, classes having their own files
 
 Hosting
 - Raspberry Pi should only require 1.2A if no peripherals
