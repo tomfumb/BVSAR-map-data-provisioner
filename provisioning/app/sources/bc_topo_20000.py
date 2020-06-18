@@ -12,6 +12,7 @@ from provisioning.app.common.httpRetriever import httpRetriever, RetrievalReques
 from provisioning.app.util import get_data_path, get_output_path
 
 CACHE_DIR_NAME: Final = "bc-topo-20000"
+OUTPUT_CRS_CODE: Final = "EPSG:3857"
 
 def provision(bbox: BBOX):
     driver = ogr.GetDriverByName("GPKG")
@@ -34,31 +35,26 @@ def provision(bbox: BBOX):
 
     httpRetriever(list(retrieval_requests.values()))
 
-    # tif_crops = list()
     for cell_name, retrieval_request in retrieval_requests.items():
         unzipped_tif_name = f"{cell_name}.tif"
         unzipped_tif_location = get_output_path(CACHE_DIR_NAME, unzipped_tif_name)
         with zipfile.ZipFile(retrieval_request.path, "r") as zip_ref:
             zip_ref.extract(unzipped_tif_name, get_output_path(CACHE_DIR_NAME))
-        Warp(_get_final_path(cell_name), unzipped_tif_location, srcSRS="EPSG:26909", dstSRS="EPSG:3857", resampleAlg="lanczos")
+        Warp(
+            _get_final_path(cell_name),
+            unzipped_tif_location,
+            cutlineDSName=get_data_path("grids.gpkg"),
+            cutlineLayer="BC-20000",
+            cutlineWhere=f"MAP_TILE = '{cell_name}'",
+            cropToCutline=True,
+            dstNodata=-1,
+            srcSRS="EPSG:26909",
+            dstSRS=OUTPUT_CRS_CODE,
+            resampleAlg="lanczos"
+        )
         if remove_intermediaries():
             os.remove(retrieval_request.path)
             os.remove(unzipped_tif_location)
-        # tif_crop_name = get_output_path(CACHE_DIR_NAME, f"{cell_name}_crop.tif")
-        # if not skip_file_creation(tif_crop_name):
-        #     result = Warp(
-        #         tif_crop_name,
-        #         tif_name,
-        #         cutlineDSName=get_data_path("grids.gpkg"),
-        #         cutlineLayer="BC-20000",
-        #         cutlineWhere=f"MAP_TILE = '{cell_name}'",
-        #         cropToCutline=True,
-        #         dstNodata=-1
-        #     )
-        #     result = None
-        # tif_crops.append(tif_crop_name)
-    
-    # Warp(get_output_path(CACHE_DIR_NAME, "merge.tif"), tif_crops)
     
     return grid_files
 

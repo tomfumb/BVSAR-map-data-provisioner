@@ -25,10 +25,6 @@ Data Sources
     - Google Earth's peaks
 
 Approach Notes
-- Sources like BC Topo & BC DEM should check for end product before doing anything so I can delete intermediary files
-    - fn within modules giving names for each stage?
-- All source files downloaded to common location and in common grid
-    - For Canvec count grids at scale and CRS from 0,0 and name accordingly
 - Environmental variable determines whether existing files are used or replaced - this is how updates vs additions are managed
     - Could be source-specific, if one source is known to have not updated like Google imagery
 - Source data grouped into directories showing year of acquisition
@@ -40,9 +36,9 @@ Approach Notes
 - Generated content (from tilemill and merged Google / Bing) always generated fresh, overwrite existing
 - Consider moving trails and cabins to a geopackage and generating .shp at generation time
     - Combine trail name and type abbreviation in export while keeping type denormalised
-- Source imagery hillshade & BC Topo not currently reprojected, meaning tilemill might apply defaults to resampling that I don't want
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
 - need some consistency in class file names, classes having their own files
+- combined util.py and file.py and choose better home for util
 
 Hosting
 - Raspberry Pi should only require 1.2A if no peripherals

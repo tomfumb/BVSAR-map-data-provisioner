@@ -12,6 +12,7 @@ from provisioning.app.common.httpRetriever import httpRetriever, RetrievalReques
 from provisioning.app.util import get_data_path, get_output_path
 
 CACHE_DIR_NAME: Final = "bc-hillshade"
+OUTPUT_CRS_CODE: Final = "EPSG:3857"
 
 def provision(bbox: BBOX) -> None:
     driver = ogr.GetDriverByName("GPKG")
@@ -42,7 +43,7 @@ def provision(bbox: BBOX) -> None:
         with zipfile.ZipFile(retrieval_request.path, "r") as zip_ref:
             zip_ref.extractall(get_output_path(CACHE_DIR_NAME))
         prj_name = get_output_path(CACHE_DIR_NAME, f"{cell_part_name}_prj.tif")
-        Warp(prj_name, dem_name, srcSRS="EPSG:4269", dstSRS="EPSG:3857", resampleAlg="cubic")
+        Warp(prj_name, dem_name, srcSRS="EPSG:4269", dstSRS=OUTPUT_CRS_CODE, resampleAlg="cubic")
         DEMProcessing(_get_final_path(cell_part_name), prj_name, "hillshade", format="GTiff", band=1, azimuth=225, altitude=45, scale=1, zFactor=1)
         if remove_intermediaries():
             os.remove(retrieval_request.path)

@@ -13,6 +13,7 @@ RUN rm /requirements.txt
 
 WORKDIR /home/appuser
 USER appuser
+RUN mkdir data
 
 # COPY app app
 

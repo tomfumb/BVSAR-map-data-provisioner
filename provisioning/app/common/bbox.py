@@ -1,3 +1,4 @@
+from gdal import ogr
 from typing import Dict
 from pydantic import BaseModel, validator
 
@@ -6,6 +7,14 @@ class BBOX(BaseModel):
     max_y: float
     min_x: float
     min_y: float
+
+    def as_tuple(self):
+        return (self.min_x, self.min_y, self.max_x, self.max_y)
+
+    def get_centre(self):
+        return ogr.CreateGeometryFromWkt(
+            f"POLYGON (({self.min_x} {self.min_y}, {self.max_x} {self.min_y}, {self.max_x} {self.max_y}, {self.min_x} {self.max_y}, {self.min_x} {self.min_y}))"
+        ).Centroid().GetPoint()
 
     @validator("min_x")
     def min_x_validator(cls, value, values):
