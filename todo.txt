@@ -1,7 +1,6 @@
 General
 - driver modules define specific process and not everything is configurable
     - small number of features are configurable
-- 'sources' conform to a pattern where standard input & output
 - move all maintained data into repo, should not sit in 'data' directory
 
 Data Sources
