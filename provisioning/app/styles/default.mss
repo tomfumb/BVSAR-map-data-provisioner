@@ -4,7 +4,7 @@ Map { background-color: #fff }
   raster-opacity:0.3;
 }
 
-#ftenrslnline {
+.bc-resource-roads {
   line-color:#CD5406;
 }
 
@@ -12,7 +12,7 @@ Map { background-color: #fff }
   line-color:#960BA4;
 }
 
-#ftenrslnline,#hikingtrails {
+.bc-resource-roads,#hikingtrails {
   [zoom < 12] {
     line-width:0;
   }
@@ -30,7 +30,7 @@ Map { background-color: #fff }
   }
 }
 
-#ftenrslnlinelabel {
+.bc-resource-roads-label {
   line-width:0;
   [zoom >= 15] {
     text-name:[RD_SECT_NM];
@@ -43,7 +43,7 @@ Map { background-color: #fff }
   }
 }
 
-#ftenrslnlinelabel,#hikingtrails {
+.bc-resource-roads-label,#hikingtrails {
   [zoom >= 15] {
     text-dy:5;
     text-face-name:'DejaVu Sans Book';

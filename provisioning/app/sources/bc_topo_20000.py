@@ -4,19 +4,21 @@ import logging
 import zipfile
 
 from gdal import ogr, Warp
-from typing import Dict, Final
+from typing import Dict, Final, List
 
 from provisioning.app.common.bbox import BBOX
 from provisioning.app.common.file import skip_file_creation, remove_intermediaries
 from provisioning.app.common.httpRetriever import httpRetriever, RetrievalRequest
+from provisioning.app.tilemill.ProjectLayerType import ProjectLayerType
 from provisioning.app.util import get_data_path, get_output_path
 
 CACHE_DIR_NAME: Final = "bc-topo-20000"
 OUTPUT_CRS_CODE: Final = "EPSG:3857"
+OUTPUT_TYPE: Final = ProjectLayerType.RASTER
 
-def provision(bbox: BBOX):
+def provision(bbox: BBOX) -> List[str]:
     driver = ogr.GetDriverByName("GPKG")
-    grid_datasource = (driver.Open(get_data_path("grids.gpkg")))
+    grid_datasource = (driver.Open(get_data_path(("grids.gpkg",))))
     grid_layer = grid_datasource.GetLayerByName("BC-20000")
     grid_layer.SetSpatialFilterRect(bbox.min_x, bbox.min_y, bbox.max_x, bbox.max_y)
     retrieval_requests = dict()

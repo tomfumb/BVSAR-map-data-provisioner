@@ -13,6 +13,7 @@ import uuid
 from provisioning.app.common.bbox import BBOX
 from provisioning.app.util import get_output_path, TILEMILL_DATA_LOCATION
 from provisioning.app.tilemill.ProjectLayer import ProjectLayer
+from provisioning.app.tilemill.ProjectLayerType import ProjectLayerType
 from provisioning.app.tilemill.ProjectProperties import ProjectProperties
 from pyproj import CRS, Transformer
 from typing import Dict
@@ -39,7 +40,7 @@ def create_or_update_project(tilemill_url: str, project_properties: ProjectPrope
         "use-default": False,
         "bones.token": token
     }
-    response = requests.put(
+    requests.put(
         f"{tilemill_url}/api/Project/{project_properties.name}",
         data = json.dumps(project),
         headers = { "Content-Type": "application/json" },
@@ -49,10 +50,15 @@ def create_or_update_project(tilemill_url: str, project_properties: ProjectPrope
 def _convert_project_layer_to_layer(project_layer: ProjectLayer) -> Dict[str, object]:
     tilemill_path = project_layer.path.replace(get_output_path(), TILEMILL_DATA_LOCATION)
     layer_id = uuid.uuid4().hex
-    image_bbox = _getExtentFromRaster(project_layer.path, project_layer.crs_code)
+    bbox_calculators = dict()
+    bbox_calculators[ProjectLayerType.RASTER.value] = _getExtentFromRaster
+    bbox_calculators[ProjectLayerType.LINESTRING.value] = _getExtentFromShp
+    if project_layer.type.value not in bbox_calculators:
+        raise Exception(f"Do not understand {project_layer.type.value}, unable to calculate BBOX")
+    layer_bbox = bbox_calculators[project_layer.type.value](project_layer.path, project_layer.crs_code)
     return {
-        "geometry": "raster",
-        "extent": {"minX": image_bbox.min_x, "minY": image_bbox.min_y, "maxX": image_bbox.max_x, "maxY": image_bbox.max_y},
+        "geometry": project_layer.type.value,
+        "extent": {"minX": layer_bbox.min_x, "minY": layer_bbox.min_y, "maxX": layer_bbox.max_x, "maxY": layer_bbox.max_y},
         "id": layer_id,
         "class": project_layer.style_class,
         "Datasource": { "file": tilemill_path },
@@ -144,3 +150,15 @@ def _getExtentFromRaster(path: str, crs_code: str) -> BBOX:
     lowerRight = transformer.transform(lrx, lry)
     upperLeft = transformer.transform(ulx, uly)
     return BBOX(min_x=upperLeft[0], min_y=lowerRight[1], max_x=lowerRight[0], max_y=upperLeft[1])
+
+def _getExtentFromShp(path: str, crs_code: str) -> BBOX:
+    driver = gdal.ogr.GetDriverByName("ESRI Shapefile")
+    shp_datasource = driver.Open(path)
+    shp_layer = shp_datasource.GetLayerByIndex(0)
+    shp_extent = shp_layer.GetExtent()
+    shp_crs = CRS(crs_code)
+    bbox_crs = CRS("EPSG:4326")
+    transformer = Transformer.from_crs(shp_crs, bbox_crs, always_xy = True)
+    llx, lly = transformer.transform(shp_extent[0], shp_extent[2])
+    urx, ury = transformer.transform(shp_extent[1], shp_extent[3])
+    return BBOX(min_x=llx, min_y=lly, max_x=urx, max_y=ury)

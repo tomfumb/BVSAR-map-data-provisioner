@@ -34,6 +34,9 @@ Approach Notes
 - need some consistency in class file names, classes having their own files
 - combined util.py and file.py and choose better home for util
 
+Bugs
+- BBOX validation fails in a strange way
+
 Hosting
 - Raspberry Pi should only require 1.2A if no peripherals
 - Battery pack may be more reliable / simpler than car charger with UPS

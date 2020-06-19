@@ -14,10 +14,12 @@ from typing import Dict, Final, List, Tuple
 from provisioning.app.common.bbox import BBOX
 from provisioning.app.common.file import skip_file_creation, remove_intermediaries
 from provisioning.app.common.httpRetriever import httpRetriever, RetrievalRequest
+from provisioning.app.tilemill.ProjectLayerType import ProjectLayerType
 
 DEFAULT_WMS_VERSION: Final = "1.1.1"
 DEFAULT_DPI: Final = 96
 TARGET_FILE_FORMAT: Final = "tif"
+OUTPUT_TYPE: Final = ProjectLayerType.RASTER
 
 class WmsProperties(BaseModel):
     max_width: int
@@ -66,7 +68,7 @@ def _get_wms_properties(base_url: str) -> WmsProperties:
 def _build_grid_for_bbox(bbox: BBOX, wms_crs_code: str, scales: Tuple[int], wms_properties: WmsProperties) -> List[PartialCoverageTile]:
     bbox_crs = CRS("EPSG:4326")
     wms_crs = CRS(wms_crs_code)
-    transformer = Transformer.from_crs(bbox_crs, wms_crs_code, always_xy = True)
+    transformer = Transformer.from_crs(bbox_crs, wms_crs, always_xy = True)
     llx, lly = list(map(lambda ord: math.floor(ord), transformer.transform(bbox.min_x, bbox.min_y)))
     urx, ury = list(map(lambda ord: math.ceil(ord),  transformer.transform(bbox.max_x, bbox.max_y)))
     crs_origin_x, crs_origin_y = transformer.transform(wms_crs.area_of_use.west, wms_crs.area_of_use.south)
