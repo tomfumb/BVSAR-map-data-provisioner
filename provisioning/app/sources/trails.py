@@ -8,7 +8,7 @@ from provisioning.app.sources.common.ogr_to_shp import ogr_to_shp
 from provisioning.app.tilemill.ProjectLayerType import ProjectLayerType
 from provisioning.app.util import delete_directory_contents, get_data_path, get_output_path
 
-CACHE_DIR_NAME: Final = "bc-resource-roads"
+CACHE_DIR_NAME: Final = "trails"
 OUTPUT_CRS_CODE: Final = "EPSG:3857"
 OUTPUT_TYPE: Final = ProjectLayerType.LINESTRING
 
@@ -16,13 +16,13 @@ def provision(bbox: BBOX) -> List[str]:
     output_dir = get_output_path(CACHE_DIR_NAME)
     os.makedirs(output_dir, exist_ok = True)
     delete_directory_contents(output_dir)
-    driver = ogr.GetDriverByName("ESRI Shapefile")
-    datasource = driver.Open(get_data_path(("FTEN_ROAD_SECTION_LINES_SVW","FTEN_RS_LN_line.shp")))
+    driver = ogr.GetDriverByName("GPKG")
+    datasource = driver.Open(get_data_path(("relevant-features.gpkg",)))
     result = ogr_to_shp(
         bbox,
-        datasource.GetLayerByIndex(0),
-        get_output_path(CACHE_DIR_NAME, "bc_resource_roads.shp"),
-        "bc_resource_roads",
+        datasource.GetLayerByName("trails"),
+        get_output_path(CACHE_DIR_NAME, "trails.shp"),
+        "trails",
         OUTPUT_CRS_CODE
     )
     datasource = None

@@ -8,11 +8,11 @@ Map { background-color: #fff }
   line-color:#CD5406;
 }
 
-#hikingtrails {
+.trails {
   line-color:#960BA4;
 }
 
-.bc-resource-roads,#hikingtrails {
+.bc-resource-roads,.trails {
   [zoom < 12] {
     line-width:0;
   }
@@ -43,7 +43,7 @@ Map { background-color: #fff }
   }
 }
 
-.bc-resource-roads-label,#hikingtrails {
+.bc-resource-roads-label,.trails {
   [zoom >= 15] {
     text-dy:5;
     text-face-name:'DejaVu Sans Book';
@@ -53,13 +53,13 @@ Map { background-color: #fff }
   }
 }
 
-#hikingtrails {
+.trails {
   [zoom >= 15] {
     text-name:[name];
   }
 }
 
-#cabins {
+.shelters {
   marker-fill:#f45;
   marker-line-color:#813;
   marker-allow-overlap:true;
