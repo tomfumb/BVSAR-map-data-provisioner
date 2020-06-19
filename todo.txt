@@ -1,8 +1,3 @@
-General
-- driver modules define specific process and not everything is configurable
-    - small number of features are configurable
-- move all maintained data into repo, should not sit in 'data' directory
-
 Data Sources
 - Canvec WMS
 - BC DEM -> Hillshade
