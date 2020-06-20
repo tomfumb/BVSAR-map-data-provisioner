@@ -11,17 +11,17 @@ import requests
 import uuid
 
 from provisioning.app.common.bbox import BBOX
-from provisioning.app.util import get_output_path, TILEMILL_DATA_LOCATION
+from provisioning.app.util import get_base_path, TILEMILL_DATA_LOCATION
 from provisioning.app.tilemill.ProjectLayer import ProjectLayer
 from provisioning.app.tilemill.ProjectLayerType import ProjectLayerType
+from provisioning.app.tilemill.ProjectCreationProperties import ProjectCreationProperties
 from provisioning.app.tilemill.ProjectProperties import ProjectProperties
 from pyproj import CRS, Transformer
 from typing import Dict
 
-def create_or_update_project(tilemill_url: str, project_properties: ProjectProperties) -> None:
+def create_or_update_project(tilemill_url: str, project_properties: ProjectCreationProperties) -> None:
     token = _generateToken()
     centre = project_properties.bbox.get_centre()
-
     project = {
         "bounds": project_properties.bbox.as_tuple(),
         "center": (centre[0], centre[1], project_properties.zoom_min),
@@ -47,8 +47,57 @@ def create_or_update_project(tilemill_url: str, project_properties: ProjectPrope
         cookies = { "bones.token": token }
     )
 
+def request_export(tilemill_url: str, project_properties: ProjectProperties) -> str:
+    token = _generateToken()
+    nowTs = _getNowAsEpochMs()
+    export_filename = "{project_name}_{unique_part}.mbtiles".format(project_name = project_properties.name, unique_part = re.sub("[^a-z0-9]", "", str(uuid.uuid4()), flags=re.IGNORECASE))
+    exportDefinition = {
+        "progress": 0,
+        "status": "waiting",
+        "format": "mbtiles",
+        "project": project_properties.name,
+        "id": str(nowTs),
+        "zooms": (project_properties.zoom_min, project_properties.zoom_max),
+        "metatile": 2,
+        "center": (*project_properties.bbox.get_centre(), project_properties.zoom_min),
+        "bounds": project_properties.bbox.as_tuple(),
+        "static_zoom": project_properties.zoom_min,
+        "filename": export_filename,
+        "note": "",
+        "bbox": project_properties.bbox.as_tuple(),
+        "minzoom": project_properties.zoom_min,
+        "maxzoom": project_properties.zoom_max,
+        "bones.token": token
+    }
+    requests.put(
+        f"{tilemill_url}/api/Export/{nowTs}",
+        data = json.dumps(exportDefinition),
+        headers = { "Content-Type": "application/json" },
+        cookies = { "bones.token": token }
+    )
+    while True:
+        try:
+            statuses = requests.get(f"{tilemill_url}/api/Export").json()
+            remaining = None
+            for status in statuses:
+                status_fileame = status["filename"]
+                if status_fileame == export_filename:
+                    progress = status["progress"]
+                    remaining = status.get("remaining", sys.maxsize)
+                    logging.debug("Project %s progress %d%%, remaining: %dms", project_properties.name, progress * 100, remaining)
+                    if progress > 0 and remaining == 0: # check both as a race condition in tilemill appears to permit 0 remaining when nothing has started yet
+                        return export_filename
+                    else:
+                        time.sleep(min(5, sys.maxsize if remaining == 0 else remaining / 1000))
+            if remaining == None:
+                logging.warn("No status available for current project, something went wrong")
+                break
+        except Exception as ex:
+            logging.error("API rejected request for update or error processing: %s", str(ex))
+            break
+
 def _convert_project_layer_to_layer(project_layer: ProjectLayer) -> Dict[str, object]:
-    tilemill_path = project_layer.path.replace(get_output_path(), TILEMILL_DATA_LOCATION)
+    tilemill_path = project_layer.path.replace(get_base_path(), TILEMILL_DATA_LOCATION)
     layer_id = uuid.uuid4().hex
     bbox_calculators = dict()
     bbox_calculators[ProjectLayerType.RASTER.value] = _getExtentFromRaster
@@ -69,66 +118,6 @@ def _convert_project_layer_to_layer(project_layer: ProjectLayer) -> Dict[str, ob
         "advanced": {},
         "name": layer_id
     }
-
-# def requestExport(userArgs, projectDefinition, projectDirectoryPath, environmentConfig):
-#     token = _generateToken()
-#     nowTs = _getNowAsEpochMs()
-#     projectName = projectDefinition.get("projectName")
-#     lowestZoom = projectDefinition.get("lowestZoom")
-#     highestZoom = projectDefinition.get("highestZoom")
-#     minX, minY, maxX, maxY = userArgs.get("minX"), userArgs.get("minY"), userArgs.get("maxX"), userArgs.get("maxY")
-#     centreX, centreY = projectDefinition.get("centreX"), projectDefinition.get("centreY")
-#     exportDefinition = {
-#         "progress": 0,
-#         "status": "waiting",
-#         "format": "mbtiles",
-#         "project": projectName,
-#         "id": projectName,
-#         "zooms": (lowestZoom, highestZoom),
-#         "metatile": 2,
-#         "center": (centreX, centreY, lowestZoom),
-#         "bounds": (minX, minY, maxX, maxY),
-#         "static_zoom": lowestZoom,
-#         "filename": "{projectName}.mbtiles".format(projectName = projectName),
-#         "note": "",
-#         "bbox": (minX, minY, maxX, maxY),
-#         "minzoom": lowestZoom,
-#         "maxzoom": highestZoom,
-#         "bones.token": token
-#     }
-#     requests.put(
-#         "{url}/api/Export/{nowTs}".format(url = environmentConfig.get("tilemillUrl"), nowTs = nowTs),
-#         data = json.dumps(exportDefinition),
-#         headers = { "Content-Type": "application/json" },
-#         cookies = { "bones.token": token }
-#     )
-#     isComplete = False
-#     while isComplete == False:
-#         try:
-#             statuses = requests.get("{url}/api/Export".format(url = environmentConfig.get("tilemillUrl"))).json()
-#             remaining = None
-#             for status in statuses:
-#                 statusProject = status.get("project", None)
-#                 if statusProject == projectName:
-#                     progress = status.get("progress")
-#                     remaining = status.get("remaining", sys.maxsize)
-#                     logging.debug("Project %s progress %d%%, remaining: %dms", projectName, progress * 100, remaining)
-#                     if progress > 0 and remaining == 0: # check both as a race condition in tilemill appears to permit 0 remaining when nothing has started yet
-#                         isComplete = True
-#                     else:
-#                         time.sleep(min(5, sys.maxsize if remaining == 0 else remaining / 1000))
-#             if remaining == None:
-#                 logging.warn("No status available for current project, something went wrong")
-#                 break
-#         except Exception as ex:
-#             logging.error("API rejected request for update or error processing: %s", str(ex))
-#             break
-#     logging.info("Export complete")
-
-#     response = requests.get("{url}/export/download/{projectName}.mbtiles".format(url = environmentConfig.get("tilemillUrl"), projectName = projectName))
-#     with open(os.path.join(projectDirectoryPath, "output.mbtiles"), "wb") as file:
-#         file.write(response.content)
-#     logging.info("Finished")
 
 def _generateToken() -> str:
     characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZY0123456789"

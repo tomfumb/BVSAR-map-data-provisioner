@@ -13,7 +13,7 @@ OUTPUT_CRS_CODE: Final = "EPSG:3857"
 OUTPUT_TYPE: Final = ProjectLayerType.LINESTRING
 
 def provision(bbox: BBOX) -> List[str]:
-    output_dir = get_output_path(CACHE_DIR_NAME)
+    output_dir = get_output_path((CACHE_DIR_NAME,))
     os.makedirs(output_dir, exist_ok = True)
     delete_directory_contents(output_dir)
     driver = ogr.GetDriverByName("GPKG")
@@ -21,7 +21,7 @@ def provision(bbox: BBOX) -> List[str]:
     result = ogr_to_shp(
         bbox,
         datasource.GetLayerByName("trails"),
-        get_output_path(CACHE_DIR_NAME, "trails.shp"),
+        get_output_path((CACHE_DIR_NAME, "trails.shp")),
         "trails",
         OUTPUT_CRS_CODE
     )

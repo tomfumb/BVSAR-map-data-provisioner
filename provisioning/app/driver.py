@@ -1,22 +1,39 @@
 import argparse
 import logging
+import mbutil
+import uuid
 import sys
 import os
+import subprocess
 
 from gdal import ConfigurePythonLogging, UseExceptions
 
 from provisioning.app.common.bbox import BBOX
+from provisioning.app.common.file import remove_intermediaries
 from provisioning.app.sources.bc_hillshade import provision as bc_hillshade_provisioner, OUTPUT_CRS_CODE as bc_hillshade_crs_code, OUTPUT_TYPE as bc_hillshade_output_type
 from provisioning.app.sources.bc_resource_roads import provision as bc_resource_roads_provisioner, OUTPUT_CRS_CODE as bc_resource_roads_crs_code, OUTPUT_TYPE as bc_resource_roads_output_type
 from provisioning.app.sources.bc_topo_20000 import provision as bc_topo_20000_provisioner, OUTPUT_CRS_CODE as bc_topo_crs_code, OUTPUT_TYPE as bc_topo_output_type
 from provisioning.app.sources.canvec_wms import provision as canvec_wms_provisioner, OUTPUT_CRS_CODE as canvec_crs_code, OUTPUT_TYPE as canvec_output_type
 from provisioning.app.sources.shelters import provision as shelters_provisioner, OUTPUT_CRS_CODE as shelters_crs_code, OUTPUT_TYPE as shelters_output_type
 from provisioning.app.sources.trails import provision as trails_provisioner, OUTPUT_CRS_CODE as trails_crs_code, OUTPUT_TYPE as trails_output_type
-from provisioning.app.tilemill.api_client import create_or_update_project
+from provisioning.app.tilemill.api_client import create_or_update_project, request_export
 from provisioning.app.tilemill.ProjectLayer import ProjectLayer
+from provisioning.app.tilemill.ProjectCreationProperties import ProjectCreationProperties
 from provisioning.app.tilemill.ProjectProperties import ProjectProperties
-from provisioning.app.util import get_style_path
+from provisioning.app.util import get_style_path, get_export_path, get_result_path, delete_directory_contents, merge_dirs
 
+
+requestedLogLevel = os.environ.get("LOG_LEVEL", "info")
+logLevelMapping = {
+    "debug": logging.DEBUG,
+    "info":  logging.INFO,
+    "warn":  logging.WARN,
+    "error": logging.ERROR
+}
+handlers = [logging.StreamHandler(stream = sys.stdout),]
+logging.basicConfig(handlers = handlers, level = logLevelMapping.get(requestedLogLevel, logging.INFO), format = '%(levelname)s %(asctime)s %(message)s')
+
+ConfigurePythonLogging(logging.getLogger().name, logging.getLogger().level == logging.DEBUG)
 UseExceptions()
 
 parser = argparse.ArgumentParser()
@@ -25,22 +42,6 @@ parser.add_argument('min_y', type = float)
 parser.add_argument('max_x', type = float)
 parser.add_argument('max_y', type = float)
 args = vars(parser.parse_args())
-
-# logDirectory = os.path.join(projectDirectory, 'log')
-# os.makedirs(logDirectory, exist_ok = True)
-requestedLogLevel = os.environ.get("LOG_LEVEL", "info")
-logLevelMapping = {
-    "debug": logging.DEBUG,
-    "info":  logging.INFO,
-    "warn":  logging.WARN,
-    "error": logging.ERROR
-}
-handlers = [
-    logging.StreamHandler(stream = sys.stdout),
-    # logging.FileHandler(os.path.join(logDirectory, '{nowTs}.log'.format(nowTs = str(int(datetime.datetime.now().timestamp())))))
-]
-logging.basicConfig(handlers = handlers, level = logLevelMapping.get(requestedLogLevel, logging.INFO), format = '%(levelname)s %(asctime)s %(message)s')
-ConfigurePythonLogging(logging.getLogger().name, logging.getLogger().level == logging.DEBUG)
 
 bbox = BBOX(**args)
 layers = list()
@@ -56,11 +57,34 @@ layers.extend([ProjectLayer(path=shelters_provisioner(bbox)[0], style_class="she
     
 with open(get_style_path("default.mss"), "r") as f:
     mss = f.read()
-create_or_update_project(os.environ.get("TILEMILL_URL", "http://localhost:20009"), ProjectProperties(
-    layers=layers,
-    mss=mss,
+
+project_name = "default"
+tilemill_url = os.environ.get("TILEMILL_URL", "http://localhost:20009")
+project_properties = ProjectProperties(
     bbox=bbox,
     zoom_min=6,
     zoom_max=17,
-    name="default"
-))
+    name=project_name
+)
+project_creation_properties = ProjectCreationProperties(
+    layers=layers,
+    mss=mss,
+    **dict(project_properties)
+)
+create_or_update_project(tilemill_url, project_creation_properties)
+export_file = request_export(tilemill_url, project_properties)
+result_dir_temp = get_result_path((str(uuid.uuid4()),))
+logging.info("Calling mb-util")
+stdout, stderr = subprocess.Popen([os.environ["MBUTIL_LOCATION"], get_export_path((export_file,)), result_dir_temp], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
+if stdout:
+    for line in stdout.decode("ascii").split(os.linesep):
+        logging.info(line)
+if stderr:
+    for line in stderr.decode("ascii").split(os.linesep):
+        logging.warn(line)
+logging.info("mb-util complete")
+if remove_intermediaries():
+    delete_directory_contents(get_export_path())
+merge_dirs(result_dir_temp, get_result_path((project_name,)))
+
+logging.info("Finished")

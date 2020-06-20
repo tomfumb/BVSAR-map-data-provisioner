@@ -3,17 +3,25 @@ import shutil
 
 from typing import Final, Tuple
 
-TILEMILL_DATA_LOCATION: Final = "/home/appuser/data"
+TILEMILL_DATA_LOCATION: Final = "/tiledata"
 
-def get_data_path(path_parts: Tuple[str]) -> str:
-    return _get_absolute_path(True, ("data",) + path_parts)
+def get_base_path() -> str:
+    return os.environ.get("DATA_LOCATION", TILEMILL_DATA_LOCATION)
 
-def get_output_path(dir_name: str = None, file_name: str = None) -> str:
-    env_var_key: Final = "OUTPUT_LOCATION"
-    return _get_absolute_path(not env_var_key in os.environ, (os.environ.get(env_var_key, TILEMILL_DATA_LOCATION), dir_name, file_name))
+def get_data_path(path_parts: Tuple[str] = None) -> str:
+    return os.path.join(*(os.path.dirname(__file__), "data", *(path_parts if path_parts else list())))
+
+def get_output_path(path_parts: Tuple[str] = None) -> str:
+    return os.path.join(*(get_base_path(), "input", *(path_parts if path_parts else list())))
 
 def get_style_path(file_name: str) -> str:
-    return os.path.join(os.path.dirname(__file__), "styles", file_name)
+    return os.path.join(*(os.path.dirname(__file__), "styles", file_name))
+
+def get_export_path(path_parts: Tuple[str] = None) -> str:
+    return os.path.join(*(get_base_path(), "export", *(path_parts if path_parts else list())))
+
+def get_result_path(path_parts: Tuple[str] = None) -> str:
+    return os.path.join(*(get_base_path(), "result", *(path_parts if path_parts else list())))
 
 def delete_directory_contents(directory: str) -> str:
     for filename in os.listdir(directory):
@@ -27,8 +35,20 @@ def delete_directory_contents(directory: str) -> str:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
             raise e
 
-def _get_absolute_path(relative: bool, path_parts: Tuple[str]) -> str:
-    if relative:
-        return os.path.join(os.path.dirname(os.path.abspath(__file__)), *path_parts)
-    else:
-        return os.path.join(*list(filter(lambda part: part, path_parts)))
+# https://unix.stackexchange.com/a/510724/328901
+def merge_dirs(source_root, dest_root):
+    for path, dirs, files in os.walk(source_root, topdown=False):
+        dest_dir = os.path.join(
+            dest_root,
+            os.path.relpath(path, source_root)
+        )
+        if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
+        for filename in files:
+            os.rename(
+                os.path.join(path, filename),
+                os.path.join(dest_dir, filename)
+            )
+        for dirname in dirs:
+            os.rmdir(os.path.join(path, dirname))
+    shutil.rmtree(source_root)

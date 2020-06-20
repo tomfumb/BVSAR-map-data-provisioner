@@ -24,4 +24,6 @@ RUN npm install && npm cache clean --force
 WORKDIR /opt/tilemill
 COPY run_tilemill.sh run_tilemill.sh
 
+RUN mkdir -p /tiledata/input
+
 ENTRYPOINT [ "/opt/tilemill/run_tilemill.sh" ]

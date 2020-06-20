@@ -15,6 +15,8 @@ WORKDIR /home/appuser
 USER appuser
 RUN mkdir data
 
+
+
 # COPY app app
 
 # CMD ["python", "-m", "app.update"]
