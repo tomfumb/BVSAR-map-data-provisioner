@@ -16,6 +16,7 @@ from provisioning.app.sources.bc_topo_20000 import provision as bc_topo_20000_pr
 from provisioning.app.sources.canvec_wms import provision as canvec_wms_provisioner, OUTPUT_CRS_CODE as canvec_crs_code, OUTPUT_TYPE as canvec_output_type
 from provisioning.app.sources.shelters import provision as shelters_provisioner, OUTPUT_CRS_CODE as shelters_crs_code, OUTPUT_TYPE as shelters_output_type
 from provisioning.app.sources.trails import provision as trails_provisioner, OUTPUT_CRS_CODE as trails_crs_code, OUTPUT_TYPE as trails_output_type
+from provisioning.app.sources.xyz_service import provision as xyz_provisioner
 from provisioning.app.tilemill.api_client import create_or_update_project, request_export
 from provisioning.app.tilemill.ProjectLayer import ProjectLayer
 from provisioning.app.tilemill.ProjectCreationProperties import ProjectCreationProperties
@@ -86,5 +87,7 @@ logging.info("mb-util complete")
 if remove_intermediaries():
     delete_directory_contents(get_export_path())
 merge_dirs(result_dir_temp, get_result_path((project_name,)))
+
+xyz_dir = xyz_provisioner(bbox, "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}", "image/jpeg", 6, 17)
 
 logging.info("Finished")

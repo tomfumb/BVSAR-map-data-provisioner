@@ -33,6 +33,7 @@ Approach Notes
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
 - need some consistency in class file names, classes having their own files
 - combined util.py and file.py and choose better home for util
+- resolve disagreement between 'input' files and 'output' path in code - both same thing
 
 Bugs
 - BBOX validation fails in a strange way
