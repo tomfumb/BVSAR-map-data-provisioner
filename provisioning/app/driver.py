@@ -44,13 +44,14 @@ parser.add_argument('min_x', type = float)
 parser.add_argument('min_y', type = float)
 parser.add_argument('max_x', type = float)
 parser.add_argument('max_y', type = float)
+parser.add_argument('xyz_url', type = str)
 args = vars(parser.parse_args())
 
-bbox = BBOX(**args)
+bbox = BBOX(min_x=args["min_x"], min_y=args["min_y"], max_x=args["max_x"], max_y=args["max_y"])
 zooms_main = list(range(6, 18)) # range stops 1 short, so 17 is max zoom
 zooms_xyz = list(range(16, 18))
 layers = list()
-for scale, files in canvec_wms_provisioner(bbox, (10000000, 4000000, 2000000, 1000000, 500000, 250000, 150000, 70000, 35000, 20000)).items():
+for scale, files in canvec_wms_provisioner(bbox, (10000000, 4000000, 2000000, 1000000, 500000, 250000, 150000, 70000, 35000)).items():
     layers.extend([ProjectLayer(path=file, style_class=f"canvec-{scale}", crs_code=canvec_crs_code, type=canvec_output_type) for file in files])
 layers.extend([ProjectLayer(path=file, style_class="bc-topo-20000", crs_code=bc_topo_crs_code, type=bc_topo_output_type) for file in bc_topo_20000_provisioner(bbox)])
 layers.extend([ProjectLayer(path=file, style_class="bc-hillshade", crs_code=bc_hillshade_crs_code, type=bc_hillshade_output_type) for file in bc_hillshade_provisioner(bbox)])
@@ -92,7 +93,9 @@ logging.info("mb-util complete")
 if remove_intermediaries():
     delete_directory_contents(get_export_path())
 
-xyz_url_template = "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+# xyz_url_template = "http://ecn.t2.tiles.virtualearth.net/tiles/a{q}?g=1124"
+# xyz_url_template = "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+xyz_url_template = args["xyz_url"]
 xyz_paths = xyz_provisioner(bbox, xyz_url_template, zooms_xyz[0], zooms_xyz[-1:][0], "image/jpeg", "png")
 xyz_path_base = xyz_get_output_dir(xyz_url_template)
 def get_result_path_for_xyz(xyz_path: str) -> str: return xyz_path.replace(xyz_path_base, project_result_path)
