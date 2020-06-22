@@ -27,13 +27,11 @@ Approach Notes
     - Only add if new outline is not completely contained within another outline
         - Expand existing outline if it intersects
 - SARM team wants logging roads / trails visible at more zoom levels
-- Generated content (from tilemill and merged Google / Bing) always generated fresh, overwrite existing
-- Consider moving trails and cabins to a geopackage and generating .shp at generation time
-    - Combine trail name and type abbreviation in export while keeping type denormalised
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
 - need some consistency in class file names, classes having their own files
 - combined util.py and file.py and choose better home for util
 - resolve disagreement between 'input' files and 'output' path in code - both same thing
+- clip all inputs to BBOX as will look a lot less messy
 
 Bugs
 - BBOX validation fails in a strange way

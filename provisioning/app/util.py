@@ -1,3 +1,4 @@
+import errno
 import os
 import shutil
 
@@ -35,8 +36,16 @@ def delete_directory_contents(directory: str) -> str:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
             raise e
 
+# https://stackoverflow.com/a/10840586/519575
+def silent_delete(path: str) -> None:
+    try:
+        os.remove(path)
+    except OSError as e:
+        if e.errno != errno.ENOENT: # errno.ENOENT = no such file or directory
+            raise # re-raise exception if a different error occurred
+
 # https://unix.stackexchange.com/a/510724/328901
-def merge_dirs(source_root, dest_root):
+def merge_dirs(source_root: str, dest_root: str) -> None:
     for path, dirs, files in os.walk(source_root, topdown=False):
         dest_dir = os.path.join(
             dest_root,

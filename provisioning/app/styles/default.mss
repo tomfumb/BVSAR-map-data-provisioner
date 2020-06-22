@@ -1,5 +1,3 @@
-Map { background-color: #fff }
-
 .bc-hillshade [zoom <= 15] {
   raster-opacity:0.3;
 }
