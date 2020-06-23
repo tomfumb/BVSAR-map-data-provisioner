@@ -23,7 +23,7 @@ from provisioning.app.tilemill.api_client import create_or_update_project, reque
 from provisioning.app.tilemill.ProjectLayer import ProjectLayer
 from provisioning.app.tilemill.ProjectCreationProperties import ProjectCreationProperties
 from provisioning.app.tilemill.ProjectProperties import ProjectProperties
-from provisioning.app.util import get_style_path, get_export_path, get_result_path, delete_directory_contents, merge_dirs, silent_delete
+from provisioning.app.util import get_style_path, get_export_path, get_result_path, delete_directory_contents, merge_dirs, silent_delete, get_run_data_path
 
 
 requestedLogLevel = os.environ.get("LOG_LEVEL", "info")
@@ -47,11 +47,13 @@ parser.add_argument('max_y', type = float)
 parser.add_argument('xyz_url', type = str)
 args = vars(parser.parse_args())
 
+run_id = str(uuid.uuid4())
 bbox = BBOX(min_x=args["min_x"], min_y=args["min_y"], max_x=args["max_x"], max_y=args["max_y"])
+
 zooms_main = list(range(6, 18)) # range stops 1 short, so 17 is max zoom
 zooms_xyz = list(range(16, 18))
 layers = list()
-for scale, files in canvec_wms_provisioner(bbox, (10000000, 4000000, 2000000, 1000000, 500000, 250000, 150000, 70000, 35000)).items():
+for scale, files in canvec_wms_provisioner(bbox, (10000000, 4000000, 2000000, 1000000, 500000, 250000, 150000, 70000, 35000), run_id).items():
     layers.extend([ProjectLayer(path=file, style_class=f"canvec-{scale}", crs_code=canvec_crs_code, type=canvec_output_type) for file in files])
 layers.extend([ProjectLayer(path=file, style_class="bc-topo-20000", crs_code=bc_topo_crs_code, type=bc_topo_output_type) for file in bc_topo_20000_provisioner(bbox)])
 layers.extend([ProjectLayer(path=file, style_class="bc-hillshade", crs_code=bc_hillshade_crs_code, type=bc_hillshade_output_type) for file in bc_hillshade_provisioner(bbox)])
@@ -64,7 +66,7 @@ layers.extend([ProjectLayer(path=shelters_provisioner(bbox)[0], style_class="she
 with open(get_style_path("default.mss"), "r") as f:
     mss = f.read()
 
-project_name = "default"
+project_name = "hybrid"
 project_result_path = get_result_path((project_name,))
 tilemill_url = os.environ.get("TILEMILL_URL", "http://localhost:20009")
 project_properties = ProjectProperties(
@@ -80,7 +82,7 @@ project_creation_properties = ProjectCreationProperties(
 )
 create_or_update_project(tilemill_url, project_creation_properties)
 export_file = request_export(tilemill_url, project_properties)
-result_dir_temp = get_result_path((str(uuid.uuid4()),))
+result_dir_temp = get_result_path((run_id,))
 logging.info("Calling mb-util")
 stdout, stderr = subprocess.Popen([os.environ["MBUTIL_LOCATION"], get_export_path((export_file,)), result_dir_temp], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
 if stdout:
@@ -93,8 +95,6 @@ logging.info("mb-util complete")
 if remove_intermediaries():
     delete_directory_contents(get_export_path())
 
-# xyz_url_template = "http://ecn.t2.tiles.virtualearth.net/tiles/a{q}?g=1124"
-# xyz_url_template = "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
 xyz_url_template = args["xyz_url"]
 xyz_paths = xyz_provisioner(bbox, xyz_url_template, zooms_xyz[0], zooms_xyz[-1:][0], "image/jpeg", "png")
 xyz_path_base = xyz_get_output_dir(xyz_url_template)
@@ -124,4 +124,5 @@ for xyz_path in xyz_paths:
         os.makedirs(xyz_result_dir, exist_ok=True)
         copyfile(xyz_path, xyz_result_path)
 
+delete_directory_contents(get_run_data_path(run_id, None))
 logging.info("Finished")

@@ -12,8 +12,11 @@ def get_base_path() -> str:
 def get_data_path(path_parts: Tuple[str] = None) -> str:
     return os.path.join(*(os.path.dirname(__file__), "data", *(path_parts if path_parts else list())))
 
-def get_output_path(path_parts: Tuple[str] = None) -> str:
-    return os.path.join(*(get_base_path(), "input", *(path_parts if path_parts else list())))
+def get_cache_path(path_parts: Tuple[str] = None) -> str:
+    return os.path.join(*(get_base_path(), "cache", *(path_parts if path_parts else list())))
+
+def get_run_data_path(run_id: str, path_parts: Tuple[str] = None) -> str:
+    return os.path.join(*(get_base_path(), "run", run_id, *(path_parts if path_parts else list())))
 
 def get_style_path(file_name: str) -> str:
     return os.path.join(*(os.path.dirname(__file__), "styles", file_name))

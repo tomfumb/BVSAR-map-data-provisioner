@@ -30,8 +30,10 @@ Approach Notes
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
 - need some consistency in class file names, classes having their own files
 - combined util.py and file.py and choose better home for util
-- resolve disagreement between 'input' files and 'output' path in code - both same thing
 - clip all inputs to BBOX as will look a lot less messy
+- test different Warp algorithms for bc-topo data
+- look into tile log analytics?
+- get resource roads, transmission lines from default location, get hiking trails & shelters from a configured location and OK if missing, same with ATES
 
 Bugs
 - BBOX validation fails in a strange way

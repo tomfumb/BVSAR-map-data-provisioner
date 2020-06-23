@@ -6,12 +6,13 @@ import math
 import os
 import re
 
-from gdal import Open, Translate, GA_ReadOnly
+from gdal import Open, Translate, GA_ReadOnly, Warp
 from pydantic import BaseModel
 from pyproj import Transformer, CRS
 from typing import Dict, Final, List, Tuple
 
 from provisioning.app.common.bbox import BBOX
+from provisioning.app.common.get_datasource_from_bbox import get_datasource_from_bbox, BBOX_GPKG_NAME, BBOX_LAYER_NAME
 from provisioning.app.common.file import skip_file_creation, remove_intermediaries
 from provisioning.app.common.httpRetriever import httpRetriever, RetrievalRequest
 from provisioning.app.tilemill.ProjectLayerType import ProjectLayerType
@@ -39,18 +40,20 @@ class PartialCoverageTile(BaseModel):
     height: int
     wms_url: str = None
     wms_path: str = None
+    tif_path: str = None
     final_path: str = None
 
-def provision(bbox: BBOX, base_url: str, wms_crs_code: str, layers: Tuple[str], styles: Tuple[str], scales: Tuple[int], image_format: str, directory: str) -> Dict[int, List[str]]:
+def provision(bbox: BBOX, base_url: str, wms_crs_code: str, layers: Tuple[str], styles: Tuple[str], scales: Tuple[int], image_format: str, cache_directory: str, run_directory: str) -> Dict[int, List[str]]:
+    os.makedirs(run_directory)
     wms_properties = _get_wms_properties(base_url)
     grid = _build_grid_for_bbox(bbox, wms_crs_code, scales, wms_properties)
-    grid_for_retrieval = _update_grid_for_retrieval(base_url, grid, layers, styles, wms_crs_code, image_format, directory)
+    grid_for_retrieval = _update_grid_for_retrieval(base_url, grid, layers, styles, wms_crs_code, image_format, cache_directory, run_directory)
     grid_for_missing = _filter_grid_for_missing(grid_for_retrieval)
     requests = _convert_grid_to_requests(grid_for_missing, image_format)
     httpRetriever(requests)
     if image_format != TARGET_FILE_FORMAT:
         _convert_to_tif(grid_for_missing, wms_crs_code)
-    return _convert_grid_to_file_list(grid_for_retrieval)
+    return _create_run_output(bbox, grid_for_retrieval, run_directory)
 
 def _get_wms_properties(base_url: str) -> WmsProperties:
     xml = requests.get(f"{base_url}?service=WMS&request=GetCapabilities&version={DEFAULT_WMS_VERSION}").text
@@ -108,7 +111,7 @@ def _build_grid_for_bbox(bbox: BBOX, wms_crs_code: str, scales: Tuple[int], wms_
                 ))
     return partial_coverage_tiles
 
-def _update_grid_for_retrieval(base_url: str, partial_coverage_tiles: List[PartialCoverageTile], layers: Tuple[str], styles: Tuple[str], wms_crs_code: str, image_format: str, directory: str, transparent: bool = False) -> List[PartialCoverageTile]:
+def _update_grid_for_retrieval(base_url: str, partial_coverage_tiles: List[PartialCoverageTile], layers: Tuple[str], styles: Tuple[str], wms_crs_code: str, image_format: str, cache_directory: str, run_directory: str, transparent: bool = False) -> List[PartialCoverageTile]:
     layers_str = ",".join(layers)
     styles_str = ",".join(styles)
     def define_url_and_paths(tile: PartialCoverageTile) -> PartialCoverageTile:
@@ -125,33 +128,36 @@ def _update_grid_for_retrieval(base_url: str, partial_coverage_tiles: List[Parti
             f"FORMAT=image/{image_format}&" + \
             f"DPI={DEFAULT_DPI}&MAP_RESOLUTION={DEFAULT_DPI}&FORMAT_OPTIONS=dpi:{DEFAULT_DPI}&" + \
             f"TRANSPARENT={transparent}"
-        path_base = os.path.join(directory, f"{tile.scale}_{DEFAULT_DPI}_{re.sub('[^0-9a-z]', '_', wms_crs_code, flags=re.IGNORECASE)}_{tile.x_min}_{tile.y_min}")
-        tile.wms_path = f"{path_base}.{image_format}"
-        tile.final_path = f"{path_base}.{TARGET_FILE_FORMAT}"
+        file_name = f"{tile.scale}_{DEFAULT_DPI}_{re.sub('[^0-9a-z]', '_', wms_crs_code, flags=re.IGNORECASE)}_{tile.x_min}_{tile.y_min}"
+        cache_path_base = os.path.join(cache_directory, file_name)
+        tile.wms_path = f"{cache_path_base}.{image_format}"
+        tile.tif_path = f"{cache_path_base}.{TARGET_FILE_FORMAT}"
+        tile.final_path = os.path.join(run_directory, f"{file_name}.{TARGET_FILE_FORMAT}")
         return tile
     return list(map(lambda tile: define_url_and_paths(tile), partial_coverage_tiles))
 
 def _filter_grid_for_missing(grid: List[PartialCoverageTile]) -> List[PartialCoverageTile]:
-    return list(filter(lambda tile: not skip_file_creation(tile.final_path), grid))
+    return list(filter(lambda tile: not skip_file_creation(tile.tif_path), grid))
 
 def _convert_grid_to_requests(grid: List[PartialCoverageTile], image_format: str) -> List[RetrievalRequest]:
     return list(map(lambda tile: RetrievalRequest(path=tile.wms_path, url=tile.wms_url, expected_type=f"image/{image_format}"), grid))
 
-def _convert_grid_to_file_list(grid: List[PartialCoverageTile]) -> Dict[int, List[str]]:
+def _create_run_output(bbox: BBOX, grid: List[PartialCoverageTile], run_directory: str) -> Dict[int, List[str]]:
     file_list = dict()
     for tile in grid:
         if not tile.scale in file_list:
             file_list[tile.scale] = list()
+        Warp(tile.final_path, tile.tif_path, cutlineDSName=get_datasource_from_bbox(bbox, run_directory), cutlineLayer=BBOX_LAYER_NAME, cropToCutline=True, dstNodata=-1)
         file_list[tile.scale].append(tile.final_path)
     return file_list
 
 def _convert_to_tif(partial_coverage_tiles: List[PartialCoverageTile], wms_crs_code: str) -> None:
     for tile in partial_coverage_tiles:
         if os.path.exists(tile.wms_path):
-            logging.debug('Converting %s to %s', tile.wms_path, tile.final_path)
+            logging.debug('Converting %s to %s', tile.wms_path, tile.tif_path)
             src_file = Open(tile.wms_path, GA_ReadOnly)
             Translate(
-                tile.final_path,
+                tile.tif_path,
                 src_file,
                 format = 'GTiff',
                 noData = None,

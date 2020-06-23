@@ -10,7 +10,7 @@ from provisioning.app.common.bbox import BBOX
 from provisioning.app.common.file import skip_file_creation, remove_intermediaries
 from provisioning.app.common.httpRetriever import httpRetriever, RetrievalRequest
 from provisioning.app.tilemill.ProjectLayerType import ProjectLayerType
-from provisioning.app.util import get_data_path, get_output_path
+from provisioning.app.util import get_data_path, get_cache_path
 
 CACHE_DIR_NAME: Final = "bc-topo-20000"
 OUTPUT_CRS_CODE: Final = "EPSG:3857"
@@ -31,7 +31,7 @@ def provision(bbox: BBOX) -> List[str]:
             cell_parent = re.search("^\d{2,3}[a-z]", cell_name, re.IGNORECASE)[0]
             retrieval_requests[cell_name] = RetrievalRequest(
                 url=f"https://pub.data.gov.bc.ca/datasets/177864/tif/bcalb/{cell_parent}/{cell_name}.zip",
-                path=get_output_path((CACHE_DIR_NAME, f"{cell_name}.zip")),
+                path=get_cache_path((CACHE_DIR_NAME, f"{cell_name}.zip")),
                 expected_type="application/zip"
             )
 
@@ -39,9 +39,9 @@ def provision(bbox: BBOX) -> List[str]:
 
     for cell_name, retrieval_request in retrieval_requests.items():
         unzipped_tif_name = f"{cell_name}.tif"
-        unzipped_tif_location = get_output_path((CACHE_DIR_NAME, unzipped_tif_name))
+        unzipped_tif_location = get_cache_path((CACHE_DIR_NAME, unzipped_tif_name))
         with zipfile.ZipFile(retrieval_request.path, "r") as zip_ref:
-            zip_ref.extract(unzipped_tif_name, get_output_path((CACHE_DIR_NAME,)))
+            zip_ref.extract(unzipped_tif_name, get_cache_path((CACHE_DIR_NAME,)))
         Warp(
             _get_final_path(cell_name),
             unzipped_tif_location,
@@ -61,4 +61,4 @@ def provision(bbox: BBOX) -> List[str]:
     return grid_files
 
 def _get_final_path(cell_name: str) -> str:
-    return get_output_path((CACHE_DIR_NAME, f"{cell_name}_prj.tif"))
+    return get_cache_path((CACHE_DIR_NAME, f"{cell_name}_prj.tif"))

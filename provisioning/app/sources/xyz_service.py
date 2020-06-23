@@ -10,7 +10,7 @@ from typing import Final
 from provisioning.app.common.bbox import BBOX
 from provisioning.app.common.file import skip_file_creation
 from provisioning.app.common.httpRetriever import httpRetriever, RetrievalRequest
-from provisioning.app.util import get_output_path
+from provisioning.app.util import get_cache_path
 
 CACHE_DIR_NAME_BASE = "xyz-"
 
@@ -56,7 +56,7 @@ def provision(bbox: BBOX, url_template: str, zoom_min: int, zoom_max: int, image
 
 def get_output_dir(url_template: str) -> str:
     dir_name = "{base}{url_part}".format(base = CACHE_DIR_NAME_BASE, url_part = re.sub("[^a-z0-9]", "", url_template, flags=re.IGNORECASE))
-    return get_output_path((dir_name,))
+    return get_cache_path((dir_name,))
 
 # https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
 def _deg_to_num(lat_deg, lon_deg, zoom):
