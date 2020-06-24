@@ -23,7 +23,7 @@ from provisioning.app.tilemill.api_client import create_or_update_project, reque
 from provisioning.app.tilemill.ProjectLayer import ProjectLayer
 from provisioning.app.tilemill.ProjectCreationProperties import ProjectCreationProperties
 from provisioning.app.tilemill.ProjectProperties import ProjectProperties
-from provisioning.app.util import get_style_path, get_export_path, get_result_path, merge_dirs, silent_delete, get_run_data_path
+from provisioning.app.util import get_style_path, get_export_path, get_result_path, merge_dirs, silent_delete, get_run_data_path, delete_directory_contents
 
 
 requestedLogLevel = os.environ.get("LOG_LEVEL", "info")
@@ -93,7 +93,7 @@ if stderr:
         logging.warn(line)
 logging.info("mb-util complete")
 if remove_intermediaries():
-    rmtree(get_export_path())
+    delete_directory_contents(get_export_path())
 
 xyz_url_template = args["xyz_url"]
 xyz_paths = xyz_provisioner(bbox, xyz_url_template, zooms_xyz[0], zooms_xyz[-1:][0], "image/jpeg", "png")
@@ -124,5 +124,6 @@ for xyz_path in xyz_paths:
         os.makedirs(xyz_result_dir, exist_ok=True)
         copyfile(xyz_path, xyz_result_path)
 
-rmtree(get_run_data_path(run_id, None))
+if remove_intermediaries():
+    rmtree(get_run_data_path(run_id, None))
 logging.info("Finished")
