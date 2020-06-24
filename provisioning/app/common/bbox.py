@@ -1,8 +1,11 @@
 from gdal import ogr
-from typing import Dict
+from typing import Dict, Final
 from pydantic import BaseModel, validator
 
 class BBOX(BaseModel):
+
+    CRS_CODE = "EPSG:4326"
+
     max_x: float
     max_y: float
     min_x: float

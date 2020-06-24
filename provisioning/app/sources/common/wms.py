@@ -1,6 +1,4 @@
-import requests
 import logging
-import xml.etree.ElementTree as ET
 import ogr
 import math
 import os
@@ -12,10 +10,11 @@ from pyproj import Transformer, CRS
 from typing import Dict, Final, List, Tuple
 
 from provisioning.app.common.bbox import BBOX
-from provisioning.app.common.get_datasource_from_bbox import get_datasource_from_bbox, BBOX_GPKG_NAME, BBOX_LAYER_NAME
+from provisioning.app.common.get_datasource_from_bbox import get_datasource_from_bbox, BBOX_LAYER_NAME
 from provisioning.app.common.file import skip_file_creation, remove_intermediaries
 from provisioning.app.common.httpRetriever import httpRetriever, RetrievalRequest
 from provisioning.app.tilemill.ProjectLayerType import ProjectLayerType
+from provisioning.app.util import get_run_data_path, get_cache_path
 
 DEFAULT_WMS_VERSION: Final = "1.1.1"
 DEFAULT_DPI: Final = 96
@@ -43,9 +42,10 @@ class PartialCoverageTile(BaseModel):
     tif_path: str = None
     final_path: str = None
 
-def provision(bbox: BBOX, base_url: str, wms_crs_code: str, layers: Tuple[str], styles: Tuple[str], scales: Tuple[int], image_format: str, cache_directory: str, run_directory: str) -> Dict[int, List[str]]:
+def provision(bbox: BBOX, base_url: str, wms_properties: WmsProperties, wms_crs_code: str, layers: Tuple[str], styles: Tuple[str], scales: Tuple[int], image_format: str, cache_dir_name: str, run_id: str) -> Dict[int, List[str]]:
+    cache_directory = get_cache_path((cache_dir_name,))
+    run_directory = get_run_data_path(run_id, (cache_dir_name,))
     os.makedirs(run_directory)
-    wms_properties = _get_wms_properties(base_url)
     grid = _build_grid_for_bbox(bbox, wms_crs_code, scales, wms_properties)
     grid_for_retrieval = _update_grid_for_retrieval(base_url, grid, layers, styles, wms_crs_code, image_format, cache_directory, run_directory)
     grid_for_missing = _filter_grid_for_missing(grid_for_retrieval)
@@ -53,20 +53,7 @@ def provision(bbox: BBOX, base_url: str, wms_crs_code: str, layers: Tuple[str], 
     httpRetriever(requests)
     if image_format != TARGET_FILE_FORMAT:
         _convert_to_tif(grid_for_missing, wms_crs_code)
-    return _create_run_output(bbox, grid_for_retrieval, run_directory)
-
-def _get_wms_properties(base_url: str) -> WmsProperties:
-    xml = requests.get(f"{base_url}?service=WMS&request=GetCapabilities&version={DEFAULT_WMS_VERSION}").text
-    tree = ET.fromstring(xml)
-    ns = {"p": "http://www.opengis.net/wms"}
-    default_max_dimension = 4096
-    max_width_element, max_height_element = tree.find("./p:Service/p:MaxWidth", ns), tree.find("./p:Service/p:MaxHeight", ns)
-    if max_width_element == None or max_height_element == None:
-       logging.warn("Cannot determine WMS max image width or height, defaulting to %d", default_max_dimension)
-    return WmsProperties(
-        max_width=int(max_width_element.text) if max_width_element != None else default_max_dimension,
-        max_height=int(max_height_element.text) if max_height_element != None else default_max_dimension
-    )
+    return _create_run_output(bbox, grid_for_retrieval, run_id)
 
 def _build_grid_for_bbox(bbox: BBOX, wms_crs_code: str, scales: Tuple[int], wms_properties: WmsProperties) -> List[PartialCoverageTile]:
     bbox_crs = CRS("EPSG:4326")
@@ -142,8 +129,9 @@ def _filter_grid_for_missing(grid: List[PartialCoverageTile]) -> List[PartialCov
 def _convert_grid_to_requests(grid: List[PartialCoverageTile], image_format: str) -> List[RetrievalRequest]:
     return list(map(lambda tile: RetrievalRequest(path=tile.wms_path, url=tile.wms_url, expected_type=f"image/{image_format}"), grid))
 
-def _create_run_output(bbox: BBOX, grid: List[PartialCoverageTile], run_directory: str) -> Dict[int, List[str]]:
+def _create_run_output(bbox: BBOX, grid: List[PartialCoverageTile], run_id: str) -> Dict[int, List[str]]:
     file_list = dict()
+    run_directory = get_run_data_path(run_id, None)
     for tile in grid:
         if not tile.scale in file_list:
             file_list[tile.scale] = list()

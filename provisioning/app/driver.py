@@ -8,7 +8,7 @@ import subprocess
 
 from gdal import ConfigurePythonLogging, UseExceptions
 from PIL import Image
-from shutil import copyfile, move
+from shutil import copyfile, move, rmtree
 
 from provisioning.app.common.bbox import BBOX
 from provisioning.app.common.file import remove_intermediaries
@@ -23,7 +23,7 @@ from provisioning.app.tilemill.api_client import create_or_update_project, reque
 from provisioning.app.tilemill.ProjectLayer import ProjectLayer
 from provisioning.app.tilemill.ProjectCreationProperties import ProjectCreationProperties
 from provisioning.app.tilemill.ProjectProperties import ProjectProperties
-from provisioning.app.util import get_style_path, get_export_path, get_result_path, delete_directory_contents, merge_dirs, silent_delete, get_run_data_path
+from provisioning.app.util import get_style_path, get_export_path, get_result_path, merge_dirs, silent_delete, get_run_data_path
 
 
 requestedLogLevel = os.environ.get("LOG_LEVEL", "info")
@@ -55,13 +55,13 @@ zooms_xyz = list(range(16, 18))
 layers = list()
 for scale, files in canvec_wms_provisioner(bbox, (10000000, 4000000, 2000000, 1000000, 500000, 250000, 150000, 70000, 35000), run_id).items():
     layers.extend([ProjectLayer(path=file, style_class=f"canvec-{scale}", crs_code=canvec_crs_code, type=canvec_output_type) for file in files])
-layers.extend([ProjectLayer(path=file, style_class="bc-topo-20000", crs_code=bc_topo_crs_code, type=bc_topo_output_type) for file in bc_topo_20000_provisioner(bbox)])
-layers.extend([ProjectLayer(path=file, style_class="bc-hillshade", crs_code=bc_hillshade_crs_code, type=bc_hillshade_output_type) for file in bc_hillshade_provisioner(bbox)])
-bc_resource_road_files = bc_resource_roads_provisioner(bbox)
+layers.extend([ProjectLayer(path=file, style_class="bc-topo-20000", crs_code=bc_topo_crs_code, type=bc_topo_output_type) for file in bc_topo_20000_provisioner(bbox, run_id)])
+layers.extend([ProjectLayer(path=file, style_class="bc-hillshade", crs_code=bc_hillshade_crs_code, type=bc_hillshade_output_type) for file in bc_hillshade_provisioner(bbox, run_id)])
+bc_resource_road_files = bc_resource_roads_provisioner(bbox, run_id)
 for class_name in ("bc-resource-roads", "bc-resource-roads-label"):
     layers.extend([ProjectLayer(path=bc_resource_road_files[0], style_class=class_name, crs_code=bc_resource_roads_crs_code, type=bc_resource_roads_output_type)])
-layers.extend([ProjectLayer(path=trails_provisioner(bbox)[0], style_class="trails", crs_code=trails_crs_code, type=trails_output_type)])
-layers.extend([ProjectLayer(path=shelters_provisioner(bbox)[0], style_class="shelters", crs_code=shelters_crs_code, type=shelters_output_type)])
+layers.extend([ProjectLayer(path=trails_provisioner(bbox, run_id)[0], style_class="trails", crs_code=trails_crs_code, type=trails_output_type)])
+layers.extend([ProjectLayer(path=shelters_provisioner(bbox, run_id)[0], style_class="shelters", crs_code=shelters_crs_code, type=shelters_output_type)])
     
 with open(get_style_path("default.mss"), "r") as f:
     mss = f.read()
@@ -93,7 +93,7 @@ if stderr:
         logging.warn(line)
 logging.info("mb-util complete")
 if remove_intermediaries():
-    delete_directory_contents(get_export_path())
+    rmtree(get_export_path())
 
 xyz_url_template = args["xyz_url"]
 xyz_paths = xyz_provisioner(bbox, xyz_url_template, zooms_xyz[0], zooms_xyz[-1:][0], "image/jpeg", "png")
@@ -124,5 +124,5 @@ for xyz_path in xyz_paths:
         os.makedirs(xyz_result_dir, exist_ok=True)
         copyfile(xyz_path, xyz_result_path)
 
-delete_directory_contents(get_run_data_path(run_id, None))
+rmtree(get_run_data_path(run_id, None))
 logging.info("Finished")
