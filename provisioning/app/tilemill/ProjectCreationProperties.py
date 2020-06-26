@@ -5,4 +5,4 @@ from provisioning.app.tilemill.ProjectProperties import ProjectProperties
 
 class ProjectCreationProperties(ProjectProperties):
     layers: List[ProjectLayer]
-    mss: str
+    mss: List[str]

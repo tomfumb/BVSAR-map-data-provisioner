@@ -30,7 +30,7 @@ def create_or_update_project(tilemill_url: str, project_properties: ProjectCreat
         "minzoom": project_properties.zoom_min,
         "maxzoom": project_properties.zoom_max,
         "srs": CRS("EPSG:3857").to_proj4(),
-        "Stylesheet": ({ "id": "default", "data": project_properties.mss },),
+        "Stylesheet": [{ "id": str(i), "data": content } for i, content in enumerate(project_properties.mss)],
         "Layer": list(map(lambda project_layer: _convert_project_layer_to_layer(project_layer), project_properties.layers)),
         "scale": 1,
         "metatile": 2,

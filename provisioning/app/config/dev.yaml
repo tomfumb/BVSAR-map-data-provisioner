@@ -1,5 +1,0 @@
-tilemillUrl: 'http://localhost:20009'
-container:
-    name: 'provisioner'
-    dataDir: '/root/data'
-logLevel: 'debug'
