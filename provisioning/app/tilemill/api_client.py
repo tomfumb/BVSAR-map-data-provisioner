@@ -10,12 +10,12 @@ import datetime
 import requests
 import uuid
 
-from provisioning.app.common.bbox import BBOX
-from provisioning.app.util import get_base_path, TILEMILL_DATA_LOCATION
-from provisioning.app.tilemill.ProjectLayer import ProjectLayer
-from provisioning.app.tilemill.ProjectLayerType import ProjectLayerType
-from provisioning.app.tilemill.ProjectCreationProperties import ProjectCreationProperties
-from provisioning.app.tilemill.ProjectProperties import ProjectProperties
+from app.common.bbox import BBOX
+from app.util import get_base_path, TILEMILL_DATA_LOCATION
+from app.tilemill.ProjectLayer import ProjectLayer
+from app.tilemill.ProjectLayerType import ProjectLayerType
+from app.tilemill.ProjectCreationProperties import ProjectCreationProperties
+from app.tilemill.ProjectProperties import ProjectProperties
 from pyproj import CRS, Transformer
 from typing import Dict
 

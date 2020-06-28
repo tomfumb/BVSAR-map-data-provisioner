@@ -3,10 +3,10 @@ import os
 from gdal import ogr
 from typing import Final, List
 
-from provisioning.app.common.bbox import BBOX
-from provisioning.app.sources.common.ogr_to_shp import ogr_to_shp
-from provisioning.app.tilemill.ProjectLayerType import ProjectLayerType
-from provisioning.app.util import get_data_path, get_run_data_path
+from app.common.bbox import BBOX
+from app.sources.common.ogr_to_shp import ogr_to_shp
+from app.tilemill.ProjectLayerType import ProjectLayerType
+from app.util import get_data_path, get_run_data_path
 
 CACHE_DIR_NAME: Final = "trails"
 OUTPUT_CRS_CODE: Final = "EPSG:3857"

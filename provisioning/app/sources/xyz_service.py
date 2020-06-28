@@ -7,10 +7,10 @@ from enum import Enum
 from pygeotile.tile import Tile
 from typing import Final
 
-from provisioning.app.common.bbox import BBOX
-from provisioning.app.common.file import skip_file_creation
-from provisioning.app.common.httpRetriever import httpRetriever, RetrievalRequest
-from provisioning.app.util import get_cache_path
+from app.common.bbox import BBOX
+from app.common.file import skip_file_creation
+from app.common.httpRetriever import httpRetriever, RetrievalRequest
+from app.util import get_cache_path
 
 CACHE_DIR_NAME_BASE = "xyz-"
 

@@ -16,7 +16,8 @@ class RetrievalRequest(BaseModel):
     url: str
     expected_type: str
 
-def httpRetriever(requests: List[RetrievalRequest], maxConcurrentRequests: int = 10):
+def httpRetriever(retrieval_requests: List[RetrievalRequest], maxConcurrentRequests: int = 10):
+    requests = retrieval_requests.copy()
     if len(requests) > 0:
         bestTimePerRequest = sys.maxsize
         bestConcurrency = 1

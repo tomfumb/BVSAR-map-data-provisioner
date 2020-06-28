@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from provisioning.app.tilemill.ProjectLayerType import ProjectLayerType
+from app.tilemill.ProjectLayerType import ProjectLayerType
 
 class ProjectLayer(BaseModel):
     path: str

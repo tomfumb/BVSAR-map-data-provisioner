@@ -1,8 +1,8 @@
 from gdal import ogr
 from typing import List
 
-from provisioning.app.common.bbox import BBOX
-from provisioning.app.common.get_datasource_from_bbox import get_wkt_from_bbox
+from app.common.bbox import BBOX
+from app.common.get_datasource_from_bbox import get_wkt_from_bbox
 
 def ogr_to_shp(
     bbox: BBOX,

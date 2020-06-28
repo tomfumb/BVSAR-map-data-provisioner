@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from typing import List
 
-from provisioning.app.common.bbox import BBOX
-from provisioning.app.tilemill.ProjectLayer import ProjectLayer
+from app.common.bbox import BBOX
+from app.tilemill.ProjectLayer import ProjectLayer
 
 class ProjectProperties(BaseModel):
     bbox: BBOX

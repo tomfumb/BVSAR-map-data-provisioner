@@ -6,12 +6,12 @@ import zipfile
 from gdal import ogr, DEMProcessing, Warp
 from typing import Final, List
 
-from provisioning.app.common.bbox import BBOX
-from provisioning.app.common.file import skip_file_creation, remove_intermediaries
-from provisioning.app.common.get_datasource_from_bbox import get_datasource_from_bbox, BBOX_LAYER_NAME
-from provisioning.app.common.httpRetriever import httpRetriever, RetrievalRequest
-from provisioning.app.tilemill.ProjectLayerType import ProjectLayerType
-from provisioning.app.util import get_data_path, get_cache_path, get_run_data_path
+from app.common.bbox import BBOX
+from app.common.file import skip_file_creation, remove_intermediaries
+from app.common.get_datasource_from_bbox import get_datasource_from_bbox, BBOX_LAYER_NAME
+from app.common.httpRetriever import httpRetriever, RetrievalRequest
+from app.tilemill.ProjectLayerType import ProjectLayerType
+from app.util import get_data_path, get_cache_path, get_run_data_path
 
 CACHE_DIR_NAME: Final = "bc-hillshade"
 OUTPUT_CRS_CODE: Final = "EPSG:3857"

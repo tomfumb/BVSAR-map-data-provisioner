@@ -1,4 +1,4 @@
-name: prov
+name: bvsar
 channels:
   - conda-forge
   - defaults
@@ -81,8 +81,11 @@ dependencies:
     - idna==2.9
     - isort==4.3.21
     - lazy-object-proxy==1.4.3
+    - mbutil==0.3.0
     - mccabe==0.6.1
+    - pillow==7.1.2
     - pydantic==1.5.1
+    - pygeotile==1.0.6
     - pylint==2.5.3
     - pyproj==2.6.1.post1
     - pyyaml==5.3.1
@@ -92,5 +95,5 @@ dependencies:
     - toml==0.10.1
     - urllib3==1.25.9
     - wrapt==1.12.1
-prefix: /opt/anaconda3/envs/prov
+prefix: /opt/anaconda3/envs/bvsar
 

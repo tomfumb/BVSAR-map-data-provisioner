@@ -1,6 +1,5 @@
 import argparse
 import logging
-import mbutil
 import uuid
 import sys
 import os
@@ -10,16 +9,16 @@ from gdal import ConfigurePythonLogging, UseExceptions
 from PIL import Image
 from shutil import copyfile, move, rmtree
 
-from provisioning.app.common.bbox import BBOX
-from provisioning.app.common.file import remove_intermediaries
-from provisioning.app.profiles.hybrid import get_profile as profile_hybrid
-from provisioning.app.profiles.xyzplus import get_profile as profile_xyzplus
-from provisioning.app.sources.xyz_service import provision as xyz_provisioner, get_output_dir as xyz_get_output_dir
-from provisioning.app.tilemill.api_client import create_or_update_project, request_export
-from provisioning.app.tilemill.ProjectLayer import ProjectLayer
-from provisioning.app.tilemill.ProjectCreationProperties import ProjectCreationProperties
-from provisioning.app.tilemill.ProjectProperties import ProjectProperties
-from provisioning.app.util import get_style_path, get_export_path, get_result_path, merge_dirs, silent_delete, get_run_data_path, delete_directory_contents
+from app.common.bbox import BBOX
+from app.common.file import remove_intermediaries
+from app.profiles.hybrid import get_profile as profile_hybrid
+from app.profiles.xyzplus import get_profile as profile_xyzplus
+from app.sources.xyz_service import provision as xyz_provisioner, get_output_dir as xyz_get_output_dir
+from app.tilemill.api_client import create_or_update_project, request_export
+from app.tilemill.ProjectLayer import ProjectLayer
+from app.tilemill.ProjectCreationProperties import ProjectCreationProperties
+from app.tilemill.ProjectProperties import ProjectProperties
+from app.util import get_style_path, get_export_path, get_result_path, merge_dirs, silent_delete, get_run_data_path, delete_directory_contents
 
 
 requestedLogLevel = os.environ.get("LOG_LEVEL", "info")
