@@ -83,15 +83,12 @@ def request_export(tilemill_url: str, project_properties: ProjectProperties) -> 
                 status_fileame = status["filename"]
                 if status_fileame == export_filename:
                     progress = status["progress"]
-                    remaining = status.get("remaining", sys.maxsize)
+                    remaining = (status.get("remaining", sys.maxsize) or 0)
                     logging.info("Project %s progress %d%%, remaining: %dms", project_properties.name, progress * 100, remaining)
                     if progress > 0 and remaining == 0: # check both as a race condition in tilemill appears to permit 0 remaining when nothing has started yet
                         return export_filename
                     else:
-                        time.sleep(min(30, sys.maxsize if (remaining == 0 or not remaining) else remaining / 1000))
-            if remaining == None:
-                logging.warn("No status available for current project, something went wrong")
-                break
+                        time.sleep(min(10, sys.maxsize if remaining == 0 else remaining / 1000))
         except Exception as ex:
             logging.error("API rejected request for update or error processing: %s", str(ex))
             break
