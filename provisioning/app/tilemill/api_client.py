@@ -84,11 +84,11 @@ def request_export(tilemill_url: str, project_properties: ProjectProperties) -> 
                 if status_fileame == export_filename:
                     progress = status["progress"]
                     remaining = status.get("remaining", sys.maxsize)
-                    logging.debug("Project %s progress %d%%, remaining: %dms", project_properties.name, progress * 100, remaining)
+                    logging.info("Project %s progress %d%%, remaining: %dms", project_properties.name, progress * 100, remaining)
                     if progress > 0 and remaining == 0: # check both as a race condition in tilemill appears to permit 0 remaining when nothing has started yet
                         return export_filename
                     else:
-                        time.sleep(min(5, sys.maxsize if remaining == 0 else remaining / 1000))
+                        time.sleep(min(30, sys.maxsize if (remaining == 0 or not remaining) else remaining / 1000))
             if remaining == None:
                 logging.warn("No status available for current project, something went wrong")
                 break
