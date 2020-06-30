@@ -119,7 +119,10 @@ for xyz_path in xyz_paths:
     else:
         xyz_result_dir = os.path.dirname(xyz_result_path)
         os.makedirs(xyz_result_dir, exist_ok=True)
-        copyfile(xyz_path, xyz_result_path)
+        try:
+            copyfile(xyz_path, xyz_result_path)
+        except Exception:
+            pass
 
 if remove_intermediaries():
     rmtree(get_run_data_path(run_id, None))

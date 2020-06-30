@@ -57,7 +57,7 @@ def merge_dirs(source_root: str, dest_root: str) -> None:
         if not os.path.exists(dest_dir):
             os.makedirs(dest_dir)
         for filename in files:
-            os.rename(
+            os.replace(
                 os.path.join(path, filename),
                 os.path.join(dest_dir, filename)
             )
