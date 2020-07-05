@@ -1,9 +1,4 @@
 Data Sources
-- Canvec WMS
-- BC DEM -> Hillshade
-- BC Topo Maps 1:20000
-- Google / Bing
-    - if URL provided, otherwise Canvec all the way down
 - Resource Roads
 - Trails
     - integrate from InReach
@@ -19,20 +14,24 @@ Data Sources
     - Google Earth's peaks
 
 Approach Notes
-- Environmental variable determines whether existing files are used or replaced - this is how updates vs additions are managed
-    - Could be source-specific, if one source is known to have not updated like Google imagery
+    Priorities
+    - accept input bounds with standard schema and divide into sequential jobs
+    - update logging to specify which job of how many
+    - report progress on tile merge
+    - maintain output bounds
+    - improve data collection
+        - get resource roads, transmission lines from default location, get hiking trails & shelters from a configured location and OK if missing, same with ATES
+
+
+- automate attribute removal for resource roads to only what's required - see if data volume reduction is worth it
+- test http://maps.geogratis.gc.ca/wms/elevation_en
+- Extend polygon to include Sibolas
+- Cover 5km either side of hwy 37
+- Review covered areas with SAR team
 - Source data grouped into directories showing year of acquisition
-- Outlines of cached areas should be visible at zoom-level 1
-    - Add a new outline as part of data build
-    - Only add if new outline is not completely contained within another outline
-        - Expand existing outline if it intersects
-- SARM team wants logging roads / trails visible at more zoom levels
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
 - need some consistency in class file names, classes having their own files
 - combined util.py and file.py and choose better home for util
-- test different Warp algorithms for bc-topo data
-- get resource roads, transmission lines from default location, get hiking trails & shelters from a configured location and OK if missing, same with ATES
-- look at creating hunting maps with wm zones, private property, parks & rec sites
 
 Bugs
 - BBOX validation fails in a strange way
