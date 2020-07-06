@@ -10,7 +10,7 @@ def get_base_path() -> str:
     return os.environ.get("DATA_LOCATION", TILEMILL_DATA_LOCATION)
 
 def get_data_path(path_parts: Tuple[str] = None) -> str:
-    return os.path.join(*(os.path.dirname(__file__), "data", *(path_parts if path_parts else list())))
+    return os.path.join(*(os.path.dirname(__file__), "..", "data", *(path_parts if path_parts else list())))
 
 def get_cache_path(path_parts: Tuple[str] = None) -> str:
     return os.path.join(*(get_base_path(), "cache", *(path_parts if path_parts else list())))

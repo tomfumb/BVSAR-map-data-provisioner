@@ -15,6 +15,7 @@ ENV MBUTIL_LOCATION=/usr/local/apps/mbutil/mb-util
 
 RUN mkdir /tiledata
 
+COPY data /data
 COPY app /app
 
 CMD tail -f /dev/null

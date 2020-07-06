@@ -30,6 +30,8 @@ def get_profile(bbox: BBOX, run_id: str) -> Profile:
     return Profile(
         provisioners=(bc_resource_roads, trails, shelters),
         stylesheets=("common",),
-        zooms=(0, 17),
-        zooms_xyz=(0, 17)
+        zoom_min=0,
+        zoom_max=17,
+        zoom_xyz_min=0,
+        zoom_xyz_max=17,
     )

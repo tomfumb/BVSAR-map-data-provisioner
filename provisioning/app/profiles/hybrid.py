@@ -59,6 +59,8 @@ def get_profile(bbox: BBOX, run_id: str) -> Profile:
     return Profile(
         provisioners=(canvec, bc_topo_20000, bc_hillshade, bc_resource_roads, trails, shelters),
         stylesheets=("common", "hybrid"),
-        zooms=(0, 17),
-        zooms_xyz=(16, 17)
+        zoom_min=0,
+        zoom_max=17,
+        zoom_xyz_min=16,
+        zoom_xyz_max=17,
     )

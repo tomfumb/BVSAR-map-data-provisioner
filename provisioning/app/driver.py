@@ -69,8 +69,8 @@ project_result_path = get_result_path((profile_name,))
 tilemill_url = os.environ.get("TILEMILL_URL", "http://localhost:20009")
 project_properties = ProjectProperties(
     bbox=bbox,
-    zoom_min=profile.zooms[0],
-    zoom_max=profile.zooms[1],
+    zoom_min=profile.zoom_min,
+    zoom_max=profile.zoom_max,
     name=profile_name
 )
 project_creation_properties = ProjectCreationProperties(
@@ -93,9 +93,9 @@ logging.info("mb-util complete")
 if remove_intermediaries():
     delete_directory_contents(get_export_path())
 
-if len(profile.zooms_xyz) == 2:
+if profile.has_xyz():
     xyz_url_template = args["xyz_url"]
-    xyz_paths = xyz_provisioner(bbox, xyz_url_template, profile.zooms_xyz[0], profile.zooms_xyz[1], "image/jpeg", "png")
+    xyz_paths = xyz_provisioner(bbox, xyz_url_template, profile.zoom_xyz_min, profile.zoom_xyz_max, "image/jpeg", "png")
     xyz_path_base = xyz_get_output_dir(xyz_url_template)
     def get_result_path_for_xyz(xyz_path: str) -> str: return xyz_path.replace(xyz_path_base, project_result_path)
     logging.info("Deleting result tiles that will be overwritten by xyz content")
@@ -106,7 +106,8 @@ else:
 
 logging.info("Searching existing tiles for edge overlaps and merging if necessary")
 edge_tiles = list()
-for zoom_dir in [entry_name for entry_name in os.listdir(result_dir_temp) if os.path.isdir(os.path.join(result_dir_temp, entry_name))]:
+zooms_to_merge = range(profile.zoom_min, profile.zoom_xyz_min if profile.has_xyz() else profile.zoom_max + 1)
+for zoom_dir in [entry_name for entry_name in os.listdir(result_dir_temp) if os.path.isdir(os.path.join(result_dir_temp, entry_name)) and int(entry_name) in zooms_to_merge]:
     x_dirs = list(map(lambda x_dir: str(x_dir), sorted([int(z_entry) for z_entry in os.listdir(os.path.join(result_dir_temp, zoom_dir))])))
     edge_tiles += list(map(lambda y_file: os.path.join(zoom_dir, x_dirs[0], y_file), os.listdir(os.path.join(result_dir_temp, zoom_dir, x_dirs[0]))))
     if len(x_dirs) > 1:
@@ -126,21 +127,23 @@ for idx, edge_tile in enumerate(existing_edge_tiles):
 logging.info("Updating result directories with latest export")
 merge_dirs(result_dir_temp, project_result_path)
 
-logging.info("Merging and transferring xyz tiles to result dir")
-for idx, xyz_path in enumerate(xyz_paths):
-    log_base = f"{idx + 1} of {len(xyz_paths)}"
-    xyz_result_path = get_result_path_for_xyz(xyz_path)
-    if os.path.exists(xyz_result_path):
-        logging.info(f"{log_base} merge and transfer")
-        merge_xyz_tiles(xyz_path, xyz_result_path, xyz_result_path)
-    else:
-        logging.info(f"{log_base} transfer")
-        xyz_result_dir = os.path.dirname(xyz_result_path)
-        os.makedirs(xyz_result_dir, exist_ok=True)
-        try:
-            copyfile(xyz_path, xyz_result_path)
-        except Exception:
-            pass
+if profile.has_xyz():
+    logging.info("Merging and transferring xyz tiles to result dir")
+    for idx, xyz_path in enumerate(xyz_paths):
+        xyz_result_path = get_result_path_for_xyz(xyz_path)
+        log_prefix = f"{idx + 1} of {len(xyz_paths)}"
+        log_suffix = f"to {xyz_result_path}"
+        if os.path.exists(xyz_result_path):
+            logging.info(f"{log_prefix} merge and transfer {log_suffix}")
+            merge_xyz_tiles(xyz_path, xyz_result_path, xyz_result_path)
+        else:
+            logging.info(f"{log_prefix} transfer {log_suffix}")
+            xyz_result_dir = os.path.dirname(xyz_result_path)
+            os.makedirs(xyz_result_dir, exist_ok=True)
+            try:
+                copyfile(xyz_path, xyz_result_path)
+            except Exception:
+                pass
 
 if remove_intermediaries():
     rmtree(get_run_data_path(run_id, None))
