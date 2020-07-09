@@ -14,6 +14,9 @@ class BBOX(BaseModel):
     def as_tuple(self):
         return (self.min_x, self.min_y, self.max_x, self.max_y)
 
+    def get_wkt(self):
+        return f"POLYGON (({self.min_x} {self.min_y},{self.max_x} {self.min_y},{self.max_x} {self.max_y},{self.min_x} {self.max_y},{self.min_x} {self.min_y}))"
+
     def get_centre(self):
         return ogr.CreateGeometryFromWkt(
             f"POLYGON (({self.min_x} {self.min_y}, {self.max_x} {self.min_y}, {self.max_x} {self.max_y}, {self.min_x} {self.max_y}, {self.min_x} {self.min_y}))"

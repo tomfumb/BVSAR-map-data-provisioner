@@ -20,7 +20,7 @@ def get_datasource_from_bbox(bbox: BBOX, output_dir: str) -> None:
     if not layer:
         layer = datasource.CreateLayer(BBOX_LAYER_NAME, srs, ogr.wkbPolygon)
     if layer.GetFeatureCount() == 0:
-        geometry = ogr.CreateGeometryFromWkt(get_wkt_from_bbox(bbox))
+        geometry = ogr.CreateGeometryFromWkt(bbox.get_wkt())
         feature_defn = layer.GetLayerDefn()
         feature = ogr.Feature(feature_defn)
         feature.SetGeometry(geometry)
@@ -28,6 +28,3 @@ def get_datasource_from_bbox(bbox: BBOX, output_dir: str) -> None:
         feature = None
     layer, datasource = None, None
     return gpkg_path
-
-def get_wkt_from_bbox(bbox: BBOX) -> str:
-    return f"POLYGON (({bbox.min_x} {bbox.min_y},{bbox.max_x} {bbox.min_y},{bbox.max_x} {bbox.max_y},{bbox.min_x} {bbox.max_y},{bbox.min_x} {bbox.min_y}))"

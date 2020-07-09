@@ -2,7 +2,6 @@ from gdal import ogr
 from typing import List
 
 from app.common.bbox import BBOX
-from app.common.get_datasource_from_bbox import get_wkt_from_bbox
 
 def ogr_to_shp(
     bbox: BBOX,
@@ -19,7 +18,7 @@ def ogr_to_shp(
     gen_layer = gen_datasource.CreateLayer(dst_layer_name, gen_srs, src_layer.GetLayerDefn().GetGeomType())
     bbox_srs = ogr.osr.SpatialReference()
     bbox_srs.ImportFromEPSG(int(bbox.CRS_CODE.split(":")[-1]))
-    bbox_geometry = ogr.CreateGeometryFromWkt(get_wkt_from_bbox(bbox), reference=bbox_srs)
+    bbox_geometry = ogr.CreateGeometryFromWkt(bbox.get_wkt(), reference=bbox_srs)
     for i in range(src_layer.GetLayerDefn().GetFieldCount()):
         field_defn = src_layer.GetLayerDefn().GetFieldDefn(i)
         gen_layer.CreateField(field_defn)
