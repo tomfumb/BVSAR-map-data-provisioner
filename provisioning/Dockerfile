@@ -13,7 +13,7 @@ RUN mkdir -p /usr/local/apps/mbutil
 RUN git clone https://github.com/mapbox/mbutil.git /usr/local/apps/mbutil
 ENV MBUTIL_LOCATION=/usr/local/apps/mbutil/mb-util
 
-RUN mkdir /tiledata
+RUN mkdir -p /tiledata/areas
 
 COPY data /data
 COPY app /app
