@@ -6,3 +6,5 @@
 **/.DS_Store
 .envrc
 .autoenv*.zsh
+*.gpkg-shm
+*.gpkg-wal

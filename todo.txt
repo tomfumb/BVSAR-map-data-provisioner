@@ -10,6 +10,7 @@ Approach Notes
         - get resource roads, transmission lines from default location, get hiking trails & shelters from a configured location and OK if missing, same with ATES
     - HEAD validation of finished product
     - more appropriate logging
+    - merge all output areas in separate layer - main store is not kml, only merge is kml
 
 - add validator to ensure zoom_max >= zoom_min and same for zoom_xyz_*
 - automate attribute removal for resource roads to only what's required - see if data volume reduction is worth it
