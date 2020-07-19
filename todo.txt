@@ -1,17 +1,8 @@
 Data Sources
-- Resource Roads
-- Trails
-    - integrate from InReach
-    - check BVSAR KML for non-duplicates
-- Cabins
 - Transmission Lines
     - only when overlaid on non-Canvec, as Canvec already shows transmission lines
 - ATES terrain (check impact on vis)
 
-    Possible Data Sources
-    - Look for data on old mining roads
-    - Snowmobile club trails
-    - Google Earth's peaks
 
 Approach Notes
     Priorities
@@ -22,9 +13,6 @@ Approach Notes
 
 - add validator to ensure zoom_max >= zoom_min and same for zoom_xyz_*
 - automate attribute removal for resource roads to only what's required - see if data volume reduction is worth it
-- test http://maps.geogratis.gc.ca/wms/elevation_en
-- Extend polygon to include Sibolas
-- Cover 5km either side of hwy 37
 - Review covered areas with SAR team
 - Source data grouped into directories showing year of acquisition
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
