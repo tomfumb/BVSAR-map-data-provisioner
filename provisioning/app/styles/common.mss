@@ -26,7 +26,7 @@
 
 .bc-resource-roads-label {
   line-width:0;
-  [zoom >= 15] {
+  [zoom >= 14] {
     text-name:[RD_SECT_NM];
     [LIFE_ST_CD = "ACTIVE"] {
       text-fill:"#000";  
@@ -38,7 +38,7 @@
 }
 
 .bc-resource-roads-label,.trails {
-  [zoom >= 15] {
+  [zoom >= 14] {
     text-dy:5;
     text-face-name:'DejaVu Sans Book';
     text-halo-radius:2;
@@ -48,7 +48,7 @@
 }
 
 .trails {
-  [zoom >= 15] {
+  [zoom >= 14] {
     text-name:[name];
   }
 }

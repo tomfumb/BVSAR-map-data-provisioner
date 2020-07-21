@@ -52,6 +52,7 @@ while area_feature := area_layer.GetNextFeature():
         logging.error(f"profile and xyz_url are required text fields but are missing one or more features. Exiting")
         exit(1)
     min_x, max_x, min_y, max_y = area_feature.GetGeometryRef().GetEnvelope()
+    logging.info(f"area {min_x},{min_y} {max_x},{max_y}. x diff: {max_x - min_x}, y diff: {max_y - min_y}")
     reset_y = min_y
     while min_x < max_x:
         increment_x = min(BBOX_DIVISION, max_x - min_x)
@@ -71,5 +72,5 @@ while area_feature := area_layer.GetNextFeature():
 
 logging.info(f"Require {len(area_division_args)} export(s) at {BBOX_DIVISION}x{BBOX_DIVISION}")
 for idx, args in enumerate(area_division_args):
-    logging.info(f"Export {idx + 1} of {len(area_division_args)}")
+    logging.info(f"Export {idx + 1} of {len(area_division_args)}: {args[0]},{args[2]} {args[1]},{args[3]}")
     provision(BBOX(min_x=args[0], max_x=args[1], min_y=args[2], max_y=args[3]), args[4], args[5])
