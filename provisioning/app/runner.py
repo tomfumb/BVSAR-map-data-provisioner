@@ -59,11 +59,14 @@ while area_feature := area_layer.GetNextFeature():
         min_y = reset_y
         while min_y < max_y:
             increment_y = min(BBOX_DIVISION, max_y - min_y)
+            this_max_x = min_x + increment_x
+            this_max_y = min_y + increment_y
+            logging.info(f"area division {min_x},{this_max_x} {min_y},{this_max_y}. x diff: {this_max_x - min_x}, y diff: {this_max_y - min_y}")
             area_division_args.append((
                 min_x,
-                min_x + increment_x,
+                this_max_x,
                 min_y,
-                min_y + increment_y,
+                this_max_y,
                 profile_name,
                 xyz_url,
             ))
