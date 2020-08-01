@@ -5,21 +5,26 @@ from gdal import ogr, osr
 from app.common.bbox import BBOX
 
 def record_run(result_dir: str, profile_name: str, bbox: BBOX) -> None:
-    layer_name = f"{profile_name}_tiles"
-    driver = ogr.GetDriverByName("KML")
-    kml_path = os.path.join(result_dir, f"{profile_name}.kml")
-    datasource = driver.Open(kml_path)
-    if not datasource:
-        datasource = driver.CreateDataSource(kml_path)
-    layer = datasource.GetLayerByName(layer_name)
-    if not layer:
+    layer_name = "areas"
+    gpkg_driver = ogr.GetDriverByName("GPKG")
+    gpkg_path = os.path.join(result_dir, "coverage.gpkg")
+    gpkg_datasource = gpkg_driver.Open(gpkg_path, 1)
+    if not gpkg_datasource:
+        gpkg_datasource = gpkg_driver.CreateDataSource(gpkg_path)
+    cumulative_layer = gpkg_datasource.GetLayerByName(layer_name)
+    if not cumulative_layer:
         srs = osr.SpatialReference()
         srs.SetFromUserInput("CRS:84")
-        layer = datasource.CreateLayer(layer_name, srs, ogr.wkbPolygon)
+        cumulative_layer = gpkg_datasource.CreateLayer(layer_name, srs, ogr.wkbPolygon)
     geometry = ogr.CreateGeometryFromWkt(bbox.get_wkt())
-    feature_defn = layer.GetLayerDefn()
+    feature_defn = cumulative_layer.GetLayerDefn()
     feature = ogr.Feature(feature_defn)
-    feature.SetGeometry(geometry)
-    layer.CreateFeature(feature)
-    feature = None
-    layer, datasource = None, None
+    feature.SetGeometryDirectly(geometry)
+    cumulative_layer.CreateFeature(feature)
+    kml_path = os.path.join(result_dir, "coverage.kml")
+    if os.path.exists(kml_path):
+        os.remove(kml_path)
+    kml_driver = ogr.GetDriverByName("KML")
+    kml_datasource = kml_driver.CreateDataSource(kml_path)
+    kml_datasource.CopyLayer(cumulative_layer, "areas")
+    cumulative_layer, gpkg_datasource, kml_datasource = None, None, None
