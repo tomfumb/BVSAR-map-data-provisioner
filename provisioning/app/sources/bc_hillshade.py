@@ -11,7 +11,7 @@ from app.common.file import skip_file_creation, remove_intermediaries
 from app.common.get_datasource_from_bbox import get_datasource_from_bbox, BBOX_LAYER_NAME
 from app.common.httpRetriever import httpRetriever, RetrievalRequest
 from app.tilemill.ProjectLayerType import ProjectLayerType
-from app.util import get_data_path, get_cache_path, get_run_data_path
+from app.util import get_data_path, get_cache_path, get_run_data_path, swallow_unimportant_warp_error
 
 CACHE_DIR_NAME: Final = "bc-hillshade"
 OUTPUT_CRS_CODE: Final = "EPSG:3857"
@@ -61,7 +61,10 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
             os.remove(generation_request.prj_path)
 
     for generation_request in bbox_cells:
-        Warp(generation_request.run_path, generation_request.hs_path, cutlineDSName=get_datasource_from_bbox(bbox, get_run_data_path(run_id, None)), cutlineLayer=BBOX_LAYER_NAME, cropToCutline=True, dstNodata=-1)
+        try:
+            Warp(generation_request.run_path, generation_request.hs_path, cutlineDSName=get_datasource_from_bbox(bbox, get_run_data_path(run_id, None)), cutlineLayer=BBOX_LAYER_NAME, cropToCutline=True, dstNodata=-1)
+        except Exception as ex:
+            swallow_unimportant_warp_error(ex)
 
     return list(map(lambda generation_request: generation_request.run_path, bbox_cells))
 

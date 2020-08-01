@@ -14,7 +14,7 @@ from app.common.get_datasource_from_bbox import get_datasource_from_bbox, BBOX_L
 from app.common.file import skip_file_creation, remove_intermediaries
 from app.common.httpRetriever import httpRetriever, RetrievalRequest
 from app.tilemill.ProjectLayerType import ProjectLayerType
-from app.util import get_run_data_path, get_cache_path
+from app.util import get_run_data_path, get_cache_path, swallow_unimportant_warp_error
 
 DEFAULT_WMS_VERSION: Final = "1.1.1"
 DEFAULT_DPI: Final = 96
@@ -135,8 +135,11 @@ def _create_run_output(bbox: BBOX, grid: List[PartialCoverageTile], run_id: str)
     for tile in grid:
         if not tile.scale in file_list:
             file_list[tile.scale] = list()
-        Warp(tile.final_path, tile.tif_path, cutlineDSName=get_datasource_from_bbox(bbox, run_directory), cutlineLayer=BBOX_LAYER_NAME, cropToCutline=True, dstNodata=-1)
-        file_list[tile.scale].append(tile.final_path)
+        try:
+            Warp(tile.final_path, tile.tif_path, cutlineDSName=get_datasource_from_bbox(bbox, run_directory), cutlineLayer=BBOX_LAYER_NAME, cropToCutline=True, dstNodata=-1)
+            file_list[tile.scale].append(tile.final_path)
+        except Exception as ex:
+            swallow_unimportant_warp_error(ex)
     return file_list
 
 def _convert_to_tif(partial_coverage_tiles: List[PartialCoverageTile], wms_crs_code: str) -> None:

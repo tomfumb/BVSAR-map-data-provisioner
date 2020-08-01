@@ -7,19 +7,9 @@ from gdal import ogr, ConfigurePythonLogging, UseExceptions
 
 from app.common.bbox import BBOX
 from app.driver import provision
+from app.util import configure_logging
 
-requestedLogLevel = os.environ.get("LOG_LEVEL", "info")
-logLevelMapping = {
-    "debug": logging.DEBUG,
-    "info":  logging.INFO,
-    "warn":  logging.WARN,
-    "error": logging.ERROR
-}
-handlers = [logging.StreamHandler(stream = sys.stdout),]
-logging.basicConfig(handlers = handlers, level = logLevelMapping.get(requestedLogLevel, logging.INFO), format = '%(levelname)s %(asctime)s %(message)s')
-
-ConfigurePythonLogging(logging.getLogger().name, logging.getLogger().level == logging.DEBUG)
-UseExceptions()
+configure_logging()
 
 BBOX_DIVISION = float(os.environ.get("BBOX_DIVISION", 0.5))
 

@@ -1,7 +1,11 @@
 import errno
+import logging
 import os
+import re
 import shutil
+import sys
 
+from gdal import ConfigurePythonLogging, UseExceptions
 from typing import Final, Tuple
 
 TILEMILL_DATA_LOCATION: Final = "/tiledata"
@@ -64,3 +68,23 @@ def merge_dirs(source_root: str, dest_root: str) -> None:
         for dirname in dirs:
             os.rmdir(os.path.join(path, dirname))
     shutil.rmtree(source_root)
+
+def configure_logging():
+    requestedLogLevel = os.environ.get("LOG_LEVEL", "info")
+    logLevelMapping = {
+        "debug": logging.DEBUG,
+        "info":  logging.INFO,
+        "warn":  logging.WARN,
+        "error": logging.ERROR
+    }
+    handlers = [logging.StreamHandler(stream = sys.stdout),]
+    logging.basicConfig(handlers = handlers, level = logLevelMapping.get(requestedLogLevel, logging.INFO), format = '%(levelname)s %(asctime)s %(message)s')
+
+    ConfigurePythonLogging(logging.getLogger().name, logging.getLogger().level == logging.DEBUG)
+    UseExceptions()
+
+def swallow_unimportant_warp_error(ex: Exception) -> None:
+    if re.match(r"Attempt to create 0x\d+ dataset is illegal\,sizes must be larger than zero", str(ex)):
+        logging.debug(f"Bouding box intersects too few pixels to clip a new image")
+    else:
+        raise ex
