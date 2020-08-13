@@ -6,6 +6,7 @@ Data Sources
 
 Approach Notes
     Priorities
+    - docker-compose mount local dir and pass areas.gpkg
     - improve data collection
         - get resource roads, transmission lines from default location, get hiking trails & shelters from a configured location and OK if missing, same with ATES
     - HEAD validation of finished product

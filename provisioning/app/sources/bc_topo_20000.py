@@ -77,7 +77,7 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
         except Exception as ex:
             swallow_unimportant_warp_error(ex)
 
-    return list(map(lambda generation_request: generation_request.run_path, bbox_cells))
+    return list(filter(lambda run_path: os.path.exists(run_path), map(lambda generation_request: generation_request.run_path, bbox_cells)))
 
 def _get_final_path(cell_name: str) -> str:
     return get_cache_path((CACHE_DIR_NAME, f"{cell_name}_prj.tif"))
