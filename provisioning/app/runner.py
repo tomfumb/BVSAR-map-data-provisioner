@@ -11,19 +11,22 @@ from app.util import configure_logging
 
 configure_logging()
 
+AREAS_ENV_VAR_NAME = "AREAS_LOCATION"
 BBOX_DIVISION = float(os.environ.get("BBOX_DIVISION", 0.5))
 
 parser = argparse.ArgumentParser()
-parser.add_argument("areas", type = str)
+parser.add_argument("--areas", type=str, help=f"Location of areas geopackage, will override {AREAS_ENV_VAR_NAME} env var if present")
 args = vars(parser.parse_args())
 
-if not os.path.exists(args["areas"]):
-    logging.error("{0} does not exist. Exiting".format(args["areas"]))
+areas_path = args.get("areas") or os.environ.get(AREAS_ENV_VAR_NAME)
+
+if not areas_path:
+    logging.error(f"Areas geopackage must be specified either by {AREAS_ENV_VAR_NAME} env var or --areas argument")
     exit(1)
 
-datasource = ogr.Open(args["areas"])
+datasource = ogr.Open(areas_path)
 if not datasource:
-    logging.error("Could not open {0}. Exiting".format(args["areas"]))
+    logging.error("Could not open {0}. Exiting".format(areas_path))
     exit(1)
 
 if datasource.GetLayerCount() != 1:

@@ -6,7 +6,6 @@ Data Sources
 
 Approach Notes
     Priorities
-    - docker-compose mount local dir and pass areas.gpkg
     - improve data collection
         - get resource roads, transmission lines from default location, get hiking trails & shelters from a configured location and OK if missing, same with ATES
     - HEAD validation of finished product
@@ -14,6 +13,7 @@ Approach Notes
     - output areas not building correctly?
     - merge all output areas in separate layer - main store is not kml, only merge is kml
 
+- refuse to run in annual data is not updated
 - add validator to ensure zoom_max >= zoom_min and same for zoom_xyz_*
 - automate attribute removal for resource roads to only what's required - see if data volume reduction is worth it
 - Review covered areas with SAR team
