@@ -11,18 +11,31 @@ from app.util import configure_logging
 
 configure_logging()
 
+AREAS_ARG_NAME = "areas"
 AREAS_ENV_VAR_NAME = "AREAS_LOCATION"
+LOCAL_FEATURES_ARG_NAME = "local-features"
+LOCAL_FEATURES_ENV_VAR_NAME = "LOCAL_FEATURES_LOCATION"
 BBOX_DIVISION = float(os.environ.get("BBOX_DIVISION", 0.5))
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--areas", type=str, help=f"Location of areas geopackage, will override {AREAS_ENV_VAR_NAME} env var if present")
+parser.add_argument(f"--{AREAS_ARG_NAME}", type=str, help=f"Location of {AREAS_ARG_NAME} geopackage, will override {AREAS_ENV_VAR_NAME} env var if present")
+parser.add_argument(f"--{LOCAL_FEATURES_ARG_NAME}", type=str, help=f"Location of {LOCAL_FEATURES_ARG_NAME} geopackage, will override {LOCAL_FEATURES_ENV_VAR_NAME} env var if present")
 args = vars(parser.parse_args())
 
-areas_path = args.get("areas") or os.environ.get(AREAS_ENV_VAR_NAME)
+areas_path = args.get(AREAS_ARG_NAME) or os.environ.get(AREAS_ENV_VAR_NAME)
+local_features_path = args.get(LOCAL_FEATURES_ARG_NAME) or os.environ.get(LOCAL_FEATURES_ENV_VAR_NAME)
+error_missing_str = "{0} geopackage must be specified either by {1} or --{0} argument"
 
 if not areas_path:
-    logging.error(f"Areas geopackage must be specified either by {AREAS_ENV_VAR_NAME} env var or --areas argument")
+    logging.error(error_missing_str.format(AREAS_ARG_NAME, AREAS_ENV_VAR_NAME))
     exit(1)
+
+if not local_features_path:
+    logging.error(error_missing_str.format(LOCAL_FEATURES_ARG_NAME, LOCAL_FEATURES_ENV_VAR_NAME))
+    exit(1)
+else:
+    # application expects the env var alone to provide this path, so ensure it has the correct value
+    os.environ[LOCAL_FEATURES_ENV_VAR_NAME] = local_features_path
 
 datasource = ogr.Open(areas_path)
 if not datasource:

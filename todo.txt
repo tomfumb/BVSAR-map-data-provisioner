@@ -1,21 +1,14 @@
-Data Sources
-- Transmission Lines
-    - only when overlaid on non-Canvec, as Canvec already shows transmission lines
-- ATES terrain (check impact on vis)
-
-
-Approach Notes
-    Priorities
-    - improve data collection
-        - get resource roads, transmission lines from default location, get hiking trails & shelters from a configured location and OK if missing, same with ATES
+Priorities
     - HEAD validation of finished product
     - more appropriate logging
-    - output areas not building correctly?
     - merge all output areas in separate layer - main store is not kml, only merge is kml
 
+- HTTP Retriever
+    - expand on heuristics to periodically check if we still have the optimal concurrency
+    - attempt to accommodate 429 "too many requests"
+    - make repeated attempts with extending wait period and error if not all requests satisfied
 - refuse to run in annual data is not updated
 - add validator to ensure zoom_max >= zoom_min and same for zoom_xyz_*
-- automate attribute removal for resource roads to only what's required - see if data volume reduction is worth it
 - Review covered areas with SAR team
 - Source data grouped into directories showing year of acquisition
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
@@ -33,7 +26,3 @@ Hosting
     - e.g. Pi Juice
 - Ruggedised case could be appropriate
 - External wifi antenna may be necessary for a good signal when broadcasting
-
-HTTP
-- expand on heuristics to periodically check if we still have the optimal concurrency
-- attempt to accommodate 429 "too many requests"
