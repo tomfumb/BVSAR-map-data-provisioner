@@ -1,3 +1,0 @@
-docker run -p 20009:20009 -p 20008:20008 -v /Users/tc/data/personal/BVSAR/cache:/tiledata/cache -v /Users/tc/data/personal/BVSAR/run:/tiledata/run -v /Users/tc/data/personal/BVSAR/export:/root/Documents/MapBox/export -d --name tilemill --rm provisioner-tilemill
-
-docker run -p 8123:80 -v /Users/tc/data/personal/BVSAR/result:/usr/local/apache2/htdocs -d --name httpd --rm httpd

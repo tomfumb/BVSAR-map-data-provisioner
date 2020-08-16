@@ -16,6 +16,15 @@ class RetrievalRequest(BaseModel):
     url: str
     expected_type: str
 
+class ExistsCheckRequest(BaseModel):
+    url: str
+
+def check_exists(check_requests: List[ExistsCheckRequest]) -> None:
+    for request in check_requests:
+        if requests.head(request.url).status_code != 200:
+            raise ValueError(f"{request.url} does not exist")
+
+
 def httpRetriever(retrieval_requests: List[RetrievalRequest], maxConcurrentRequests: int = 10):
     requests = retrieval_requests.copy()
     if len(requests) > 0:
@@ -77,7 +86,7 @@ def issueFileRequest(request: RetrievalRequest):
             out.write(response.content)
             out.close()
         else:
-            logging.error('Response is not of expected type "%s", result will not be stored', request.expected_type)
+            logging.error(f"Response is not of expected type {request.expected_type}")
    
 
 def isExpectedResponseType(response, expectedType: str) -> bool:

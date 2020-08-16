@@ -11,11 +11,12 @@ from shutil import copyfile, move, rmtree
 
 from app.common.bbox import BBOX
 from app.common.file import remove_intermediaries
+from app.common.httpRetriever import check_exists
 from app.merging.merge_xyz_tiles import merge_xyz_tiles
 from app.profiles.hybrid import get_profile as profile_hybrid
 from app.profiles.xyzplus import get_profile as profile_xyzplus
 from app.record.run_recorder import record_run
-from app.sources.xyz_service import provision as xyz_provisioner, get_output_dir as xyz_get_output_dir
+from app.sources.xyz_service import provision as xyz_provisioner, get_output_dir as xyz_get_output_dir, build_exists_check_requests as xyz_check_builder
 from app.tilemill.api_client import create_or_update_project, request_export
 from app.tilemill.ProjectLayer import ProjectLayer
 from app.tilemill.ProjectCreationProperties import ProjectCreationProperties
@@ -123,6 +124,17 @@ def provision(bbox: BBOX, profile_name: str, xyz_url: str) -> None:
                     copyfile(xyz_path, xyz_result_path)
                 except Exception:
                     pass
+
+    # validate result by issuing HEAD request for every expected tile in the result set
+    check_exists(
+        xyz_check_builder(
+            bbox,
+            "{0}/{1}/{{z}}/{{x}}/{{y}}.png".format(os.environ.get("HTTP_URL", "http://localhost:8001"), profile_name),
+            profile.zoom_xyz_min,
+            profile.zoom_xyz_max,
+            "image/png",
+        )
+    )
 
     record_run(final_result_path, profile_name, bbox)
 

@@ -26,3 +26,9 @@ Hosting
     - e.g. Pi Juice
 - Ruggedised case could be appropriate
 - External wifi antenna may be necessary for a good signal when broadcasting
+
+
+
+Awaiting tes
+: moved local-features to runner location
+: HEAD validation of all tiles
