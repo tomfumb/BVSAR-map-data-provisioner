@@ -20,10 +20,13 @@ class ExistsCheckRequest(BaseModel):
     url: str
 
 def check_exists(check_requests: List[ExistsCheckRequest]) -> None:
-    for request in check_requests:
+    logging.info(f"Issuing {len(check_requests)} HEAD requests...")
+    log_format = "... {0}"
+    for i, request in enumerate(check_requests):
+        if i > 0 and i % 100 == 0: logging.info(log_format.format(i))
         if requests.head(request.url).status_code != 200:
             raise ValueError(f"{request.url} does not exist")
-
+    logging.info(log_format.format(len(check_requests)))
 
 def httpRetriever(retrieval_requests: List[RetrievalRequest], maxConcurrentRequests: int = 10):
     requests = retrieval_requests.copy()
@@ -32,10 +35,10 @@ def httpRetriever(retrieval_requests: List[RetrievalRequest], maxConcurrentReque
         bestConcurrency = 1
         concurrency = 1
         while concurrency <= maxConcurrentRequests:
-            logging.debug('Testing request speed with %d concurrent requests', concurrency)
+            logging.debug(f"Testing request speed with {concurrency} concurrent requests")
             bestConcurrency = concurrency
             numRequestsToTest = min(concurrency, len(requests))
-            logging.debug('Got %d requests to test with', numRequestsToTest)
+            logging.debug(f"Got {numRequestsToTest} requests to test with")
             if numRequestsToTest > 0:
                 testRequests = requests[:numRequestsToTest]
                 del requests[:numRequestsToTest]
@@ -44,19 +47,19 @@ def httpRetriever(retrieval_requests: List[RetrievalRequest], maxConcurrentReque
                     executeRequests(executor, testRequests)
                 end = timer()
                 testTimePerRequest = (end - start) / numRequestsToTest
-                logging.debug('Time per request %s', testTimePerRequest)
+                logging.debug(f"Time per request {testTimePerRequest}")
                 if testTimePerRequest < bestTimePerRequest:
                     logging.debug('Got new best time')
                     bestTimePerRequest = testTimePerRequest
                 else:
                     bestConcurrency = concurrency - 1
-                    logging.debug('Previous time per request was better, exit and use %d', bestConcurrency)
+                    logging.debug(f"Previous time per request was better, exit and use {bestConcurrency}")
                     break
                 concurrency += 1
             else:
                 break
         
-        logging.info('Issuing requests with %d concurrency', bestConcurrency)
+        logging.info(f"Issuing requests with {bestConcurrency} concurrency")
         with futures.ThreadPoolExecutor(max_workers = bestConcurrency) as executor:
             executeRequests(executor, requests)
 
@@ -67,14 +70,14 @@ def executeRequests(executor, requests: List[RetrievalRequest]) -> None:
         try:
             future.result()
         except Exception as exc:
-            logging.info('Exception: %s', str(type(exc)))
+            logging.info(f'Exception: {type(exc)}')
 
 
 def issueFileRequest(request: RetrievalRequest):
     filePath = request.path
     os.makedirs(os.path.dirname(filePath), exist_ok = True)
     url = request.url
-    logging.info('Requesting %s from %s', filePath, url)
+    logging.info(f'Requesting {filePath} from {url}')
     response = requests.get(url, headers = { 'User-Agent': getRandomUserAgent() })
     isExpectedType = isExpectedResponseType(response, request.expected_type)
     if isExpectedType is None:

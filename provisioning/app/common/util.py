@@ -9,12 +9,13 @@ from gdal import ConfigurePythonLogging, UseExceptions
 from typing import Final, Tuple
 
 TILEMILL_DATA_LOCATION: Final = "/tiledata"
+OVERWRITE_EXISTING: Final = int(os.environ.get("OVERWRITE_EXISTING", 0)) == 0
 
 def get_base_path() -> str:
     return os.environ.get("DATA_LOCATION", TILEMILL_DATA_LOCATION)
 
 def get_data_path(path_parts: Tuple[str] = None) -> str:
-    return os.path.join(*(os.path.dirname(__file__), "..", "data", *(path_parts if path_parts else list())))
+    return os.path.join(*(os.path.dirname(__file__), "..", "..", "data", *(path_parts if path_parts else list())))
 
 def get_local_features_path() -> str:
     return os.environ["LOCAL_FEATURES_LOCATION"]
@@ -26,7 +27,7 @@ def get_run_data_path(run_id: str, path_parts: Tuple[str] = None) -> str:
     return os.path.join(*(get_base_path(), "run", run_id, *(path_parts if path_parts else list())))
 
 def get_style_path(file_name: str) -> str:
-    return os.path.join(*(os.path.dirname(__file__), "styles", file_name))
+    return os.path.join(*(os.path.dirname(__file__), "..", "styles", file_name))
 
 def get_export_path(path_parts: Tuple[str] = None) -> str:
     return os.path.join(*(get_base_path(), "export", *(path_parts if path_parts else list())))
@@ -43,7 +44,7 @@ def delete_directory_contents(directory: str) -> str:
             elif os.path.isdir(file_path):
                 shutil.rmtree(file_path)
         except Exception as e:
-            print('Failed to delete %s. Reason: %s' % (file_path, e))
+            logging.warn(f'Failed to delete {file_path}. Reason: {e}')
             raise e
 
 # https://stackoverflow.com/a/10840586/519575
@@ -91,3 +92,9 @@ def swallow_unimportant_warp_error(ex: Exception) -> None:
         logging.debug(f"Bouding box intersects too few pixels to clip a new image")
     else:
         raise ex
+
+def skip_file_creation(path: str) -> bool:
+    return os.path.exists(path) and OVERWRITE_EXISTING
+
+def remove_intermediaries() -> bool:
+    return int(os.environ.get("REMOVE_INTERMEDIARIES", 1)) == 1

@@ -5,9 +5,9 @@ import sys
 
 from gdal import ogr, ConfigurePythonLogging, UseExceptions
 
-from app.common.bbox import BBOX
+from app.common.BBOX import BBOX
 from app.driver import provision
-from app.util import configure_logging
+from app.common.util import configure_logging
 
 configure_logging()
 

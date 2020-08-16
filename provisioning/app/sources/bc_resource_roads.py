@@ -3,10 +3,10 @@ import os
 from gdal import ogr
 from typing import Final, List
 
-from app.common.bbox import BBOX
+from app.common.BBOX import BBOX
 from app.sources.common.ogr_to_shp import ogr_to_shp
 from app.tilemill.ProjectLayerType import ProjectLayerType
-from app.util import get_data_path, get_run_data_path
+from app.common.util import get_data_path, get_run_data_path
 
 CACHE_DIR_NAME: Final = "bc-resource-roads"
 OUTPUT_CRS_CODE: Final = "EPSG:3857"

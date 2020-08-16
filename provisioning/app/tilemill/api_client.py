@@ -10,8 +10,8 @@ import datetime
 import requests
 import uuid
 
-from app.common.bbox import BBOX
-from app.util import get_base_path, TILEMILL_DATA_LOCATION
+from app.common.BBOX import BBOX
+from app.common.util import get_base_path, TILEMILL_DATA_LOCATION
 from app.tilemill.ProjectLayer import ProjectLayer
 from app.tilemill.ProjectLayerType import ProjectLayerType
 from app.tilemill.ProjectCreationProperties import ProjectCreationProperties
@@ -84,13 +84,13 @@ def request_export(tilemill_url: str, project_properties: ProjectProperties) -> 
                 if status_fileame == export_filename:
                     progress = status["progress"]
                     remaining = (status.get("remaining", sys.maxsize) or 0)
-                    logging.info("Project %s progress %d%%, remaining: %dms", project_properties.name, progress * 100, remaining)
+                    logging.info(f"Project {project_properties.name} progress {progress * 100}%, remaining: {remaining}ms")
                     if progress > 0 and remaining == 0: # check both as a race condition in tilemill appears to permit 0 remaining when nothing has started yet
                         return export_filename
                     else:
                         time.sleep(min(10, sys.maxsize if remaining == 0 else remaining / 1000))
         except Exception as ex:
-            logging.error("API rejected request for update or error processing: %s", str(ex))
+            logging.error(f"API rejected request for update or error processing: {ex}")
             break
 
 def _convert_project_layer_to_layer(project_layer: ProjectLayer) -> Dict[str, object]:

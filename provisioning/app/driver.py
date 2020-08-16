@@ -9,8 +9,7 @@ import subprocess
 from gdal import ConfigurePythonLogging, UseExceptions
 from shutil import copyfile, move, rmtree
 
-from app.common.bbox import BBOX
-from app.common.file import remove_intermediaries
+from app.common.BBOX import BBOX
 from app.common.httpRetriever import check_exists
 from app.merging.merge_xyz_tiles import merge_xyz_tiles
 from app.profiles.hybrid import get_profile as profile_hybrid
@@ -21,13 +20,11 @@ from app.tilemill.api_client import create_or_update_project, request_export
 from app.tilemill.ProjectLayer import ProjectLayer
 from app.tilemill.ProjectCreationProperties import ProjectCreationProperties
 from app.tilemill.ProjectProperties import ProjectProperties
-from app.util import get_style_path, get_export_path, get_result_path, merge_dirs, silent_delete, get_run_data_path, delete_directory_contents, configure_logging
+from app.common.util import get_style_path, get_export_path, get_result_path, merge_dirs, silent_delete, get_run_data_path, delete_directory_contents, configure_logging, remove_intermediaries
 
 
 def provision(bbox: BBOX, profile_name: str, xyz_url: str) -> None:
-
     run_id = str(uuid.uuid4())
-
     profiles = {
         "hybrid": profile_hybrid,
         "xyzplus": profile_xyzplus,
@@ -35,18 +32,14 @@ def provision(bbox: BBOX, profile_name: str, xyz_url: str) -> None:
     try:
         profile = profiles[profile_name](bbox, run_id)
     except KeyError:
-        logging.error("Requested profile %s does not exist", profile_name)
+        logging.error(f"Requested profile {profile_name} does not exist")
         return
-
     final_result_path = get_result_path((profile_name,))
-
     layers = [item for sublist in [provisioner() for provisioner in profile.provisioners] for item in sublist]
-
     stylesheets = list()
     for stylesheet in profile.stylesheets:
         with open(get_style_path(f"{stylesheet}.mss"), "r") as f:
             stylesheets.append(f.read())
-
     project_properties = ProjectProperties(
         bbox=bbox,
         zoom_min=profile.zoom_min,
@@ -59,14 +52,12 @@ def provision(bbox: BBOX, profile_name: str, xyz_url: str) -> None:
         **dict(project_properties)
     )
     tilemill_url = os.environ.get("TILEMILL_URL", "http://localhost:20009")
+
     create_or_update_project(tilemill_url, project_creation_properties)
     export_file = request_export(tilemill_url, project_properties)
     result_dir_temp = get_result_path((run_id,))
     logging.info("Calling mb-util")
-    stdout, stderr = subprocess.Popen([os.environ["MBUTIL_LOCATION"], get_export_path((export_file,)), result_dir_temp], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
-    if stdout:
-        for line in stdout.decode("ascii").split(os.linesep):
-            logging.info(line)
+    _, stderr = subprocess.Popen([os.environ["MBUTIL_LOCATION"], get_export_path((export_file,)), result_dir_temp], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
     if stderr:
         for line in stderr.decode("ascii").split(os.linesep):
             logging.warn(line)
@@ -125,7 +116,7 @@ def provision(bbox: BBOX, profile_name: str, xyz_url: str) -> None:
                 except Exception:
                     pass
 
-    # validate result by issuing HEAD request for every expected tile in the result set
+    logging.info("Validating result")
     check_exists(
         xyz_check_builder(
             bbox,

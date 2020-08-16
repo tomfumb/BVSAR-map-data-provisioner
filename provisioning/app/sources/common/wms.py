@@ -9,12 +9,11 @@ from pydantic import BaseModel
 from pyproj import Transformer, CRS
 from typing import Dict, Final, List, Tuple
 
-from app.common.bbox import BBOX
+from app.common.BBOX import BBOX
 from app.common.get_datasource_from_bbox import get_datasource_from_bbox, BBOX_LAYER_NAME
-from app.common.file import skip_file_creation, remove_intermediaries
 from app.common.httpRetriever import httpRetriever, RetrievalRequest
 from app.tilemill.ProjectLayerType import ProjectLayerType
-from app.util import get_run_data_path, get_cache_path, swallow_unimportant_warp_error
+from app.common.util import get_run_data_path, get_cache_path, swallow_unimportant_warp_error, skip_file_creation, remove_intermediaries
 
 DEFAULT_WMS_VERSION: Final = "1.1.1"
 DEFAULT_DPI: Final = 96
@@ -145,7 +144,7 @@ def _create_run_output(bbox: BBOX, grid: List[PartialCoverageTile], run_id: str)
 def _convert_to_tif(partial_coverage_tiles: List[PartialCoverageTile], wms_crs_code: str) -> None:
     for tile in partial_coverage_tiles:
         if os.path.exists(tile.wms_path):
-            logging.debug('Converting %s to %s', tile.wms_path, tile.tif_path)
+            logging.debug(f'Converting {tile.wms_path} to {tile.tif_path}')
             src_file = Open(tile.wms_path, GA_ReadOnly)
             Translate(
                 tile.tif_path,
@@ -159,7 +158,7 @@ def _convert_to_tif(partial_coverage_tiles: List[PartialCoverageTile], wms_crs_c
             if remove_intermediaries():
                 os.remove(tile.wms_path)
         else:
-            logging.warn('Expected file %s does not exist', tile.wms_path)
+            logging.warn(f'Expected file {tile.wms_path} does not exist')
 
 
 def _map_units_to_pixels(map_units: float, scale: int, map_crs: CRS) -> float:

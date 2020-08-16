@@ -1,22 +1,16 @@
-Priorities
-    - HEAD validation of finished product
-    - more appropriate logging
-    - merge all output areas in separate layer - main store is not kml, only merge is kml
-
+- merge all output areas in separate layer - main store is not kml, only merge is kml
 - HTTP Retriever
+    - use async http?
     - expand on heuristics to periodically check if we still have the optimal concurrency
     - attempt to accommodate 429 "too many requests"
     - make repeated attempts with extending wait period and error if not all requests satisfied
+- browser-based tile viewer
 - refuse to run in annual data is not updated
-- add validator to ensure zoom_max >= zoom_min and same for zoom_xyz_*
 - Review covered areas with SAR team
 - Source data grouped into directories showing year of acquisition
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
 - need some consistency in class file names, classes having their own files
-- combined util.py and file.py and choose better home for util
-
-Bugs
-- BBOX validation fails in a strange way
+- black / isort / flake8 validation
 
 Hosting
 - Raspberry Pi should only require 1.2A if no peripherals
@@ -26,9 +20,3 @@ Hosting
     - e.g. Pi Juice
 - Ruggedised case could be appropriate
 - External wifi antenna may be necessary for a good signal when broadcasting
-
-
-
-Awaiting tes
-: moved local-features to runner location
-: HEAD validation of all tiles

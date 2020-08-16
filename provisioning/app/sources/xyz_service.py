@@ -7,10 +7,9 @@ from enum import Enum
 from pygeotile.tile import Tile
 from typing import Dict, Final, List
 
-from app.common.bbox import BBOX
-from app.common.file import skip_file_creation
+from app.common.BBOX import BBOX
 from app.common.httpRetriever import httpRetriever, ExistsCheckRequest, RetrievalRequest
-from app.util import get_cache_path
+from app.common.util import get_cache_path, skip_file_creation
 
 CACHE_DIR_NAME_BASE = "xyz-"
 
@@ -43,7 +42,7 @@ def get_output_dir(url_template: str) -> str:
     dir_name = "{base}{url_part}".format(base = CACHE_DIR_NAME_BASE, url_part = re.sub("[^a-z0-9]", "", url_template, flags=re.IGNORECASE))
     return get_cache_path((dir_name,))
 
-def _identify_tiles(bbox: BBOX, zoom_min: int, zoom_max: int) -> Dict[int, Dict[int: List[int]]]:
+def _identify_tiles(bbox: BBOX, zoom_min: int, zoom_max: int) -> Dict[int, Dict[int, List[int]]]:
     tiles = dict()
     currentZoom = zoom_min
     while currentZoom <= zoom_max:
@@ -61,13 +60,13 @@ def _identify_tiles(bbox: BBOX, zoom_min: int, zoom_max: int) -> Dict[int, Dict[
         currentZoom += 1
     return tiles
 
-def _build_retrieval_requests(tiles: Dict[int, Dict[int: List[int]]], url_template: str, image_format: str, file_extension: str = None) -> List[RetrievalRequest]:
+def _build_retrieval_requests(tiles: Dict[int, Dict[int, List[int]]], url_template: str, image_format: str, file_extension: str = None) -> List[RetrievalRequest]:
     requests = list()
     url_format = _determine_format(url_template)
     for z, xs in tiles.items():
         for x, ys in xs.items():
             for y in ys:
-                path = _build_tile_path(z, x, y, image_format, file_extension)
+                path = _build_tile_path(z, x, y, url_template, image_format, file_extension)
                 if skip_file_creation(path):
                     continue
                 requests.append(RetrievalRequest(
@@ -77,12 +76,13 @@ def _build_retrieval_requests(tiles: Dict[int, Dict[int: List[int]]], url_templa
                 ))
     return requests
 
-def _build_tile_paths(tiles: Dict[int, Dict[int: List[int]]], url_template: str, image_format: str, file_extension: str = None) -> List[str]:
+def _build_tile_paths(tiles: Dict[int, Dict[int, List[int]]], url_template: str, image_format: str, file_extension: str = None) -> List[str]:
     paths = list()
     for z, xs in tiles.items():
         for x, ys in xs.items():
             for y in ys:
-                paths.append(_build_tile_path(z, x, y, image_format, file_extension))
+                paths.append(_build_tile_path(z, x, y, url_template, image_format, file_extension))
+    return paths
 
 def _determine_format(url_template: str) -> UrlFormat:
     if re.search(r"\{q\}", url_template):

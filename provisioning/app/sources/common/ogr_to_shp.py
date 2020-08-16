@@ -1,7 +1,7 @@
 from gdal import ogr
 from typing import List
 
-from app.common.bbox import BBOX
+from app.common.BBOX import BBOX
 
 def ogr_to_shp(
     bbox: BBOX,
