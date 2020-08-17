@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from app.common.bbox import BBOX
+from app.common.BBOX import BBOX
 from app.profiles.Profile import Profile
 from app.sources.canvec_wms import provision as canvec_wms_provisioner, OUTPUT_CRS_CODE as canvec_crs_code, OUTPUT_TYPE as canvec_output_type
 from app.sources.bc_hillshade import provision as bc_hillshade_provisioner, OUTPUT_CRS_CODE as bc_hillshade_crs_code, OUTPUT_TYPE as bc_hillshade_output_type

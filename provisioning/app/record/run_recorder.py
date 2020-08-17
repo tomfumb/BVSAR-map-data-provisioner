@@ -21,10 +21,19 @@ def record_run(result_dir: str, profile_name: str, bbox: BBOX) -> None:
     feature = ogr.Feature(feature_defn)
     feature.SetGeometryDirectly(geometry)
     cumulative_layer.CreateFeature(feature)
+
     kml_path = os.path.join(result_dir, "coverage.kml")
     if os.path.exists(kml_path):
         os.remove(kml_path)
     kml_driver = ogr.GetDriverByName("KML")
     kml_datasource = kml_driver.CreateDataSource(kml_path)
     kml_datasource.CopyLayer(cumulative_layer, "areas")
-    cumulative_layer, gpkg_datasource, kml_datasource = None, None, None
+
+    geojson_path = os.path.join(result_dir, "coverage.geojson")
+    if os.path.exists(geojson_path):
+        os.remove(geojson_path)
+    geojson_driver = ogr.GetDriverByName("GeoJSON")
+    geojson_datasource = geojson_driver.CreateDataSource(geojson_path)
+    geojson_datasource.CopyLayer(cumulative_layer, "areas")
+
+    cumulative_layer, gpkg_datasource, kml_datasource, geojson_datasource = None, None, None, None

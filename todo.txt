@@ -5,6 +5,8 @@
     - attempt to accommodate 429 "too many requests"
     - make repeated attempts with extending wait period and error if not all requests satisfied
 - browser-based tile viewer
+    - integrate viewer build into httpd image using multi-stage build and node image
+    - add links to viewer with path arg in output directory
 - refuse to run in annual data is not updated
 - Review covered areas with SAR team
 - Source data grouped into directories showing year of acquisition
