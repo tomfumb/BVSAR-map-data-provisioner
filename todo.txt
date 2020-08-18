@@ -7,6 +7,7 @@
 - browser-based tile viewer
     - integrate viewer build into httpd image using multi-stage build and node image
     - add links to viewer with path arg in output directory
+    - ** fix directory selection issue
 - refuse to run in annual data is not updated
 - Review covered areas with SAR team
 - Source data grouped into directories showing year of acquisition

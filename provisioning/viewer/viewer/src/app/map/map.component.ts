@@ -1,7 +1,7 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import * as l from 'leaflet';
-import { forkJoin, of, Observable, Observer } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators'
 import { environment } from 'src/environments/environment';
 
@@ -10,45 +10,60 @@ import { environment } from 'src/environments/environment';
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.less']
 })
-export class MapComponent implements AfterViewInit {
+export class MapComponent {
+
+  public directoryList: string[] = [];
+  public directorySelected: string;
+  public errorMessage: string;
 
   private readonly MAX_POSSIBLE_ZOOM = 22;
-
-  private componentInitObserver: Observer<void>;
-  private componentInitObservable: Observable<void> = Observable.create(observer => {
-    this.componentInitObserver = observer;
-  });
 
   constructor(
     http: HttpClient
   ) {
-    // TODO: hack around lack of query params because Angular app is not confiured for routing
-    const rootPath = `${environment.tile_domain}/${new URLSearchParams(window.location.search).get("path")}`;
-    forkJoin([
-      forkJoin(
-        Array(this.MAX_POSSIBLE_ZOOM).fill(undefined).map(
-          (_: undefined, i: number) => {
-            return http.head(`${rootPath}/${i}/`).pipe(map(_ => true)).pipe(catchError(_ => of(false)))
-          }
-        )
-      ).pipe(map(result => {
-        const validZooms = result.map((exists: boolean, idx: number) => {
-          return exists ? idx : undefined;
-        }).filter(entry => entry !== undefined);
-        return [Math.min(...validZooms), Math.max(...validZooms)];
-      })),
-      http.get(`${rootPath}/coverage.geojson`).pipe(map((response: HttpResponse<object>) => {
-        return response;
-      })),
-      this.componentInitObservable
-    ]).subscribe(initOutcomes => {
-      this.initMap(initOutcomes[0][0], initOutcomes[0][1], initOutcomes[1], rootPath);
+    http.get(`${environment.tile_domain}/`, {
+      responseType: "text"
+    }).subscribe((response: string) => {
+      this.directoryList = response.match(/<a href=".+">\s+.+<\/a>/gi).map(link => {
+        return link.replace(/<a href=".+">\s+/, "").replace(/\/?<\/a>/, "")
+      }).filter(link => {
+        return !link.match(/.DS_Store|viewer/i);
+      });
+      if (this.directoryList.length === 0) {
+        this.errorMessage = "No tiles. Tile generator must be run"
+      } else {
+        this.directorySelected = this.directoryList[0];
+        const rootPath = `${environment.tile_domain}/${this.directorySelected}`;
+        forkJoin([
+          forkJoin(
+            Array(this.MAX_POSSIBLE_ZOOM).fill(undefined).map(
+              (_: undefined, i: number) => {
+                return http.head(`${rootPath}/${i}/`).pipe(map(_ => true)).pipe(catchError(_ => of(false)))
+              }
+            )
+          ).pipe(map(result => {
+            const validZooms = result.map((exists: boolean, idx: number) => {
+              return exists ? idx : undefined;
+            }).filter(entry => entry !== undefined);
+            return [Math.min(...validZooms), Math.max(...validZooms)];
+          })),
+          http.get(`${rootPath}/coverage.geojson`).pipe(map((response: HttpResponse<object>) => {
+            return response;
+          }))
+        ]).subscribe(initOutcomes => {
+          this.initMap(initOutcomes[0][0], initOutcomes[0][1], initOutcomes[1], rootPath);
+        });
+      }
     });
   }
 
-  public ngAfterViewInit(): void {
-    this.componentInitObserver.next(null);
-    this.componentInitObserver.complete();
+  get directorySelectedAccess() {
+    return this.directorySelected;
+  }
+
+  set directorySelectedAccess(value) {
+    this.directorySelected = value;
+    console.warn("Not yet implemented - switch to different directory");
   }
 
   private initMap(minZoom: number, maxZoom: number, geojson: object, rootPath: string): void {

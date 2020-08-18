@@ -1,3 +1,21 @@
-<div id="map-container">
-    <div id="map"></div>
-</div>
+<ng-container [ngSwitch]="!!errorMessage">
+    <ng-container *ngSwitchCase="true">
+        <h4>{{ errorMessage }}</h4>
+    </ng-container>
+    <ng-container *ngSwitchCase="false">
+        <div
+            *ngIf="directoryList.length > 1"
+            id="tile-select-container">
+            <label for="directorySelected">Viewing Tiles: </label>
+            <select 
+                name="directorySelected" 
+                id="directorySelected"
+                [(ngModel)]="directorySelectedAccess">
+                <option *ngFor="let directory of directoryList" [ngValue]="directory">{{ directory }}</option>
+            </select>
+        </div>
+        <div id="map-container">
+            <div id="map"></div>
+        </div>
+    </ng-container>
+</ng-container>
