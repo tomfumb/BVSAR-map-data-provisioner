@@ -6,6 +6,7 @@
     - make repeated attempts with extending wait period and error if not all requests satisfied
 - browser-based tile viewer
     - integrate viewer build into httpd image using multi-stage build and node image
+        - node setup may have more success if using package.json, create with npm init
     - add links to viewer with path arg in output directory
     - ** fix directory selection issue
 - refuse to run in annual data is not updated
