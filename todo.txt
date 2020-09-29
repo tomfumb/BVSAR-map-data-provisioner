@@ -12,7 +12,6 @@
 - need some consistency in class file names, classes having their own files
 - black / isort
 - only provision 0.5x0.5 grid squares intersecting the drawn area to avoid filling unwanted gaps
-- permit multiple profile names per search area
 
 
 Hosting

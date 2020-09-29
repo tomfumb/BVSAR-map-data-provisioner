@@ -52,32 +52,33 @@ def get_bounding_box(geom: ogr.Geometry) -> ogr.Geometry:
 area_layer = datasource.GetLayerByIndex(0)
 area_division_args = list()
 while area_feature := area_layer.GetNextFeature():
-    profile_name = area_feature.GetFieldAsString("profile")
+    profile_names = area_feature.GetFieldAsString("profile")
     xyz_url = area_feature.GetFieldAsString("xyz_url")
-    if profile_name is None or profile_name == '' or xyz_url is None or xyz_url == '':
+    if profile_names is None or profile_names == '' or xyz_url is None or xyz_url == '':
         logging.error(f"profile and xyz_url are required text fields but are missing one or more features. Exiting")
         exit(1)
-    min_x, max_x, min_y, max_y = area_feature.GetGeometryRef().GetEnvelope()
-    logging.info(f"area {min_x},{min_y} {max_x},{max_y}. x diff: {max_x - min_x}, y diff: {max_y - min_y}")
-    reset_y = min_y
-    while min_x < max_x:
-        increment_x = min(BBOX_DIVISION, max_x - min_x)
-        min_y = reset_y
-        while min_y < max_y:
-            increment_y = min(BBOX_DIVISION, max_y - min_y)
-            this_max_x = min_x + increment_x
-            this_max_y = min_y + increment_y
-            logging.info(f"area division {min_x},{this_max_x} {min_y},{this_max_y}. x diff: {this_max_x - min_x}, y diff: {this_max_y - min_y}")
-            area_division_args.append((
-                min_x,
-                this_max_x,
-                min_y,
-                this_max_y,
-                profile_name,
-                xyz_url,
-            ))
-            min_y += increment_y
-        min_x += increment_x
+    for profile_name in list(map(lambda profile_names_part: profile_names_part.strip(), profile_names.split(","))):
+        min_x, max_x, min_y, max_y = area_feature.GetGeometryRef().GetEnvelope()
+        logging.info(f"area {min_x},{min_y} {max_x},{max_y}. x diff: {max_x - min_x}, y diff: {max_y - min_y}. Profile: {profile_name}")
+        reset_y = min_y
+        while min_x < max_x:
+            increment_x = min(BBOX_DIVISION, max_x - min_x)
+            min_y = reset_y
+            while min_y < max_y:
+                increment_y = min(BBOX_DIVISION, max_y - min_y)
+                this_max_x = min_x + increment_x
+                this_max_y = min_y + increment_y
+                logging.info(f"area division {min_x},{this_max_x} {min_y},{this_max_y}. x diff: {this_max_x - min_x}, y diff: {this_max_y - min_y}")
+                area_division_args.append((
+                    min_x,
+                    this_max_x,
+                    min_y,
+                    this_max_y,
+                    profile_name,
+                    xyz_url,
+                ))
+                min_y += increment_y
+            min_x += increment_x
 
 logging.info(f"Require {len(area_division_args)} export(s) at {BBOX_DIVISION}x{BBOX_DIVISION}")
 for idx, args in enumerate(area_division_args):
