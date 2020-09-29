@@ -7,14 +7,13 @@
 - browser-based tile viewer
     - integrate viewer build into httpd image using multi-stage build and node image
         - node setup may have more success if using package.json, create with npm init
-    - add links to viewer with path arg in output directory
     - ** fix directory selection issue
 - refuse to run in annual data is not updated
 - Review covered areas with SAR team
 - Source data grouped into directories showing year of acquisition
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
 - need some consistency in class file names, classes having their own files
-- black / isort / flake8 validation
+- black / isort
 
 Hosting
 - Raspberry Pi should only require 1.2A if no peripherals

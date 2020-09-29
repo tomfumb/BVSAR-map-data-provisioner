@@ -17,5 +17,3 @@ RUN mkdir -p /tiledata/areas
 
 COPY data /data
 COPY app /app
-
-CMD tail -f /dev/null
