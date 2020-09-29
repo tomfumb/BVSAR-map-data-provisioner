@@ -8,7 +8,7 @@ from pygeotile.tile import Tile
 from typing import Dict, Final, List
 
 from app.common.BBOX import BBOX
-from app.common.httpRetriever import httpRetriever, ExistsCheckRequest, RetrievalRequest
+from app.common.http_retriever import retrieve, ExistsCheckRequest, RetrievalRequest
 from app.common.util import get_cache_path, skip_file_creation
 
 CACHE_DIR_NAME_BASE = "xyz-"
@@ -19,7 +19,7 @@ class UrlFormat(Enum):
 
 def provision(bbox: BBOX, url_template: str, zoom_min: int, zoom_max: int, image_format: str, file_extension: str = None) -> str:
     tiles = _identify_tiles(bbox, zoom_min, zoom_max)
-    httpRetriever(_build_retrieval_requests(
+    retrieve(_build_retrieval_requests(
         tiles,
         url_template,
         image_format,

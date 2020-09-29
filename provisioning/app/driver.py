@@ -10,7 +10,7 @@ from gdal import ConfigurePythonLogging, UseExceptions
 from shutil import copyfile, move, rmtree
 
 from app.common.BBOX import BBOX
-from app.common.httpRetriever import check_exists
+from app.common.http_retriever import check_exists
 from app.merging.merge_xyz_tiles import merge_xyz_tiles
 from app.profiles.hybrid import get_profile as profile_hybrid
 from app.profiles.xyzplus import get_profile as profile_xyzplus

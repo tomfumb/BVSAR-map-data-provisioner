@@ -11,7 +11,7 @@ from typing import Dict, Final, List, Tuple
 
 from app.common.BBOX import BBOX
 from app.common.get_datasource_from_bbox import get_datasource_from_bbox, BBOX_LAYER_NAME
-from app.common.httpRetriever import httpRetriever, RetrievalRequest
+from app.common.http_retriever import retrieve, RetrievalRequest
 from app.tilemill.ProjectLayerType import ProjectLayerType
 from app.common.util import get_run_data_path, get_cache_path, swallow_unimportant_warp_error, skip_file_creation, remove_intermediaries
 
@@ -49,7 +49,7 @@ def provision(bbox: BBOX, base_url: str, wms_properties: WmsProperties, wms_crs_
     grid_for_retrieval = _update_grid_for_retrieval(base_url, grid, layers, styles, wms_crs_code, image_format, cache_directory, run_directory)
     grid_for_missing = _filter_grid_for_missing(grid_for_retrieval)
     requests = _convert_grid_to_requests(grid_for_missing, image_format)
-    httpRetriever(requests)
+    retrieve(requests)
     if image_format != TARGET_FILE_FORMAT:
         _convert_to_tif(grid_for_missing, wms_crs_code)
     return _create_run_output(bbox, grid_for_retrieval, run_id)

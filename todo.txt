@@ -1,9 +1,6 @@
 - merge all output areas in separate layer - main store is not kml, only merge is kml
 - HTTP Retriever
-    - use async http?
-    - expand on heuristics to periodically check if we still have the optimal concurrency
-    - attempt to accommodate 429 "too many requests"
-    - make repeated attempts with extending wait period and error if not all requests satisfied
+    - consider parallel async requests
 - browser-based tile viewer
     - integrate viewer build into httpd image using multi-stage build and node image
         - node setup may have more success if using package.json, create with npm init
@@ -14,6 +11,9 @@
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
 - need some consistency in class file names, classes having their own files
 - black / isort
+- only provision 0.5x0.5 grid squares intersecting the drawn area to avoid filling unwanted gaps
+- permit multiple profile names per search area
+
 
 Hosting
 - Raspberry Pi should only require 1.2A if no peripherals

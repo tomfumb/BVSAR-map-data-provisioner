@@ -8,7 +8,7 @@ from typing import Final, List
 
 from app.common.BBOX import BBOX
 from app.common.get_datasource_from_bbox import get_datasource_from_bbox, BBOX_LAYER_NAME
-from app.common.httpRetriever import httpRetriever, RetrievalRequest
+from app.common.http_retriever import retrieve, RetrievalRequest
 from app.tilemill.ProjectLayerType import ProjectLayerType
 from app.common.util import get_data_path, get_cache_path, get_run_data_path, swallow_unimportant_warp_error, skip_file_creation, remove_intermediaries
 
@@ -47,7 +47,7 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
             ))
 
     to_generate = list(filter(lambda generation_request: not skip_file_creation(generation_request.hs_path), bbox_cells))
-    httpRetriever(to_generate)
+    retrieve(to_generate)
 
     for generation_request in to_generate:
         with zipfile.ZipFile(generation_request.path, "r") as zip_ref:
