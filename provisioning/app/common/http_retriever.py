@@ -47,7 +47,7 @@ def retrieve(retrieval_requests: List[RetrievalRequest]):
             time.sleep(delay)
             logging.info("...resuming")
         while len(requests_remaining) > 0:
-            if len(retrieval_requests) >= 10 and len(retrieval_requests) % len(requests_remaining) == 0:
+            if len(retrieval_requests) >= 10 and len(requests_remaining) % round(len(retrieval_requests) / 10) == 0:
                 logging.info(f"{len(requests_remaining)} remaining")
             request = requests_remaining.pop(0)
             url = request.url

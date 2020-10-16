@@ -19,7 +19,7 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     datasource = driver.Open(get_local_features_path())
     result = ogr_to_shp(
         bbox,
-        datasource.GetLayerByName("shelters"),
+        [datasource.GetLayerByName("shelters")],
         os.path.join(run_directory, "shelters.shp"),
         "shelters",
         OUTPUT_CRS_CODE

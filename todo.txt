@@ -1,24 +1,18 @@
-- merge all output areas in separate layer - main store is not kml, only merge is kml
-- HTTP Retriever
-    - consider parallel async requests
+- xyz (no plus) profile
+- add waterways and wetlands to xyzplus
+    - need lighter blue for lines
+    - some problem with bbox clip for waterways - does not match over layers bbox clip (in different CRS)
+- os-specific conda environment files
 - browser-based tile viewer
     - integrate viewer build into httpd image using multi-stage build and node image
         - node setup may have more success if using package.json, create with npm init
     - ** fix directory selection issue
-- refuse to run in annual data is not updated
-- Review covered areas with SAR team
-- Source data grouped into directories showing year of acquisition
+- file sharing via httpd
+- refuse to run if annual data is not updated
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
 - need some consistency in class file names, classes having their own files
 - black / isort
-- only provision 0.5x0.5 grid squares intersecting the drawn area to avoid filling unwanted gaps
+- only provision grid squares intersecting the drawn area to avoid filling unwanted gaps
 
-
-Hosting
-- Raspberry Pi should only require 1.2A if no peripherals
-- Battery pack may be more reliable / simpler than car charger with UPS
-    - check how much battery power can be expected
-    - webpage could show remaining battery
-    - e.g. Pi Juice
-- Ruggedised case could be appropriate
-- External wifi antenna may be necessary for a good signal when broadcasting
+- generally poor approach to managing merging & edge detection - lots of assumptions in there about what the profile does
+    - would be nice to better encapsulate merge / edge logic in profile

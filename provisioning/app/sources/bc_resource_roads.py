@@ -19,7 +19,7 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     datasource = driver.Open(get_data_path(("FTEN_ROAD_SECTION_LINES_SVW","FTEN_RS_LN_line.shp")))
     result = ogr_to_shp(
         bbox,
-        datasource.GetLayerByIndex(0),
+        [datasource.GetLayerByIndex(0)],
         os.path.join(run_directory, "bc_resource_roads.shp"),
         "bc_resource_roads",
         OUTPUT_CRS_CODE,

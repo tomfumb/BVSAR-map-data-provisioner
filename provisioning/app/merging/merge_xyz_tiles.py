@@ -10,7 +10,16 @@ def merge_xyz_tiles(base_path: str, overlay_path: str, output_path: str) -> None
     for i in range(256):
         for j in range(256):
             coord = (i,j)
-            values = overlay_image.getpixel(coord)
-            if values[3] > 0:
-                base_image.putpixel(coord, values)
+            overlay_values = overlay_image.getpixel(coord)
+            if overlay_values[3] > 0:
+                base_image.putpixel(coord, combine_pixels(base_image.getpixel(coord) + (255,), overlay_values))
     base_image.quantize(method=2).save(output_path)
+
+
+# https://stackoverflow.com/a/52993128/519575
+def combine_pixels(base_rgba, overlay_rgba):
+    alpha = 255 - ((255 - base_rgba[3]) * (255 - overlay_rgba[3]) / 255)
+    red   = (base_rgba[0] * (255 - overlay_rgba[3]) + overlay_rgba[0] * overlay_rgba[3]) / 255
+    green = (base_rgba[1] * (255 - overlay_rgba[3]) + overlay_rgba[1] * overlay_rgba[3]) / 255
+    blue  = (base_rgba[2] * (255 - overlay_rgba[3]) + overlay_rgba[2] * overlay_rgba[3]) / 255
+    return (int(red), int(green), int(blue), int(alpha))

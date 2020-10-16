@@ -16,7 +16,7 @@ def get_datasource_from_bbox(bbox: BBOX, output_dir: str) -> None:
         datasource = driver.CreateDataSource(gpkg_path)
     layer = datasource.GetLayerByName(BBOX_LAYER_NAME)
     srs = osr.SpatialReference()
-    srs.SetFromUserInput(bbox.CRS_CODE)
+    srs.SetFromUserInput(bbox.crs_code)
     if not layer:
         layer = datasource.CreateLayer(BBOX_LAYER_NAME, srs, ogr.wkbPolygon)
     if layer.GetFeatureCount() == 0:

@@ -14,6 +14,7 @@ from app.common.http_retriever import check_exists
 from app.merging.merge_xyz_tiles import merge_xyz_tiles
 from app.profiles.hybrid import get_profile as profile_hybrid
 from app.profiles.xyzplus import get_profile as profile_xyzplus
+from app.profiles.xyz import get_profile as profile_xyz
 from app.record.run_recorder import record_run
 from app.sources.xyz_service import provision as xyz_provisioner, get_output_dir as xyz_get_output_dir, build_exists_check_requests as xyz_check_builder
 from app.tilemill.api_client import create_or_update_project, request_export
@@ -28,6 +29,7 @@ def provision(bbox: BBOX, profile_name: str, xyz_url: str) -> None:
     profiles = {
         "hybrid": profile_hybrid,
         "xyzplus": profile_xyzplus,
+        "xyz": profile_xyz,
     }
     try:
         profile = profiles[profile_name](bbox, run_id)
@@ -46,24 +48,25 @@ def provision(bbox: BBOX, profile_name: str, xyz_url: str) -> None:
         zoom_max=profile.zoom_max,
         name=profile_name
     )
-    project_creation_properties = ProjectCreationProperties(
-        layers=layers,
-        mss=stylesheets,
-        **dict(project_properties)
-    )
-    tilemill_url = os.environ.get("TILEMILL_URL", "http://localhost:20009")
+    if len(layers) > 0:
+        project_creation_properties = ProjectCreationProperties(
+            layers=layers,
+            mss=stylesheets,
+            **dict(project_properties)
+        )
+        tilemill_url = os.environ.get("TILEMILL_URL", "http://localhost:20009")
 
-    create_or_update_project(tilemill_url, project_creation_properties)
-    export_file = request_export(tilemill_url, project_properties)
-    result_dir_temp = get_result_path((run_id,))
-    logging.info("Calling mb-util")
-    _, stderr = subprocess.Popen([os.environ["MBUTIL_LOCATION"], get_export_path((export_file,)), result_dir_temp], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
-    if stderr:
-        for line in stderr.decode("ascii").split(os.linesep):
-            logging.warn(line)
-    logging.info("mb-util complete")
-    if remove_intermediaries():
-        delete_directory_contents(get_export_path())
+        create_or_update_project(tilemill_url, project_creation_properties)
+        export_file = request_export(tilemill_url, project_properties)
+        result_dir_temp = get_result_path((run_id,))
+        logging.info("Calling mb-util")
+        _, stderr = subprocess.Popen([os.environ["MBUTIL_LOCATION"], get_export_path((export_file,)), result_dir_temp], stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
+        if stderr:
+            for line in stderr.decode("ascii").split(os.linesep):
+                logging.warn(line)
+        logging.info("mb-util complete")
+        if remove_intermediaries():
+            delete_directory_contents(get_export_path())
 
     if profile.has_xyz():
         xyz_paths = xyz_provisioner(bbox, xyz_url, profile.zoom_xyz_min, profile.zoom_xyz_max, "image/jpeg", "png")
