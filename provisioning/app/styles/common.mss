@@ -10,17 +10,14 @@
   [zoom < 12] {
     line-width:0;
   }
-  [zoom = 12] {
-    line-width:0.5;
+  [zoom = 12][zoom = 13] {
+    line-width:1;
   }
-  [zoom = 13] {
-    line-width: 1;
-  }
-  [zoom = 14] {
-    line-width: 1.5;
-  }
-  [zoom >= 15] {
+  [zoom = 14][zoom = 15] {
     line-width: 2;
+  }
+  [zoom > 15] {
+    line-width: 3;
   }
 }
 
@@ -54,20 +51,21 @@
 }
 
 .shelters {
-  marker-fill:#f45;
-  marker-line-color:#813;
-  marker-allow-overlap:true;
-  marker-ignore-placement:true;
-  [zoom < 12] {
-    marker-width: 0;
-  }
-  [zoom >= 12][zoom < 14] {
-    marker-width:4;
+  [zoom >= 12] {
+    marker-file: url(/icons/cabin.png);
+    marker-width:16;
+    marker-height:16;
   }
   [zoom = 14] {
-    marker-width:6;
+    marker-width:20;
+    marker-height:20;
   }
-  [zoom >= 15] {
-    marker-width:8;
+  [zoom = 15] {
+    marker-width:24;
+    marker-height:24;
+  }
+  [zoom >= 16] {
+    marker-width:28;
+    marker-height:28;
   }
 }

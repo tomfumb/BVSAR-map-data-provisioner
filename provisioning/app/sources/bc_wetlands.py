@@ -11,9 +11,9 @@ from app.sources.common.ogr_to_shp import ogr_to_shp
 from app.tilemill.ProjectLayerType import ProjectLayerType
 
 
-CACHE_DIR_NAME: Final = "bc-waterways"
+CACHE_DIR_NAME: Final = "bc-wetlands"
 OUTPUT_CRS_CODE: Final = "EPSG:3857"
-OUTPUT_TYPE: Final = ProjectLayerType.LINESTRING
+OUTPUT_TYPE: Final = ProjectLayerType.POLYGON
 
 def provision(bbox: BBOX, run_id: str) -> List[str]:
     logging.info("Retrieving BC Freshwater Atlas - this could take a while the first time")
@@ -25,9 +25,9 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     datasource = driver.Open(fgdb)
     result = ogr_to_shp(
         bbox,
-        [datasource.GetLayerByName("FWA_ROUTES_SP")],
-        os.path.join(run_directory, "bc_waterways.shp"),
-        "bc_waterways",
+        [datasource.GetLayerByName("FWA_WETLANDS_POLY")],
+        os.path.join(run_directory, "bc_wetlands.shp"),
+        "bc_wetlands",
         OUTPUT_CRS_CODE,
     )
     datasource = None

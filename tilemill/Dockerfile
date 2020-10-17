@@ -26,4 +26,6 @@ COPY run_tilemill.sh run_tilemill.sh
 
 RUN mkdir -p /tiledata/input
 
+COPY icons /icons
+
 ENTRYPOINT [ "/opt/tilemill/run_tilemill.sh" ]

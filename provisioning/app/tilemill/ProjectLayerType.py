@@ -4,3 +4,4 @@ class ProjectLayerType(str, Enum):
     RASTER = "raster"
     LINESTRING = "linestring"
     POINT = "point"
+    POLYGON = "polygon"

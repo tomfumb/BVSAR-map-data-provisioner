@@ -100,6 +100,7 @@ def _convert_project_layer_to_layer(project_layer: ProjectLayer) -> Dict[str, ob
     bbox_calculators[ProjectLayerType.RASTER.value] = _getExtentFromRaster
     bbox_calculators[ProjectLayerType.LINESTRING.value] = _getExtentFromShp
     bbox_calculators[ProjectLayerType.POINT.value] = _getExtentFromShp
+    bbox_calculators[ProjectLayerType.POLYGON.value] = _getExtentFromShp
     if project_layer.type.value not in bbox_calculators:
         raise Exception(f"Do not understand {project_layer.type.value}, unable to calculate BBOX")
     layer_bbox = bbox_calculators[project_layer.type.value](project_layer.path, project_layer.crs_code)

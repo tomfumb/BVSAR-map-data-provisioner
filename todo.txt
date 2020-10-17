@@ -1,7 +1,7 @@
+- xyzplus-winter profile (xyzplus without water info and with avi zones. Only zones and avalanche paths?) Ensure zones are at the bottom of the layer stack
 - xyz (no plus) profile
-- add waterways and wetlands to xyzplus
-    - need lighter blue for lines
-    - some problem with bbox clip for waterways - does not match over layers bbox clip (in different CRS)
+    - needs refactor to make logic specific to profiles, not driver working around profile attributes
+- remove BVSAR-map-data-runner and put docker-compose in main project
 - os-specific conda environment files
 - browser-based tile viewer
     - integrate viewer build into httpd image using multi-stage build and node image
@@ -13,6 +13,4 @@
 - need some consistency in class file names, classes having their own files
 - black / isort
 - only provision grid squares intersecting the drawn area to avoid filling unwanted gaps
-
-- generally poor approach to managing merging & edge detection - lots of assumptions in there about what the profile does
-    - would be nice to better encapsulate merge / edge logic in profile
+- auto-push to Docker Hub from master if test succeeds
