@@ -31,7 +31,7 @@ def check_exists(check_requests: List[ExistsCheckRequest]) -> None:
     for i, request in enumerate(check_requests):
         if i > 0 and i % 100 == 0: logging.info(log_format.format(i))
         if requests.head(request.url).status_code != 200:
-            raise ValueError(f"{request.url} does not exist")
+            logging.warn(f"{request.url} does not exist")
     logging.info(log_format.format(len(check_requests)))
 
 

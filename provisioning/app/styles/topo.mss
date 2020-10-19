@@ -1,4 +1,4 @@
-.bc-hillshade [zoom <= 15] {
+.bc-hillshade {
   raster-opacity:0.3;
 }
 
@@ -11,4 +11,4 @@
 .canvec-150000 [zoom = 12] { raster-opacity: 1; }
 .canvec-70000 [zoom = 13] { raster-opacity: 1; }
 .canvec-35000 [zoom = 14] { raster-opacity: 1; }
-.bc-topo-20000[zoom = 15] { raster-opacity: 1; }
+.bc-topo-20000[zoom >= 15] { raster-opacity: 1; }

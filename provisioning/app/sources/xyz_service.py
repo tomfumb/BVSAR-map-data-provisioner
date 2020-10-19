@@ -25,7 +25,7 @@ def provision(bbox: BBOX, url_template: str, zoom_min: int, zoom_max: int, image
         image_format,
         file_extension,
     ))
-    return _build_tile_paths(tiles, url_template, image_format, file_extension)
+    return get_output_dir(url_template)
 
 def build_exists_check_requests(bbox: BBOX, url_template: str, zoom_min: int, zoom_max: int, image_format: str, file_extension: str = None) -> List[ExistsCheckRequest]:
     requests = list()
