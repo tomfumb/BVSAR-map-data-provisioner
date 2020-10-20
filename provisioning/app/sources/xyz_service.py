@@ -4,6 +4,7 @@ import math
 import logging
 
 from enum import Enum
+from pydantic import BaseModel
 from pygeotile.tile import Tile
 from typing import Dict, Final, List
 
@@ -17,7 +18,11 @@ class UrlFormat(Enum):
     XYZ = 0
     QUADKEY = 1
 
-def provision(bbox: BBOX, url_template: str, zoom_min: int, zoom_max: int, image_format: str, file_extension: str = None) -> str:
+class ProvisionResult(BaseModel):
+    tile_paths: List[str]
+    tile_dir: str
+
+def provision(bbox: BBOX, url_template: str, zoom_min: int, zoom_max: int, image_format: str, file_extension: str = None) -> ProvisionResult:
     tiles = _identify_tiles(bbox, zoom_min, zoom_max)
     retrieve(_build_retrieval_requests(
         tiles,
@@ -25,7 +30,10 @@ def provision(bbox: BBOX, url_template: str, zoom_min: int, zoom_max: int, image
         image_format,
         file_extension,
     ))
-    return get_output_dir(url_template)
+    return ProvisionResult(
+        tile_dir=get_output_dir(url_template),
+        tile_paths=_build_tile_paths(tiles, url_template, image_format, file_extension)
+    )
 
 def build_exists_check_requests(bbox: BBOX, url_template: str, zoom_min: int, zoom_max: int, image_format: str, file_extension: str = None) -> List[ExistsCheckRequest]:
     requests = list()

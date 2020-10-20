@@ -17,7 +17,7 @@ push-tilemill:
 build-http:
 	docker build httpd -t $(HTTPD_IMAGE_NAME)
 start-http:
-	docker run -p 8001:80 -v $(DATA_LOCATION)/result:/usr/local/apache2/htdocs -d --name ${HTTPD_NAME} --rm $(HTTPD_IMAGE_NAME)
+	docker run -p 8011:80 -v $(DATA_LOCATION)/result:/usr/local/apache2/htdocs -d --name ${HTTPD_NAME} --rm $(HTTPD_IMAGE_NAME)
 stop-http:
 	docker stop ${HTTPD_NAME}
 push-http:

@@ -1,5 +1,5 @@
 .waterways {
-  line-color: #0E97D3;
+  line-color: #0f5ed4;
   line-opacity: 0.7;
   [zoom < 14] {
     line-width: 0;
@@ -16,7 +16,7 @@
 }
 
 .wetlands {
-  polygon-fill: #0E97D3;
+  polygon-fill: #0f5ed4;
   [zoom < 14] {
     polygon-opacity: 0;
   }

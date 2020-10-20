@@ -1,6 +1,4 @@
-- xyzplus-winter profile (xyzplus without water info and with avi zones. Only zones and avalanche paths?) Ensure zones are at the bottom of the layer stack
-- xyz (no plus) profile
-    - needs refactor to make logic specific to profiles, not driver working around profile attributes
+- Make unused sections of xyz tiles transparent and this should fix the edge stitching issue. Don't need to pull in existing tiles for merge for non-edge tiles - non-edge tiles can use raw xyz and overwrite any existing. edges.py should have a function get_edge_tiles
 - try to detect stalled tilemill issue 
 - request permission for FTEN roads reproduction: https://www2.gov.bc.ca/gov/content/home/copyright
 - add hunting profile with private property

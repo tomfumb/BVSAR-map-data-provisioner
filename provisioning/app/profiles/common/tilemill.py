@@ -4,6 +4,7 @@ import os
 import subprocess
 
 from typing import List
+from pydantic import BaseModel
 
 from app.common.BBOX import BBOX
 from app.common.util import get_style_path, get_result_path, get_export_path, delete_directory_contents, remove_intermediaries
@@ -13,7 +14,13 @@ from app.tilemill.ProjectCreationProperties import ProjectCreationProperties
 from app.tilemill.ProjectProperties import ProjectProperties
 
 
-def generate_tiles(layers: List[ProjectLayer], stylesheets: List[str], bbox: BBOX, profile_name: str, zoom_min: int, zoom_max: int, run_id: str) -> str:
+class GenerateResult(BaseModel):
+    tile_dir: str
+    tile_paths: List[str]
+
+
+def generate_tiles(layers: List[ProjectLayer], stylesheets: List[str], bbox: BBOX, profile_name: str, zoom_min: int, zoom_max: int, run_id: str) -> GenerateResult:
+    logging.info("Generating tiles from source data")
     stylesheet_content = list()
     for stylesheet in stylesheets:
         with open(get_style_path(f"{stylesheet}.mss"), "r") as f:
@@ -42,6 +49,6 @@ def generate_tiles(layers: List[ProjectLayer], stylesheets: List[str], bbox: BBO
         logging.info("mb-util complete")
         if remove_intermediaries():
             delete_directory_contents(get_export_path())
-        # return [ filename for filename in glob.iglob(os.path.join(result_dir_temp, "**", "*.png"), recursive=True) ]
-        return result_dir_temp
-    return None
+        return GenerateResult(
+            tile_dir=result_dir_temp,
+            tile_paths=[ filename for filename in glob.iglob(os.path.join(result_dir_temp, "**", "*.png"), recursive=True) ])

@@ -11,6 +11,8 @@ def merge_xyz_tiles(base_path: str, overlay_path: str, output_path: str) -> None
         for j in range(256):
             coord = (i,j)
             overlay_values = overlay_image.getpixel(coord)
+            if len(overlay_values) == 3:
+                overlay_values += (255,)
             if overlay_values[3] > 0:
                 base_image.putpixel(coord, combine_pixels(base_image.getpixel(coord) + (255,), overlay_values))
     base_image.quantize(method=2).save(output_path)

@@ -10,6 +10,10 @@ from app.sources.shelters import provision as shelters_provisioner, OUTPUT_CRS_C
 from app.sources.trails import provision as trails_provisioner, OUTPUT_CRS_CODE as trails_crs_code, OUTPUT_TYPE as trails_output_type
 from app.sources.bc_waterways import provision as bc_waterways_provisioner, OUTPUT_CRS_CODE as bc_waterways_crs_code, OUTPUT_TYPE as bc_waterways_output_type
 from app.sources.bc_wetlands import provision as bc_wetlands_provisioner, OUTPUT_CRS_CODE as bc_wetlands_crs_code, OUTPUT_TYPE as bc_wetlands_output_type
+from app.sources.bc_ates_zones import provision as bc_ates_zones_provisioner, OUTPUT_CRS_CODE as bc_ates_zones_crs_code, OUTPUT_TYPE as bc_ates_zones_output_type
+from app.sources.bc_ates_av_paths import provision as bc_ates_av_paths_provisioner, OUTPUT_CRS_CODE as bc_ates_av_paths_crs_code, OUTPUT_TYPE as bc_ates_av_paths_output_type
+from app.sources.bc_ates_dec_points import provision as bc_ates_dec_points_provisioner, OUTPUT_CRS_CODE as bc_ates_dec_points_crs_code, OUTPUT_TYPE as bc_ates_dec_points_output_type
+from app.sources.bc_ates_poi import provision as bc_ates_poi_provisioner, OUTPUT_CRS_CODE as bc_ates_poi_crs_code, OUTPUT_TYPE as bc_ates_poi_output_type
 
 
 def canvec(bbox: BBOX, run_id: str, scales: List[int]) -> List[ProjectLayer]:
@@ -62,4 +66,24 @@ def bc_waterways(bbox: BBOX, run_id: str) -> List[ProjectLayer]:
 def bc_wetlands(bbox: BBOX, run_id: str) -> List[ProjectLayer]:
     return [
         ProjectLayer(path=bc_wetlands_provisioner(bbox, run_id)[0], style_class="wetlands", crs_code=bc_wetlands_crs_code, type=bc_wetlands_output_type)
+    ]
+
+def bc_ates_zones(bbox: BBOX, run_id: str) -> List[ProjectLayer]:
+    return [
+        ProjectLayer(path=bc_ates_zones_provisioner(bbox, run_id)[0], style_class="bc-ates-zones", crs_code=bc_ates_zones_crs_code, type=bc_ates_zones_output_type)
+    ]
+
+def bc_ates_avpaths(bbox: BBOX, run_id: str) -> List[ProjectLayer]:
+    return [
+        ProjectLayer(path=bc_ates_av_paths_provisioner(bbox, run_id)[0], style_class="bc-ates-av-paths", crs_code=bc_ates_av_paths_crs_code, type=bc_ates_av_paths_output_type)
+    ]
+
+def bc_ates_dec_points(bbox: BBOX, run_id: str) -> List[ProjectLayer]:
+    return [
+        ProjectLayer(path=bc_ates_dec_points_provisioner(bbox, run_id)[0], style_class="bc-ates-dec-points", crs_code=bc_ates_dec_points_crs_code, type=bc_ates_dec_points_output_type)
+    ]
+
+def bc_ates_poi(bbox: BBOX, run_id: str) -> List[ProjectLayer]:
+    return [
+        ProjectLayer(path=bc_ates_poi_provisioner(bbox, run_id)[0], style_class="bc-ates-poi", crs_code=bc_ates_poi_crs_code, type=bc_ates_poi_output_type)
     ]

@@ -65,7 +65,7 @@ def merge_dirs(source_root: str, dest_root: str) -> None:
         if not os.path.exists(dest_dir):
             os.makedirs(dest_dir)
         for filename in files:
-            os.replace(
+            shutil.move(
                 os.path.join(path, filename),
                 os.path.join(dest_dir, filename)
             )
@@ -84,7 +84,12 @@ def configure_logging():
     handlers = [logging.StreamHandler(stream = sys.stdout),]
     logging.basicConfig(handlers = handlers, level = logLevelMapping.get(requestedLogLevel, logging.INFO), format = '%(levelname)s %(asctime)s %(message)s')
 
-    ConfigurePythonLogging(logging.getLogger().name, logging.getLogger().level == logging.DEBUG)
+    logger_name = "gdal"
+    enable_debug = logging.getLogger().level == logging.DEBUG
+    ConfigurePythonLogging(logger_name, enable_debug)
+    if not enable_debug:
+        # suppress noisy GDAL log output as it is meaningless to most users
+        logging.getLogger(logger_name).setLevel(logging.ERROR)
     UseExceptions()
 
 def swallow_unimportant_warp_error(ex: Exception) -> None:

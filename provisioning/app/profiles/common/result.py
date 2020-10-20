@@ -23,10 +23,12 @@ def add_or_update(source_dir: str, dest_dir: str):
                     if len(y_file_nums) > 1:
                         edge_tiles.append(os.path.join(zoom_dir, x_mid_dir, f"{y_file_nums[-1]}.png"))
     existing_edge_tiles = [edge_tile for edge_tile in edge_tiles if os.path.exists(os.path.join(dest_dir, edge_tile))]
-    for idx, edge_tile in enumerate(existing_edge_tiles):
-        logging.info(f"Stitching edge tile {idx + 1} of {len(existing_edge_tiles)} to prior output {edge_tile}")
-        new_edge_tile_path = os.path.join(source_dir, edge_tile)
-        merge_xyz_tiles(os.path.join(dest_dir, edge_tile), new_edge_tile_path, new_edge_tile_path)
+    if len(existing_edge_tiles) > 0:
+        logging.info(f"Stitching {len(existing_edge_tiles)} tile(s)")
+        for idx, edge_tile in enumerate(existing_edge_tiles):
+            logging.debug(f"Stitching edge tile {idx + 1} of {len(existing_edge_tiles)} to prior output {edge_tile}")
+            new_edge_tile_path = os.path.join(source_dir, edge_tile)
+            merge_xyz_tiles(os.path.join(dest_dir, edge_tile), new_edge_tile_path, new_edge_tile_path)
 
     logging.info("Updating result directories with latest export")
     merge_dirs(source_dir, dest_dir)
