@@ -4,8 +4,6 @@ from typing import Dict, Final, Tuple
 from pydantic import BaseModel, validator
 from pyproj import Proj, transform, Transformer, CRS
 
-from app.common.validation import less_than_or_equal_to_other
-
 class BBOX(BaseModel):
 
     DEFAULT_CRS_CODE = "EPSG:4326"

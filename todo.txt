@@ -1,4 +1,6 @@
 - Make unused sections of xyz tiles transparent and this should fix the edge stitching issue. Don't need to pull in existing tiles for merge for non-edge tiles - non-edge tiles can use raw xyz and overwrite any existing. edges.py should have a function get_edge_tiles
+    - https://stackoverflow.com/questions/24165769/tiling-an-image-up-into-xyz-tiles
+- move from common to profiles/common where appropriate
 - try to detect stalled tilemill issue 
 - request permission for FTEN roads reproduction: https://www2.gov.bc.ca/gov/content/home/copyright
 - add hunting profile with private property

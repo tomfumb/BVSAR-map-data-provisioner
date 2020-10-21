@@ -1,0 +1,13 @@
+repos:
+# Disabled isort on pre-commit due to conflicts.
+# Encountered a situation in which neither pre-commit hook could complete because both modified the same import block in different ways.
+# This discussion https://github.com/psf/black/issues/333 indicates that an upcoming version of isort may have a black-compatible profile.
+-   repo: https://github.com/ambv/black
+    rev: stable
+    hooks:
+    - id: black
+      language_version: python3.7
+-   repo: https://gitlab.com/pycqa/flake8
+    rev: 3.7.9
+    hooks:
+    - id: flake8
