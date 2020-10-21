@@ -8,6 +8,7 @@ from app.common.BBOX import BBOX
 BBOX_LAYER_NAME: Final = "bbox"
 BBOX_GPKG_NAME: Final = "bbox.gpkg"
 
+
 def get_datasource_from_bbox(bbox: BBOX, output_dir: str) -> None:
     driver = ogr.GetDriverByName("GPKG")
     gpkg_path = os.path.join(output_dir, BBOX_GPKG_NAME)

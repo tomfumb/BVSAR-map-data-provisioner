@@ -12,11 +12,14 @@ CACHE_DIR_NAME: Final = "bc-resource-roads"
 OUTPUT_CRS_CODE: Final = "EPSG:3857"
 OUTPUT_TYPE: Final = ProjectLayerType.LINESTRING
 
+
 def provision(bbox: BBOX, run_id: str) -> List[str]:
     run_directory = get_run_data_path(run_id, (CACHE_DIR_NAME,))
     os.makedirs(run_directory)
     driver = ogr.GetDriverByName("ESRI Shapefile")
-    datasource = driver.Open(get_data_path(("FTEN_ROAD_SECTION_LINES_SVW","FTEN_RS_LN_line.shp")))
+    datasource = driver.Open(
+        get_data_path(("FTEN_ROAD_SECTION_LINES_SVW", "FTEN_RS_LN_line.shp"))
+    )
     result = ogr_to_shp(
         bbox,
         [datasource.GetLayerByIndex(0)],

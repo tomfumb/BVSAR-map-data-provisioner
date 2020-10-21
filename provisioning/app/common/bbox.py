@@ -1,8 +1,6 @@
-import math
-from gdal import ogr, osr
-from typing import Dict, Final, Tuple
-from pydantic import BaseModel, validator
-from pyproj import Proj, transform, Transformer, CRS
+from gdal import ogr
+from pydantic import BaseModel
+
 
 class BBOX(BaseModel):
 
@@ -13,7 +11,6 @@ class BBOX(BaseModel):
     min_x: float
     min_y: float
     crs_code: str = DEFAULT_CRS_CODE
-
 
     def as_tuple(self):
         return (self.min_x, self.min_y, self.max_x, self.max_y)

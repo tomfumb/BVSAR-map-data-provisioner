@@ -4,6 +4,7 @@ from gdal import ogr, osr
 
 from app.common.BBOX import BBOX
 
+
 def record_run(result_dir: str, profile_name: str, bbox: BBOX) -> None:
     layer_name = "areas"
     gpkg_driver = ogr.GetDriverByName("GPKG")
@@ -36,4 +37,9 @@ def record_run(result_dir: str, profile_name: str, bbox: BBOX) -> None:
     geojson_datasource = geojson_driver.CreateDataSource(geojson_path)
     geojson_datasource.CopyLayer(cumulative_layer, "areas")
 
-    cumulative_layer, gpkg_datasource, kml_datasource, geojson_datasource = None, None, None, None
+    cumulative_layer, gpkg_datasource, kml_datasource, geojson_datasource = (
+        None,
+        None,
+        None,
+        None,
+    )

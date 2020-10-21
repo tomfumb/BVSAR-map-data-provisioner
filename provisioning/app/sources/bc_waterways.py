@@ -15,9 +15,14 @@ CACHE_DIR_NAME: Final = "bc-waterways"
 OUTPUT_CRS_CODE: Final = "EPSG:3857"
 OUTPUT_TYPE: Final = ProjectLayerType.LINESTRING
 
+
 def provision(bbox: BBOX, run_id: str) -> List[str]:
-    logging.info("Retrieving BC Freshwater Atlas - this could take a while the first time")
-    fgdb = retrieve_directory("ftp.geobc.gov.bc.ca", "/sections/outgoing/bmgs/FWA_Public/FWA_BC.gdb")
+    logging.info(
+        "Retrieving BC Freshwater Atlas - this could take a while the first time"
+    )
+    fgdb = retrieve_directory(
+        "ftp.geobc.gov.bc.ca", "/sections/outgoing/bmgs/FWA_Public/FWA_BC.gdb"
+    )
     logging.info("Retrieved BC Freshwater Atlas")
     run_directory = get_run_data_path(run_id, (CACHE_DIR_NAME,))
     os.makedirs(run_directory)

@@ -12,6 +12,7 @@ CACHE_DIR_NAME: Final = "shelters"
 OUTPUT_CRS_CODE: Final = "EPSG:3857"
 OUTPUT_TYPE: Final = ProjectLayerType.POINT
 
+
 def provision(bbox: BBOX, run_id: str) -> List[str]:
     run_directory = get_run_data_path(run_id, (CACHE_DIR_NAME,))
     os.makedirs(run_directory)
@@ -22,7 +23,7 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
         [datasource.GetLayerByName("shelters")],
         os.path.join(run_directory, "shelters.shp"),
         "shelters",
-        OUTPUT_CRS_CODE
+        OUTPUT_CRS_CODE,
     )
     datasource = None
     return result
