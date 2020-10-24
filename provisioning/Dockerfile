@@ -1,4 +1,4 @@
-FROM osgeo/gdal:ubuntu-small-3.1.0
+FROM osgeo/gdal:ubuntu-full-3.1.0
 
 RUN apt-get -y update \
  && apt-get install -y --no-install-recommends python3-pip git \
