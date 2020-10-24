@@ -31,3 +31,12 @@ stop-provisioner:
 	docker stop $(PROVISIONER_NAME)
 push-provisioner:
 	docker push $(PROVISIONER_IMAGE_NAME)
+
+
+build-push-all:
+	make build-tilemill
+	make build-http
+	make build-provisioner
+	make push-tilemill
+	make push-http
+	make push-provisioner
