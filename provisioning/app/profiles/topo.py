@@ -2,7 +2,7 @@ import logging
 
 from typing import Dict, Final
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.common.util import get_result_path
 from app.profiles.common.result import add_or_update
 from app.profiles.common.sources import (

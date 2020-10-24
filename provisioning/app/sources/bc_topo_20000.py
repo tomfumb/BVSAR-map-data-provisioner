@@ -6,7 +6,7 @@ import zipfile
 from gdal import ogr, Warp
 from typing import Final, List
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.common.get_datasource_from_bbox import (
     get_datasource_from_bbox,
     BBOX_LAYER_NAME,

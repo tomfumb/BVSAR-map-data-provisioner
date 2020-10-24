@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from pyproj import Transformer, CRS
 from typing import Dict, Final, List, Tuple
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.common.get_datasource_from_bbox import (
     get_datasource_from_bbox,
     BBOX_LAYER_NAME,

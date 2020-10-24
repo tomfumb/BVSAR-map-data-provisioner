@@ -3,7 +3,7 @@ import os
 from gdal import ogr
 from typing import Final, List
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.sources.common.ogr_to_shp import ogr_to_shp
 from app.tilemill.ProjectLayerType import ProjectLayerType
 from app.common.util import get_local_features_path, get_run_data_path

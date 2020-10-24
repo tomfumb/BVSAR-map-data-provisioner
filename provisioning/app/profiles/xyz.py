@@ -4,7 +4,7 @@ import os
 from shutil import copyfile
 from typing import Dict, Final
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.common.util import get_result_path
 from app.sources.xyz_service import provision as xyz_provisioner
 

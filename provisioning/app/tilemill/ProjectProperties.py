@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 
 
 class ProjectProperties(BaseModel):

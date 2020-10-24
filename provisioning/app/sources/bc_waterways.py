@@ -4,7 +4,7 @@ import os
 from gdal import ogr
 from typing import Final, List
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.common.ftp_retriever import retrieve_directory
 from app.common.util import get_run_data_path
 from app.sources.common.ogr_to_shp import ogr_to_shp

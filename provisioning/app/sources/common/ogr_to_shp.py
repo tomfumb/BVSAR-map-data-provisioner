@@ -1,9 +1,8 @@
-import json
 import logging
-from gdal import ogr, osr
+from gdal import ogr
 from typing import List
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 
 
 def ogr_to_shp(
@@ -24,9 +23,8 @@ def ogr_to_shp(
             )
             continue
         src_layer_srs = src_layer.GetSpatialRef()
-        clip_geometry = _transform_bbox(
-            bbox,
-            f"{src_layer_srs.GetAuthorityName(None)}:{src_layer_srs.GetAuthorityCode(None)}",
+        clip_geometry = bbox.transform_as_geom(
+            f"{src_layer_srs.GetAuthorityName(None)}:{src_layer_srs.GetAuthorityCode(None)}"
         )
         if i == 0:
             gen_layer = gen_datasource.CreateLayer(
@@ -54,29 +52,3 @@ def ogr_to_shp(
     return [
         dst_path,
     ]
-
-
-def _transform_bbox(bbox: BBOX, target_crs_code: str) -> ogr.Geometry:
-    if bbox.crs_code == target_crs_code:
-        return ogr.CreateGeometryFromWkt(bbox.get_wkt())
-    srs_in = osr.SpatialReference()
-    srs_in.SetFromUserInput(bbox.crs_code)
-    srs_out = osr.SpatialReference()
-    srs_out.SetFromUserInput(target_crs_code)
-    bbox_geom = ogr.CreateGeometryFromWkt(bbox.get_wkt(), srs_in)
-    bbox_coords = json.loads(bbox_geom.ExportToJson())
-    bbox_coords_transformed = list()
-    for bbox_point_pair in bbox_coords["coordinates"][0]:
-        point = ogr.Geometry(ogr.wkbPoint)
-        point.AssignSpatialReference(srs_in)
-        if srs_in.EPSGTreatsAsLatLong() == srs_out.EPSGTreatsAsLatLong():
-            point.AddPoint(bbox_point_pair[0], bbox_point_pair[1])
-        else:
-            point.AddPoint(bbox_point_pair[1], bbox_point_pair[0])
-        point.TransformTo(srs_out)
-        x, y, _ = point.GetPoint()
-        bbox_coords_transformed.append([x, y])
-    bbox_coords["coordinates"][0] = bbox_coords_transformed
-    bbox_transformed_geom = ogr.CreateGeometryFromJson(json.dumps(bbox_coords))
-    bbox_transformed_geom.AssignSpatialReference(srs_out)
-    return bbox_transformed_geom

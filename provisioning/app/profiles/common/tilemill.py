@@ -6,7 +6,7 @@ import subprocess
 from typing import List
 from pydantic import BaseModel
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.common.util import (
     get_style_path,
     get_result_path,

@@ -1,6 +1,6 @@
 from typing import Final, List
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.tilemill.ProjectLayerType import ProjectLayerType
 from app.sources.common.bc_ates import (
     provision as bc_ates_provisioner,

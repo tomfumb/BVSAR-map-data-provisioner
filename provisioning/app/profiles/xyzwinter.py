@@ -1,6 +1,6 @@
 from typing import Dict, Final
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.profiles.common.xyzplus import (
     execute as xyzplus_execute,
     ZOOM_MAX as xyz_zoom_max,

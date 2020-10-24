@@ -1,11 +1,3 @@
-.bc-resource-roads {
-  line-color:#CD5406;
-}
-
-.trails {
-  line-color:#960BA4;
-}
-
 .bc-resource-roads,.trails {
   [zoom < 12] {
     line-width:0;
@@ -13,11 +5,39 @@
   [zoom = 12][zoom = 13] {
     line-width:1;
   }
+}
+
+.bc-resource-roads {
+  line-color:#CD5406;
   [zoom = 14][zoom = 15] {
     line-width: 2;
   }
   [zoom > 15] {
     line-width: 3;
+  }
+}
+
+.trails {
+  line-color:#960BA4;
+  [zoom = 14][zoom = 15] {
+    ::case {
+      line-width: 4;
+      line-color: #ffffff;
+    }
+    ::fill {
+      line-width: 2;
+      line-color: #960BA4;
+    }
+  }
+  [zoom > 15] {
+    ::case {
+      line-width: 5;
+      line-color: #ffffff;
+    }
+    ::fill {
+      line-width: 3;
+      line-color: #960BA4;
+    }
   }
 }
 

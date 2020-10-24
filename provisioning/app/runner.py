@@ -4,7 +4,7 @@ import os
 
 from gdal import ogr
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.driver import provision
 from app.common.util import configure_logging
 

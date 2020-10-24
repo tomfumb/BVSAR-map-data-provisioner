@@ -1,6 +1,6 @@
 from typing import List
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.tilemill.ProjectLayer import ProjectLayer
 from app.sources.canvec_wms import (
     provision as canvec_wms_provisioner,

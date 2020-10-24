@@ -2,7 +2,7 @@ import os
 
 from gdal import ogr, osr
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 
 
 def record_run(result_dir: str, profile_name: str, bbox: BBOX) -> None:

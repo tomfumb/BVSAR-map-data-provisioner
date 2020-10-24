@@ -5,7 +5,7 @@ import os
 
 from shutil import rmtree
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.common.http_retriever import check_exists
 from app.profiles import xyz, topo, xyzsummer, xyzwinter
 from app.record.run_recorder import record_run

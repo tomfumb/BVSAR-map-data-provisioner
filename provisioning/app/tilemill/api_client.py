@@ -9,7 +9,7 @@ import datetime
 import requests
 import uuid
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.common.util import get_base_path, TILEMILL_DATA_LOCATION
 from app.tilemill.ProjectLayer import ProjectLayer
 from app.tilemill.ProjectLayerType import ProjectLayerType

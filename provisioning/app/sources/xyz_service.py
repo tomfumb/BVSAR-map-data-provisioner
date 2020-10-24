@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from pygeotile.tile import Tile
 from typing import Dict, List
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.common.http_retriever import retrieve, ExistsCheckRequest, RetrievalRequest
 from app.common.util import get_cache_path, skip_file_creation
 

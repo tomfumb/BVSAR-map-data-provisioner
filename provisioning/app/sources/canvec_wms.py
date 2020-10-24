@@ -1,6 +1,6 @@
 from typing import Dict, Final, List, Tuple
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 from app.sources.common.wms import (
     provision as wms_provisioner,
     OUTPUT_TYPE as WMS_OUTPUT_TYPE,

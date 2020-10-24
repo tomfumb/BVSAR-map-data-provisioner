@@ -3,7 +3,7 @@ import os
 from gdal import ogr, osr
 from typing import Final
 
-from app.common.BBOX import BBOX
+from app.common.bbox import BBOX
 
 BBOX_LAYER_NAME: Final = "bbox"
 BBOX_GPKG_NAME: Final = "bbox.gpkg"
