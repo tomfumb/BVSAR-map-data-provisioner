@@ -1,21 +1,22 @@
-- Make unused sections of xyz tiles transparent and this should fix the edge stitching issue. Don't need to pull in existing tiles for merge for non-edge tiles - non-edge tiles can use raw xyz and overwrite any existing. edges.py should have a function get_edge_tiles
-    - https://stackoverflow.com/questions/24165769/tiling-an-image-up-into-xyz-tiles
+- Multi-threading
+    - xyz merges
+    - transparent cropping
+- asyncio
+    - http get
+    - ftp get
+- ftp stall issue
 - add license to github
 - pyproj suppress warnings when exporting proj4
-- move from common to profiles/common where appropriate
 - try to detect stalled tilemill issue 
 - request permission for FTEN roads reproduction: https://www2.gov.bc.ca/gov/content/home/copyright
 - add hunting profile with private property
-- remove BVSAR-map-data-runner and put docker-compose in main project
 - os-specific conda environment files
 - browser-based tile viewer
     - integrate viewer build into httpd image using multi-stage build and node image
         - node setup may have more success if using package.json, create with npm init
     - ** fix directory selection issue
-- file sharing via httpd
 - refuse to run if annual data is not updated
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
 - need some consistency in class file names, classes having their own files
-- black / isort
 - only provision grid squares intersecting the drawn area to avoid filling unwanted gaps
 - auto-push to Docker Hub from master if test succeeds
