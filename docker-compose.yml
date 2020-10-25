@@ -1,0 +1,86 @@
+version: "3.3"
+services:
+
+  tilemill:
+    container_name: bvsar-tilemill
+    image: tomfumb/bvsar-tilemill:latest
+    ports:
+      - "20009"
+      - "20008"
+    volumes:
+      - type: volume
+        source: bvsar-export
+        target: /root/Documents/MapBox/export
+      - type: volume
+        source: bvsar-run
+        target: /tiledata/run
+    networks:
+      - bvsar
+
+  provisioner:
+    container_name: bvsar-provisioner
+    image: tomfumb/bvsar-provisioner:latest
+    volumes:
+      - type: volume
+        source: bvsar-cache
+        target: /tiledata/cache
+      - type: volume
+        source: bvsar-export
+        target: /tiledata/export
+      - type: volume
+        source: bvsar-result
+        target: /tiledata/result
+      - type: volume
+        source: bvsar-run
+        target: /tiledata/run
+      - type: bind
+        source: ./runner-data/areas
+        target: /tiledata/areas
+      - type: bind
+        source: ./runner-data/local-features
+        target: /tiledata/local-features
+    networks:
+      - bvsar
+    environment:
+      HTTP_URL: http://httpd
+      TILEMILL_URL: http://tilemill:20009
+      AREAS_LOCATION: /tiledata/areas/areas.gpkg
+      LOCAL_FEATURES_LOCATION: /tiledata/local-features/local-features.gpkg
+    depends_on: 
+      - tilemill
+
+  httpd:
+    container_name: bvsar-httpd
+    image: tomfumb/bvsar-httpd:latest
+    ports:
+      - "8001:80"
+    volumes:
+      - type: volume
+        source: bvsar-result
+        target: /usr/local/apache2/htdocs/tiles
+    networks:
+      - bvsar
+
+  rpi:
+    container_name: bvsar-rpi
+    build:
+      context: ./rpi
+    image: tomfumb/bvsar-rpi
+    volumes:
+      - type: volume
+        source: bvsar-result
+        target: /www/tiles
+    networks:
+      - bvsar
+    ports:
+      - 9000:80
+      - 9080:8080
+        
+networks:
+  bvsar:
+
+volumes:
+  bvsar-cache:
+  bvsar-export:
+  bvsar-result:
+  bvsar-run:
