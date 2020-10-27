@@ -1,5 +1,15 @@
-- Make unused sections of xyz tiles transparent and this should fix the edge stitching issue. Don't need to pull in existing tiles for merge for non-edge tiles - non-edge tiles can use raw xyz and overwrite any existing. edges.py should have a function get_edge_tiles
-    - https://stackoverflow.com/questions/24165769/tiling-an-image-up-into-xyz-tiles
+FTP problem
+    - support FTP recovery similar to HTTP
+    - minimal area intersection in runner.py
+    - differential area processing in runner.py ? 
+
+- Multi-threading
+    - xyz merges
+    - transparent cropping
+- asyncio
+    - http get
+    - ftp get
+- ftp stall issue
 - add license to github
 - pyproj suppress warnings when exporting proj4
 - move from common to profiles/common where appropriate

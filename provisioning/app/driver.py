@@ -8,7 +8,7 @@ from shutil import rmtree
 from app.common.bbox import BBOX
 from app.common.http_retriever import check_exists
 from app.profiles import xyz, topo, xyzsummer, xyzwinter
-from app.record.run_recorder import record_run
+from app.record.run_recorder import record_run, has_prior_run
 from app.sources.xyz_service import build_exists_check_requests as xyz_check_builder
 from app.common.util import (
     get_result_path,
@@ -19,6 +19,14 @@ from app.common.util import (
 
 
 def provision(bbox: BBOX, profile_name: str, xyz_url: str) -> None:
+    bbox_repeat_if_exists = int(os.environ.get("BBOX_REPEAT_IF_EXISTS", 0)) == 1
+    bbox_exists = has_prior_run(get_result_path((profile_name,)), bbox)
+    if bbox_exists and not bbox_repeat_if_exists:
+        logging.info(
+            f"Skipping {profile_name} {bbox.min_x},{bbox.min_y} {bbox.max_x},{bbox.max_y} as it already exists"
+        )
+        return
+
     run_id = str(uuid.uuid4())
     profiles = {
         profile.NAME: {
@@ -42,7 +50,7 @@ def provision(bbox: BBOX, profile_name: str, xyz_url: str) -> None:
             "image/{0}".format(profiles[profile_name]["format"]),
         )
     )
-    record_run(get_result_path((profile_name,)), profile_name, bbox)
+    record_run(get_result_path((profile_name,)), bbox)
     if remove_intermediaries():
         run_dir = get_run_data_path(run_id, None)
         result_temp_dir = get_result_path((run_id,))

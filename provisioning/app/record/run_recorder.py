@@ -1,22 +1,55 @@
 import os
 
 from gdal import ogr, osr
+from typing import Final, List
 
 from app.common.bbox import BBOX
 
 
-def record_run(result_dir: str, profile_name: str, bbox: BBOX) -> None:
-    layer_name = "areas"
-    gpkg_driver = ogr.GetDriverByName("GPKG")
-    gpkg_path = os.path.join(result_dir, "coverage.gpkg")
-    gpkg_datasource = gpkg_driver.Open(gpkg_path, 1)
+GPKG_DRIVER: Final = ogr.GetDriverByName("GPKG")
+LAYER_NAME: Final = "areas"
+
+
+def _get_gpkg_path(result_dir: str) -> str:
+    return os.path.join(result_dir, "coverage.gpkg")
+
+
+def has_prior_run(result_dir: str, bbox: BBOX) -> bool:
+    wkts = [prior_run.get_wkt() for prior_run in get_prior_runs(result_dir)]
+    return bbox.get_wkt() in wkts
+
+
+def get_prior_runs(result_dir: str) -> List[BBOX]:
+    path = _get_gpkg_path(result_dir)
+    if os.path.exists(path):
+        datasource = GPKG_DRIVER.Open(path, 0)
+        layer = datasource.GetLayerByName(LAYER_NAME)
+        runs = list()
+        while area_feature := layer.GetNextFeature():
+            run_envelope = area_feature.GetGeometryRef().GetEnvelope()
+            runs.append(
+                BBOX(
+                    min_x=run_envelope[0],
+                    min_y=run_envelope[2],
+                    max_x=run_envelope[1],
+                    max_y=run_envelope[3],
+                )
+            )
+        return runs
+    else:
+        return list()
+
+
+def record_run(result_dir: str, bbox: BBOX) -> None:
+    gpkg_path = _get_gpkg_path(result_dir)
+    gpkg_datasource = GPKG_DRIVER.Open(gpkg_path, 1)
     if not gpkg_datasource:
-        gpkg_datasource = gpkg_driver.CreateDataSource(gpkg_path)
-    cumulative_layer = gpkg_datasource.GetLayerByName(layer_name)
+        gpkg_datasource = GPKG_DRIVER.CreateDataSource(gpkg_path)
+    cumulative_layer = gpkg_datasource.GetLayerByName(LAYER_NAME)
     if not cumulative_layer:
         srs = osr.SpatialReference()
         srs.SetFromUserInput("CRS:84")
-        cumulative_layer = gpkg_datasource.CreateLayer(layer_name, srs, ogr.wkbPolygon)
+        cumulative_layer = gpkg_datasource.CreateLayer(LAYER_NAME, srs, ogr.wkbPolygon)
     geometry = ogr.CreateGeometryFromWkt(bbox.get_wkt())
     feature_defn = cumulative_layer.GetLayerDefn()
     feature = ogr.Feature(feature_defn)
