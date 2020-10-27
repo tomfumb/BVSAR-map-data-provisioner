@@ -3,6 +3,8 @@ services:
 
   tilemill:
     container_name: bvsar-tilemill
+    build:
+      context: ./tilemill
     image: tomfumb/bvsar-tilemill:latest
     ports:
       - "20009"
@@ -19,6 +21,8 @@ services:
 
   provisioner:
     container_name: bvsar-provisioner
+    build:
+      context: ./provisioning
     image: tomfumb/bvsar-provisioner:latest
     volumes:
       - type: volume
@@ -51,6 +55,8 @@ services:
 
   httpd:
     container_name: bvsar-httpd
+    build:
+      context: ./httpd
     image: tomfumb/bvsar-httpd:latest
     ports:
       - "8001:80"

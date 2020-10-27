@@ -1,4 +1,4 @@
-FTP problem
+TP problem
     - support FTP recovery similar to HTTP
     - minimal area intersection in runner.py
     - differential area processing in runner.py ? 
