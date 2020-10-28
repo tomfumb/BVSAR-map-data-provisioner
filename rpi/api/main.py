@@ -5,6 +5,7 @@ import re
 from uuid import uuid4
 
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 
@@ -14,6 +15,14 @@ TILES_DIR = os.path.join(os.path.sep, "www", "tiles")
 TILES_PATH = "/tiles/files"
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"^http(s)?://localhost(:\d{1,5})?$",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
@@ -72,12 +81,9 @@ async def delete_file(filename: str):
 
 @app.get("/tiles/list")
 async def tile_info():
-    tilesets = dict()
-    print(f"base_dir: {TILES_DIR}")
+    tilesets = list()
     for dirname in os.listdir(TILES_DIR):
-        print(f"dirname: {dirname}")
         profile_path = os.path.join(TILES_DIR, dirname)
-        print(f"profile_path: {profile_path}")
         if os.path.isdir(profile_path):
             zooms = sorted(
                 [
@@ -86,11 +92,9 @@ async def tile_info():
                     if os.path.isdir(os.path.join(profile_path, zoomdir))
                 ]
             )
-            print(f"zooms: {zooms}")
-            tilesets[dirname] = {
-                "zoom_min": zooms[0],
-                "zoom_max": zooms[-1],
-            }
+            tilesets.append(
+                {"name": dirname, "zoom_min": zooms[0], "zoom_max": zooms[-1],}
+            )
     return tilesets
 
 

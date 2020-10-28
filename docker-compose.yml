@@ -76,11 +76,27 @@ services:
       - type: volume
         source: bvsar-result
         target: /www/tiles
+      - type: bind
+        source: ./rpi/api
+        target: /www/api
     networks:
       - bvsar
     ports:
       - 9000:80
       - 9080:8080
+    command: 'uvicorn main:app --port=80 --host=0.0.0.0 --reload'
+
+  angular-cli:
+    container_name: bvsar-angular-cli
+    build:
+      context: ./angular-cli
+    image: tomfumb/bvsar-angular-cli
+    volumes:
+      - type: bind
+        source: ./rpi/ui/viewer
+        target: /workdir
+    ports:
+      - 4200:4200
         
 networks:
   bvsar:
