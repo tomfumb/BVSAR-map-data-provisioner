@@ -1,4 +1,5 @@
 import datetime
+import math
 import os
 import re
 
@@ -13,6 +14,7 @@ UPLOADS_DIR = os.path.join(os.path.sep, "www", "uploads")
 UPLOADS_PATH = "/uploads/files"
 TILES_DIR = os.path.join(os.path.sep, "www", "tiles")
 TILES_PATH = "/tiles/files"
+
 
 app = FastAPI()
 
@@ -98,5 +100,36 @@ async def tile_info():
     return tilesets
 
 
+@app.get("/export/pdf/{profile}/{zoom}/{x_min}/{y_min}/{x_max}/{y_max}")
+async def export_pdf(
+    profile: str, zoom: int, x_min: float, y_min: float, x_max: float, y_max: float
+):
+
+    # https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
+    def lat_lon_to_tile(lat_deg, lon_deg):
+        lat_rad = math.radians(lat_deg)
+        n = 2.0 ** zoom
+        xtile = int((lon_deg + 180.0) / 360.0 * n)
+        ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
+        return (xtile, ytile)
+
+    tile_start = lat_lon_to_tile(y_max, x_min)
+    tile_end = lat_lon_to_tile(y_min, x_max)
+
+    # return (tile_start, tile_end)
+
+    tile_paths = list()
+    for x in range(tile_start[0], tile_end[0]):
+        for y in range(tile_start[1], tile_end[1]):
+            tile_paths.append(
+                os.path.join(TILES_DIR, profile, str(zoom), str(x), f"{y}.png")
+            )
+
+    return {
+        "required": tile_paths,
+        "exist": list(filter(lambda tile_path: os.path.exists(tile_path), tile_paths)),
+    }
+
+
 app.mount(UPLOADS_PATH, StaticFiles(directory=UPLOADS_DIR), name="uploads")
-app.mount(TILES_PATH, StaticFiles(directory="/www/tiles"), name="tiles")
+app.mount(TILES_PATH, StaticFiles(directory=TILES_DIR), name="tiles")

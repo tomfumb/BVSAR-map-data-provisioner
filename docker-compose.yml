@@ -84,7 +84,6 @@ services:
     ports:
       - 9000:80
       - 9080:8080
-    command: 'uvicorn main:app --port=80 --host=0.0.0.0 --reload'
 
   angular-cli:
     container_name: bvsar-angular-cli
