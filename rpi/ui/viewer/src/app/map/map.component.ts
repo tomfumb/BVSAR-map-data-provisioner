@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import * as l from 'leaflet';
 import { environment } from 'src/environments/environment';
 import { map } from 'rxjs/operators'
+import { forkJoin, Observable, Observer } from 'rxjs';
 
 interface Tileset {
   name: string;
@@ -15,23 +16,34 @@ interface Tileset {
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.less']
 })
-export class MapComponent {
+export class MapComponent implements OnInit {
 
   public tilesetSelected: Tileset;
   public tilesets: Tileset[] = [];
 
   private leafletMap: any;
+  private initObserver: Observer<void>;
 
   constructor(
     private http: HttpClient
   ) {
-    this.http.get(`${environment.tile_domain}/tiles/list`).subscribe((response: HttpResponse<object>) => {
-      this.tilesets = <Tileset[]><object>response;
+    forkJoin([
+      this.http.get<Tileset[]>(`${environment.tile_domain}/tiles/list`),
+      new Observable(observer => {
+        this.initObserver = observer;
+      })
+    ]).subscribe(results => {
+      this.tilesets = results[0];
       if (this.tilesets.length) {
         this.tilesetSelected = this.tilesets[0];
         this.initMap(this.tilesetSelected);
       }
     });
+  }
+
+  public ngOnInit(): void {
+    this.initObserver.next(null);
+    this.initObserver.complete();
   }
 
   public tilesetSelectedChanged(): void {

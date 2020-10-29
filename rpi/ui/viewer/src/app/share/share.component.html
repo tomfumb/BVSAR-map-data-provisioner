@@ -1,1 +1,15 @@
-<p>share works!</p>
+<input type="file" (change)="fileChange($event)" placeholder="Upload file" accept="*">
+<button type="button" (click)="uploadFile()" [disabled]="!pendingUploadExists">{{ pendingUploadButtonText }}</button>
+
+<div id="uploads-container">
+    <ng-container *ngFor="let upload of uploads">
+        <a [href]="uploadDomain + upload.path">{{ upload.filename }}</a>
+        &nbsp;
+        <span (click)="deleteFileInitiate(upload.filename)">Delete</span>
+        <span [hidden]="upload.filename != pendingDeleteFilename">
+            <span (click)="deleteFile()">Confirm</span>
+            <span (click)="deleteFileCancel()">Cancel</span>
+        </span>
+        <br />
+    </ng-container>
+</div>
