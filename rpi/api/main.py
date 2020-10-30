@@ -1,19 +1,28 @@
 import datetime
-import math
 import os
 import re
 
+from gdal import Warp, Translate
+from shutil import rmtree
+from math import floor
+from typing import Tuple
 from uuid import uuid4
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 
+from api.export.export import bbox_to_xyz, georeference_raster_tile
 
-UPLOADS_DIR = os.path.join(os.path.sep, "www", "uploads")
+
+UPLOADS_DIR = os.environ.get("UPLOADS_DIR", os.path.join(os.path.sep, "www", "uploads"))
 UPLOADS_PATH = "/uploads/files"
-TILES_DIR = os.path.join(os.path.sep, "www", "tiles")
+TILES_DIR = os.environ.get("TILES_DIR", os.path.join(os.path.sep, "www", "tiles"))
 TILES_PATH = "/tiles/files"
+
+CURRENT_DIR = os.path.dirname(__file__)
+PARENT_TEMP_DIR = os.path.join(CURRENT_DIR, "export", "temp")
 
 
 app = FastAPI()
@@ -100,36 +109,75 @@ async def tile_info():
     return tilesets
 
 
+@app.get("/export/info/{profile}/{zoom}/{x_min}/{y_min}/{x_max}/{y_max}")
+async def export_info(
+    profile: str, zoom: int, x_min: float, y_min: float, x_max: float, y_max: float
+):
+    export_tile_bounds = bbox_to_xyz(x_min, x_max, y_min, y_max, zoom)
+    export_tile_counts = tile_counts(*export_tile_bounds)
+    return {
+        "x_tiles": export_tile_counts[0],
+        "y_tiles": export_tile_counts[1],
+        "sample": f"{TILES_PATH}/{profile}/{zoom}/{export_tile_bounds[0] + floor(export_tile_counts[0] / 2)}/{export_tile_bounds[1] + floor(export_tile_counts[1] / 2)}.png",
+    }
+
+
 @app.get("/export/pdf/{profile}/{zoom}/{x_min}/{y_min}/{x_max}/{y_max}")
 async def export_pdf(
     profile: str, zoom: int, x_min: float, y_min: float, x_max: float, y_max: float
 ):
-
-    # https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
-    def lat_lon_to_tile(lat_deg, lon_deg):
-        lat_rad = math.radians(lat_deg)
-        n = 2.0 ** zoom
-        xtile = int((lon_deg + 180.0) / 360.0 * n)
-        ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
-        return (xtile, ytile)
-
-    tile_start = lat_lon_to_tile(y_max, x_min)
-    tile_end = lat_lon_to_tile(y_min, x_max)
-
-    # return (tile_start, tile_end)
-
-    tile_paths = list()
-    for x in range(tile_start[0], tile_end[0]):
-        for y in range(tile_start[1], tile_end[1]):
-            tile_paths.append(
-                os.path.join(TILES_DIR, profile, str(zoom), str(x), f"{y}.png")
-            )
-
-    return {
-        "required": tile_paths,
-        "exist": list(filter(lambda tile_path: os.path.exists(tile_path), tile_paths)),
-    }
+    x_tile_min, y_tile_min, x_tile_max, y_tile_max = bbox_to_xyz(
+        x_min, x_max, y_min, y_max, zoom
+    )
+    export_temp_dir = os.path.join(PARENT_TEMP_DIR, str(uuid4()))
+    os.makedirs(export_temp_dir)
+    tifs = list()
+    for x in range(x_tile_min, x_tile_max + 1):
+        for y in range(y_tile_min, y_tile_max + 1):
+            png_path = os.path.join(TILES_DIR, profile, str(zoom), str(x), f"{y}.png")
+            if os.path.exists(png_path):
+                tif_path = os.path.join(export_temp_dir, f"{zoom}_{x}_{y}.tif")
+                georeference_raster_tile(x, y, zoom, png_path, tif_path)
+                tifs.append(tif_path)
+    if len(tifs) > 0:
+        merge_path = os.path.join(export_temp_dir, "merge.tif")
+        Warp(
+            merge_path,
+            tifs,
+            outputBounds=(x_min, y_min, x_max, y_max),
+            outputBoundsSRS="EPSG:4326",
+            dstSRS="EPSG:3857",
+            srcNodata=-1,
+            dstNodata=-1,
+        )
+        pdf_path = os.path.join(export_temp_dir, "merge.pdf")
+        Translate(pdf_path, merge_path, format="PDF")
+        with open(pdf_path, "rb") as pdf_file:
+            pdf_data = pdf_file.read()
+        rmtree(export_temp_dir)
+        return Response(pdf_data, media_type="application/pdf")
+    else:
+        rmtree(export_temp_dir)
+        return None
 
 
 app.mount(UPLOADS_PATH, StaticFiles(directory=UPLOADS_DIR), name="uploads")
 app.mount(TILES_PATH, StaticFiles(directory=TILES_DIR), name="tiles")
+
+
+def tile_counts(
+    x_tile_min: int, y_tile_min: int, x_tile_max: int, y_tile_max: int
+) -> Tuple[int]:
+    return ((x_tile_max - x_tile_min) + 1, (y_tile_max - y_tile_min) + 1)
+
+
+# Development / debug support, not executed when running in container
+# Start a local server on port 8888 by default, or whichever port was provided by the caller, when script / module executed directly
+if __name__ == "__main__":
+    import sys
+
+    import uvicorn
+
+    port = 8888 if len(sys.argv) == 1 else int(sys.argv[1])
+    print("Available on port %d", port)
+    uvicorn.run(app, host="0.0.0.0", port=port)
