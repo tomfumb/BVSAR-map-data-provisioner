@@ -139,6 +139,7 @@ def transparent_clip_to_bbox(tile_paths: List[str], bbox: BBOX) -> None:
 
 def merge_tiles(base_path: str, overlay_path: str, output_path: str) -> None:
     overlay_image_src = overlay_image = Image.open(overlay_path)
+    # overlay_has_palette = overlay_image.mode == "P"
     overlay_has_palette = overlay_image_src.getpalette() is not None
     base_image_src = Image.open(base_path)
     base_has_palette = base_image_src.getpalette is not None

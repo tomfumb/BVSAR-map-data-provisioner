@@ -50,8 +50,14 @@ def tile_edges(x, y, z):
     return [lon1, lat1, lon2, lat2]
 
 
-def georeference_raster_tile(x, y, z, input_path, output_path):
+def georeference_raster_tile(x, y, z, input_path, output_path, expandRgba):
     bounds = tile_edges(x, y, z)
+    named_args = {
+        "outputSRS": "EPSG:4326",
+        "outputBounds": bounds,
+    }
+    if expandRgba:
+        named_args["rgbExpand"] = "rgba"
     gdal.Translate(
-        output_path, input_path, outputSRS="EPSG:4326", outputBounds=bounds,
+        output_path, input_path, **named_args,
     )

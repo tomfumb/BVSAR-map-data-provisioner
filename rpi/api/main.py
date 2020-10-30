@@ -7,6 +7,7 @@ from shutil import rmtree
 from math import floor
 from typing import Tuple
 from uuid import uuid4
+from PIL import Image
 
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -134,10 +135,15 @@ async def export_pdf(
     tifs = list()
     for x in range(x_tile_min, x_tile_max + 1):
         for y in range(y_tile_min, y_tile_max + 1):
-            png_path = os.path.join(TILES_DIR, profile, str(zoom), str(x), f"{y}.png")
-            if os.path.exists(png_path):
+            src_png_path = os.path.join(
+                TILES_DIR, profile, str(zoom), str(x), f"{y}.png"
+            )
+            if os.path.exists(src_png_path):
                 tif_path = os.path.join(export_temp_dir, f"{zoom}_{x}_{y}.tif")
-                georeference_raster_tile(x, y, zoom, png_path, tif_path)
+                png_image = Image.open(src_png_path)
+                georeference_raster_tile(
+                    x, y, zoom, src_png_path, tif_path, png_image.mode == "P"
+                )
                 tifs.append(tif_path)
     if len(tifs) > 0:
         merge_path = os.path.join(export_temp_dir, "merge.tif")
@@ -147,8 +153,6 @@ async def export_pdf(
             outputBounds=(x_min, y_min, x_max, y_max),
             outputBoundsSRS="EPSG:4326",
             dstSRS="EPSG:3857",
-            srcNodata=-1,
-            dstNodata=-1,
         )
         pdf_path = os.path.join(export_temp_dir, "merge.pdf")
         Translate(pdf_path, merge_path, format="PDF")
