@@ -14,6 +14,6 @@ RUN pip3 install -r /requirements.txt
 COPY api /www/api
 RUN mkdir /www/uploads
 
-WORKDIR /www/api
+WORKDIR /www
 
-CMD [ "uvicorn", "main:app", "--port=80", "--host=0.0.0.0" ]
+CMD [ "uvicorn", "api.main:app", "--port=80", "--host=0.0.0.0" ]
