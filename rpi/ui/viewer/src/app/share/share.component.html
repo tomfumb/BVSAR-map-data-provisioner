@@ -1,15 +1,28 @@
-<input type="file" (change)="fileChange($event)" placeholder="Upload file" accept="*">
+<h4>Uploads</h4>
+<input #fileSelector type="file" (change)="fileChange($event)" placeholder="Upload file" accept="*">
 <button type="button" (click)="uploadFile()" [disabled]="!pendingUploadExists">{{ pendingUploadButtonText }}</button>
 
+<h4>Files</h4>
 <div id="uploads-container">
-    <ng-container *ngFor="let upload of uploads">
-        <a [href]="uploadDomain + upload.path">{{ upload.filename }}</a>
-        &nbsp;
-        <span (click)="deleteFileInitiate(upload.filename)">Delete</span>
-        <span [hidden]="upload.filename != pendingDeleteFilename">
-            <span (click)="deleteFile()">Confirm</span>
-            <span (click)="deleteFileCancel()">Cancel</span>
-        </span>
-        <br />
+    <ng-container *ngIf="uploads.length > 0">
+        <table>
+            <tr>
+                <th>Filename</th>
+                <th></th>
+                <th></th>
+            </tr>
+            <tr *ngFor="let upload of uploads">
+                <td>
+                    <a [href]="uploadDomain + upload.path">{{ upload.filename }}</a>
+                </td>
+                <td>
+                    <span class="file-action-button" [hidden]="upload.filename == pendingDeleteFilename" (click)="deleteFileInitiate(upload.filename)">Delete</span>
+                    <span class="file-action-button" [hidden]="upload.filename != pendingDeleteFilename" (click)="deleteFileCancel()">Cancel</span>
+                </td>
+                <td>
+                    <span class="file-action-button" [hidden]="upload.filename != pendingDeleteFilename" (click)="deleteFile()">Confirm</span>
+                </td>
+            </tr>
+        </table>
     </ng-container>
 </div>

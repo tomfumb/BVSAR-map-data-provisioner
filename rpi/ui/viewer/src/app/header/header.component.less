@@ -1,0 +1,29 @@
+@good-colour: hsl(120, 100%, 50%);
+@bad-colour: #ff6600;
+@critical-colour: #ff0000;
+
+* {
+    color: #fff;
+}
+
+.space-good, .power-good {
+    background-color: @good-colour;
+}
+
+.space-critical, .power-critical {
+    background-color: @critical-colour;
+}
+
+.power-low {
+    background-color: @bad-colour;
+}
+
+#container {
+    display: flex;
+
+    div {
+        padding: 0.2em 1em;
+        display: flex;
+        width: 50%;
+    }
+}

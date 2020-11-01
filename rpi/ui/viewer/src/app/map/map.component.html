@@ -17,6 +17,19 @@
         <div id="map-container">
             <div id="map"></div>
         </div>
+        <h4>Tile URLs</h4>
+        <table>
+            <tr>
+                <th>App</th>
+                <th>Url</th>
+                <th></th>
+            </tr>
+            <tr *ngFor="let tileUrl of tileUrls | keyvalue:keepOriginalOrder">
+                <td>{{ tileUrl.key }}</td>
+                <td>{{ tileUrl.value }}</td>
+                <td class="url-copier" (click)="copyUrl(tileUrl.value)">Copy Url</td>
+            </tr>
+        </table>
     </ng-container>
     <ng-container *ngSwitchCase="false">
         <h4>There are currently no tilesets</h4>

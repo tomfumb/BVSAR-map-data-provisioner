@@ -27,7 +27,7 @@ async def list_uploads():
                     "uploaded": int(fileinfo.st_ctime * 1000),
                 }
             )
-    return sorted(uploads, key=lambda upload: upload["uploaded"])
+    return uploads
 
 
 # curl -F "file=@/Users/tc/Desktop/chips.txt" localhost:9000/upload

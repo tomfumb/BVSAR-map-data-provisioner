@@ -20,7 +20,6 @@ RUN chown -R pi: /www
 RUN mkdir -p /var/log/gunicorn
 
 COPY api /www/api
-RUN mkdir /www/uploads
 
 WORKDIR /www
 

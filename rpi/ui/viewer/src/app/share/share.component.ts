@@ -1,6 +1,7 @@
 import { HttpClient, HttpEventType, HttpParams, HttpRequest, HttpResponse } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { environment } from 'src/environments/environment';
+import { SpaceService } from '../space.service';
 
 interface Upload {
   filename: string;
@@ -22,14 +23,28 @@ export class ShareComponent {
   private pendingUpload: File;
   private pendingDeleteFilename: string;
 
+  @ViewChild("fileSelector")
+  private fileSelector: ElementRef;
+
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private spaceService: SpaceService
   ) {
     this.updateFileList();
   }
 
   public fileChange(event): void {
-    this.pendingUpload = event.target.files.length > 0 ? event.target.files[0] : null;
+    const candidateFile = event.target.files.length > 0 ? event.target.files[0] : null;
+    if (candidateFile) {
+      if (candidateFile.size > 100000000) {
+        window.alert("File is too big and cannot be uploaded");
+        this.pendingUpload = null;
+      } else {
+        this.pendingUpload = candidateFile;
+      }
+    } else {
+      this.pendingUpload = null;
+    }
   }
 
   public uploadFile(): void {
@@ -40,23 +55,11 @@ export class ShareComponent {
       reportProgress: true,
     };
     const req = new HttpRequest("POST", `${environment.tile_domain}/upload`, formData, options);
-    this.http.request(req).subscribe(
-      event => {
-        if (event.type == HttpEventType.UploadProgress) {
-          const percentDone = Math.round(100 * event.loaded / event.total);
-          console.log(`File is ${percentDone}% loaded.`);
-        } else if (event instanceof HttpResponse) {
-          console.log('File is completely loaded!');
-        }
-      },
-      (err) => {
-        console.log("Upload Error:", err);
-      }, () => {
-        console.log("Upload done");
-        this.pendingUpload = null;
-        this.updateFileList();
-      }
-    );
+    this.http.request(req).subscribe(() => {
+      this.pendingUpload = null;
+      this.fileSelector.nativeElement.value = null;
+      this.updateFileList();
+    });
   }
 
   public get pendingUploadExists(): boolean {
@@ -64,7 +67,7 @@ export class ShareComponent {
   }
 
   public get pendingUploadButtonText(): string {
-    return "Upload" + (this.pendingUpload ? ` ${this.pendingUpload.name} (${this.pendingUpload.size} bytes)` : "")
+    return "Upload" + (this.pendingUpload ? ` ${this.pendingUpload.name} (${this.spaceService.fromBytes(this.pendingUpload.size)})` : "")
   }
 
   public deleteFileInitiate(filename: string): void {
@@ -83,7 +86,9 @@ export class ShareComponent {
 
   private updateFileList(): void {
     this.http.get<Upload[]>(`${environment.tile_domain}/upload/list`).subscribe(response => {
-      this.uploads = response;
+      this.uploads = response.sort((a, b) => {
+        return b.uploaded - a.uploaded;
+      });
     });
   }
 }

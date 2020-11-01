@@ -4,6 +4,7 @@ import * as l from 'leaflet';
 import { environment } from 'src/environments/environment';
 import { map } from 'rxjs/operators'
 import { forkJoin, Observable, Observer } from 'rxjs';
+import { CopyService } from '../copy.service';
 
 interface Tileset {
   name: string;
@@ -20,12 +21,14 @@ export class MapComponent implements OnInit {
 
   public tilesetSelected: Tileset;
   public tilesets: Tileset[] = [];
+  public tileUrls: {[index: string]: string} = {};
 
   private leafletMap: any;
   private initObserver: Observer<void>;
 
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private copyService: CopyService
   ) {
     forkJoin([
       this.http.get<Tileset[]>(`${environment.tile_domain}/tile/list`),
@@ -40,7 +43,7 @@ export class MapComponent implements OnInit {
       }
     });
   }
-
+  
   public ngOnInit(): void {
     this.initObserver.next(null);
     this.initObserver.complete();
@@ -48,6 +51,14 @@ export class MapComponent implements OnInit {
 
   public tilesetSelectedChanged(): void {
     this.initMap(this.tilesetSelected);
+  }
+
+  public keepOriginalOrder(a: any, _: any): string {
+    return a.key;
+  }
+
+  public copyUrl(url: string): void {
+    this.copyService.copyText(url);
   }
 
   private initMap(tileset: Tileset): void {
@@ -70,5 +81,15 @@ export class MapComponent implements OnInit {
       }).addTo(this.leafletMap);
       this.leafletMap.fitBounds(initialBounds);
     });
+    this.tileUrls = this.buildTileUrls();
+  }
+
+  private buildTileUrls(): {[index: string]: string} {
+    const baseUrl = `${window.location.protocol}//${window.location.host}/tiles/files/${this.tilesetSelected.name}/`
+    return {
+      "GIS Kit": `${baseUrl}#Z#/#X#/#Y#.png`,
+      "Touch GIS": `${baseUrl}{z}/{x}/{y}.png`,
+      "QGIS": `${baseUrl}{z}/{x}/{y}.png`
+    };
   }
 }

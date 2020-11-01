@@ -1,8 +1,8 @@
-<h1>Angular Router App</h1>
+<app-header></app-header>
 <nav>
-  <ul>
-    <li><a routerLink="/share" routerLinkActive="active">Share</a></li>
-    <li><a routerLink="/map" routerLinkActive="active">Map</a></li>
-  </ul>
+  <div id="nav-container">
+    <div class="nav-link" routerLink="/map" routerLinkActive="active">Map</div>
+    <div class="nav-link" routerLink="/share" routerLinkActive="active">Share</div>
+  </div>
 </nav>
 <router-outlet></router-outlet>
