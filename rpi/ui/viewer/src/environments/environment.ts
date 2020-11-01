@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  tile_domain: "http://localhost:9000",
+  tile_domain: ""
 };
 
 /*

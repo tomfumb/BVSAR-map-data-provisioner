@@ -28,7 +28,7 @@ export class MapComponent implements OnInit {
     private http: HttpClient
   ) {
     forkJoin([
-      this.http.get<Tileset[]>(`${environment.tile_domain}/tiles/list`),
+      this.http.get<Tileset[]>(`${environment.tile_domain}/tile/list`),
       new Observable(observer => {
         this.initObserver = observer;
       })

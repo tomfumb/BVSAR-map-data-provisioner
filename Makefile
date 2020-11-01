@@ -33,6 +33,19 @@ push-provisioner:
 	docker push $(PROVISIONER_IMAGE_NAME)
 
 
+api-deploy-prod:
+	ssh pi@pi-wired 'rm -rf /www/api'
+	scp -r `pwd`/rpi/api pi@pi-wired:/www/
+
+web-build-prod:
+	docker run --rm -v `pwd`/rpi/ui/viewer:/workdir -w /workdir tomfumb/bvsar-angular-cli ng build --prod --baseHref=/web/
+
+web-deploy-prod:
+	make web-build-prod
+	ssh pi@pi-wired 'rm -rf /www/web'
+	scp -r `pwd`/rpi/ui/viewer/dist/viewer pi@pi-wired:/www/web
+
+
 build-push-all:
 	make build-tilemill
 	make build-http

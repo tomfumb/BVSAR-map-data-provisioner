@@ -76,13 +76,13 @@ export class ShareComponent {
   }
 
   public deleteFile(): void {
-    this.http.delete(`${environment.tile_domain}/uploads/${this.pendingDeleteFilename}`).subscribe(() => {
+    this.http.delete(`${environment.tile_domain}/upload/${this.pendingDeleteFilename}`).subscribe(() => {
       this.updateFileList();
     });
   }
 
   private updateFileList(): void {
-    this.http.get<Upload[]>(`${environment.tile_domain}/uploads/list`).subscribe(response => {
+    this.http.get<Upload[]>(`${environment.tile_domain}/upload/list`).subscribe(response => {
       this.uploads = response;
     });
   }

@@ -4,4 +4,4 @@ RUN npm install -g @angular/cli
 
 WORKDIR /workdir
 
-CMD [ "ng", "serve", "--host", "0.0.0.0" ]
+CMD [ "ng", "build", "--watch", "--baseHref", "/web/" ]

@@ -1,0 +1,8 @@
+[Unit]
+Description=Start gunicorn
+
+[Service]
+ExecStart=/www/start.sh
+
+[Install]
+WantedBy=multi-user.target
