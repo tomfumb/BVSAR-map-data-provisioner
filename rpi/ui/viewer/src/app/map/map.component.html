@@ -17,6 +17,21 @@
         <div id="map-container">
             <div id="map"></div>
         </div>
+        <ng-container [ngSwitch]="exportInProgress">
+            <div *ngSwitchCase="false">
+                <button type="button" (click)="initiateExport()">Export PDF</button>
+            </div>
+            <div *ngSwitchCase="true">
+                <h4>Choose Export Zoom</h4>
+                <button type="button" (click)="endExport()">Cancel Export</button>
+                <div class="export-info-container" *ngFor="let exportInfo of exportInfos">
+                    <div class="export-sample" style="background: url('{{exportInfo.sample}}')">
+                        <span class="export-sample-info">{{ 256 * exportInfo.x_tiles }} x {{ 256 * exportInfo.y_tiles }}px</span>
+                        <button type="button" class="export-requestor" (click)="requestExport(exportInfo.z)">Export at z{{exportInfo.z}}</button>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
         <h4>Tile URLs</h4>
         <table>
             <tr>

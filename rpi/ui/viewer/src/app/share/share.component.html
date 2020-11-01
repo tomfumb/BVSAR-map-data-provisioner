@@ -13,7 +13,7 @@
             </tr>
             <tr *ngFor="let upload of uploads">
                 <td>
-                    <a [href]="uploadDomain + upload.path">{{ upload.filename }}</a>
+                    <a [href]="uploadDomain + upload.path" target="_blank">{{ upload.filename }}</a>
                 </td>
                 <td>
                     <span class="file-action-button" [hidden]="upload.filename == pendingDeleteFilename" (click)="deleteFileInitiate(upload.filename)">Delete</span>

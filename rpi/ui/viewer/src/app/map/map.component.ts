@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import * as l from 'leaflet';
 import { environment } from 'src/environments/environment';
@@ -12,16 +12,35 @@ interface Tileset {
   zoom_max: number;
 }
 
+interface ExportInfo {
+  z: number;
+  x_tiles: number;
+  y_tiles: number;
+  sample: string;
+  permitted: boolean;
+}
+
+interface MapState {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+  zoom: number;
+}
+
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.less']
 })
-export class MapComponent implements OnInit {
+export class MapComponent implements OnInit, OnDestroy {
 
   public tilesetSelected: Tileset;
   public tilesets: Tileset[] = [];
   public tileUrls: {[index: string]: string} = {};
+
+  public exportInProgress: boolean = false;
+  public exportInfos: ExportInfo[] = [];
 
   private leafletMap: any;
   private initObserver: Observer<void>;
@@ -49,7 +68,15 @@ export class MapComponent implements OnInit {
     this.initObserver.complete();
   }
 
+  public ngOnDestroy(): void {
+    if (this.leafletMap) {
+      this.leafletMap.off();
+      this.leafletMap.remove();
+    }
+  }
+
   public tilesetSelectedChanged(): void {
+    this.endExport();
     this.initMap(this.tilesetSelected);
   }
 
@@ -59,6 +86,53 @@ export class MapComponent implements OnInit {
 
   public copyUrl(url: string): void {
     this.copyService.copyText(url);
+  }
+
+  public initiateExport(): void {
+    if (!this.leafletMap) {
+      console.error("Attempt to export before map is ready");
+      return;
+    }
+    this.exportInProgress = true;
+    this.updateExportOptions();
+    this.leafletMap.on("moveend", () => {
+      this.updateExportOptions();
+   });
+  }
+
+  public endExport(): void {
+    this.exportInProgress = false;
+  }
+
+  public requestExport(zoom: number): void {
+    const mapState = this.getMapState();
+    const exportUrl = `${environment.tile_domain}/export/pdf/${zoom}/${mapState.minX}/${mapState.minY}/${mapState.maxX}/${mapState.maxY}/${this.tilesetSelected.name}`
+    window.open(exportUrl, "PDF Export");
+    this.endExport();
+  }
+
+  private updateExportOptions(): void {
+    this.exportInfos = [];
+    const mapState = this.getMapState();
+    const minZoom = Math.max(mapState.zoom, this.tilesetSelected.zoom_min);
+    const infoRequestObservables = [];
+    for(let i = minZoom; i <= this.tilesetSelected.zoom_max; i++) {
+      infoRequestObservables.push(this.http.get(`${environment.tile_domain}/export/info/${i}/${mapState.minX}/${mapState.minY}/${mapState.maxX}/${mapState.maxY}/${this.tilesetSelected.name}`));
+    }
+    forkJoin(infoRequestObservables).subscribe((results: HttpResponse<ExportInfo>[]) => {
+      this.exportInfos = (<any>results).filter((exportInfo: ExportInfo) => exportInfo.permitted);
+    });
+  }
+
+  private getMapState(): MapState {
+    const [minX, minY, maxX, maxY] = this.leafletMap.getBounds().toBBoxString().split(",")
+    return {
+      minX: minX,
+      minY: minY,
+      maxX: maxX,
+      maxY: maxY,
+      zoom: this.leafletMap.getZoom()
+    };
   }
 
   private initMap(tileset: Tileset): void {
