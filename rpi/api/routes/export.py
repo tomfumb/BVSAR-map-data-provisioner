@@ -1,3 +1,4 @@
+import logging
 import os
 
 from fastapi import APIRouter, HTTPException, status
@@ -44,37 +45,46 @@ async def export_pdf(
             status.HTTP_406_NOT_ACCEPTABLE,
             detail=f"Requested PDF is too big (> {PDF_EXPORT_MAX_PX}px)",
         )
-    export_temp_dir = os.path.join(PARENT_TEMP_DIR, str(uuid4()))
-    os.makedirs(export_temp_dir)
-    tifs = list()
-    for x in range(x_tile_min, x_tile_max + 1):
-        for y in range(y_tile_min, y_tile_max + 1):
-            src_png_path = os.path.join(
-                TILES_DIR, profile, str(zoom), str(x), f"{y}.png"
-            )
-            if os.path.exists(src_png_path):
-                tif_path = os.path.join(export_temp_dir, f"{zoom}_{x}_{y}.tif")
-                png_image = Image.open(src_png_path)
-                georeference_raster_tile(
-                    x, y, zoom, src_png_path, tif_path, png_image.mode == "P"
+
+    try:
+        export_temp_dir = os.path.join(PARENT_TEMP_DIR, str(uuid4()))
+        os.makedirs(export_temp_dir)
+        tifs = list()
+        for x in range(x_tile_min, x_tile_max + 1):
+            for y in range(y_tile_min, y_tile_max + 1):
+                src_png_path = os.path.join(
+                    TILES_DIR, profile, str(zoom), str(x), f"{y}.png"
                 )
-                tifs.append(tif_path)
-    if len(tifs) > 0:
-        merge_path = os.path.join(export_temp_dir, "merge.tif")
-        Warp(
-            merge_path,
-            tifs,
-            outputBounds=(x_min, y_min, x_max, y_max),
-            outputBoundsSRS="EPSG:4326",
-            dstSRS="EPSG:3857",
-        )
-        pdf_path = os.path.join(export_temp_dir, "merge.pdf")
-        Translate(pdf_path, merge_path, format="PDF")
-        with open(pdf_path, "rb") as pdf_file:
-            pdf_data = pdf_file.read()
-        rmtree(export_temp_dir)
-        return Response(pdf_data, media_type="application/pdf")
-    else:
+                if os.path.exists(src_png_path):
+                    tif_path = os.path.join(export_temp_dir, f"{zoom}_{x}_{y}.tif")
+                    logging.info(f"georeferencing {src_png_path} to {tif_path}")
+                    png_image = Image.open(src_png_path)
+                    georeference_raster_tile(
+                        x, y, zoom, src_png_path, tif_path, png_image.mode == "P"
+                    )
+                    tifs.append(tif_path)
+        if len(tifs) > 0:
+            merge_path = os.path.join(export_temp_dir, "merge.tif")
+            logging.info(f"merging {len(tifs)} to {merge_path}")
+            Warp(
+                merge_path,
+                tifs,
+                outputBounds=(x_min, y_min, x_max, y_max),
+                outputBoundsSRS="EPSG:4326",
+                dstSRS="EPSG:3857",
+            )
+            logging.info("merge complete")
+            pdf_path = os.path.join(export_temp_dir, "merge.pdf")
+            Translate(pdf_path, merge_path, format="PDF")
+            with open(pdf_path, "rb") as pdf_file:
+                pdf_data = pdf_file.read()
+            rmtree(export_temp_dir)
+            return Response(pdf_data, media_type="application/pdf")
+        else:
+            rmtree(export_temp_dir)
+            return None
+    except Exception as e:
+        logging.error(f"Warp failed with {e}")
         rmtree(export_temp_dir)
         return None
 

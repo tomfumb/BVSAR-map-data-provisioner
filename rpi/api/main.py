@@ -1,7 +1,12 @@
+import os
+import logging
+import sys
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from gdal import UseExceptions, ConfigurePythonLogging
 
 from api.routes.export import router as router_export
 from api.routes.status import router as router_status
@@ -14,6 +19,7 @@ from api.settings import (
     TILES_DIR,
     UI_DIR,
     UI_PATH,
+    API_LOG_DIR,
 )
 
 app = FastAPI()
@@ -41,13 +47,43 @@ async def root():
     return RedirectResponse(f"{UI_PATH}")
 
 
+def configure_logging():
+    requestedLogLevel = os.environ.get("LOG_LEVEL", "info")
+    logLevelMapping = {
+        "debug": logging.DEBUG,
+        "info": logging.INFO,
+        "warn": logging.WARN,
+        "error": logging.ERROR,
+    }
+    handlers = [
+        logging.StreamHandler(stream=sys.stdout),
+        logging.FileHandler(
+            filename=os.path.join(API_LOG_DIR, f"api-{os.getpid()}.log"), mode="w"
+        ),
+    ]
+    logging.basicConfig(
+        handlers=handlers,
+        level=logLevelMapping.get(requestedLogLevel, logging.INFO),
+        format="%(levelname)s %(asctime)s %(message)s",
+    )
+
+    logger_name = "gdal"
+    enable_debug = logging.getLogger().level == logging.DEBUG
+    ConfigurePythonLogging(logger_name, enable_debug)
+    if not enable_debug:
+        # suppress noisy GDAL log output as it is meaningless to most users
+        logging.getLogger(logger_name).setLevel(logging.ERROR)
+    UseExceptions()
+
+
+configure_logging()
+
 # Development / debug support, not executed when running in container
 # Start a local server on port 8888 by default, or whichever port was provided by the caller, when script / module executed directly
 if __name__ == "__main__":
-    import sys
 
     import uvicorn
 
     port = 8888 if len(sys.argv) == 1 else int(sys.argv[1])
-    print("Available on port %d", port)
+    logging.info("Available on port %d", port)
     uvicorn.run(app, host="0.0.0.0", port=port)

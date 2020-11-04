@@ -1,6 +1,9 @@
 import os
 
 
+API_LOG_DIR = os.environ.get(
+    "API_LOG_DIR", os.path.join(os.path.sep, "var", "log", "gunicorn")
+)
 UPLOADS_DIR = os.environ.get("UPLOADS_DIR", os.path.join(os.path.sep, "www", "uploads"))
 UPLOADS_PATH = "/uploads/files"
 TILES_DIR = os.environ.get("TILES_DIR", os.path.join(os.path.sep, "www", "tiles"))

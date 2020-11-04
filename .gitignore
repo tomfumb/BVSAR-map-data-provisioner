@@ -12,5 +12,6 @@ rpi/ui/viewer/node_modules/**
 rpi/ui/viewer/dist/**
 rpi/api/export/temp/**
 rpi/api/uploads/**
+rpi/api/log/**
 
 !.gitkeep
