@@ -79,6 +79,8 @@ services:
       - type: bind
         source: ./rpi/api
         target: /www/api
+    environment:
+      PDF_EXPORT_MAX_TILES:
     networks:
       - bvsar
     ports:

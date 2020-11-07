@@ -39,14 +39,13 @@ async def export_pdf(
     x_tile_min, y_tile_min, x_tile_max, y_tile_max = bbox_to_xyz(
         x_min, x_max, y_min, y_max, zoom
     )
-    check_tile_count_permitted(
-        *tile_counts(x_tile_min, y_tile_min, x_tile_max, y_tile_max)
-    )
+    required_tile_counts = tile_counts(x_tile_min, y_tile_min, x_tile_max, y_tile_max)
+    check_tile_count_permitted(*required_tile_counts)
     try:
         export_temp_dir = os.path.join(PARENT_TEMP_DIR, str(uuid4()))
         os.makedirs(export_temp_dir)
         tifs = list()
-        logging.info("Georeferencing tiles")
+        logging.info(f"Georeferencing tiles ({required_tile_counts[0]}x{required_tile_counts[1]})")
         for x in range(x_tile_min, x_tile_max + 1):
             for y in range(y_tile_min, y_tile_max + 1):
                 src_png_path = os.path.join(
@@ -54,15 +53,15 @@ async def export_pdf(
                 )
                 if os.path.exists(src_png_path):
                     tif_path = os.path.join(export_temp_dir, f"{zoom}_{x}_{y}.tif")
+                    logging.debug(f"Georeferencing {src_png_path} to {tif_path}")
                     png_image = Image.open(src_png_path)
                     georeference_raster_tile(
                         x, y, zoom, src_png_path, tif_path, png_image.mode == "P"
                     )
                     tifs.append(tif_path)
-        logging.info(f"Gereferenced {len(tifs)} tiles")
         if len(tifs) > 0:
             merge_path = os.path.join(export_temp_dir, "merge.tif")
-            logging.info(f"Merging to {merge_path}")
+            logging.info(f"Merging {len(tifs)} tiles to {merge_path}")
             Warp(
                 merge_path,
                 tifs,
@@ -70,11 +69,9 @@ async def export_pdf(
                 outputBoundsSRS="EPSG:4326",
                 dstSRS="EPSG:3857",
             )
-            logging.info("Merge complete")
             pdf_path = os.path.join(export_temp_dir, "merge.pdf")
             logging.info(f"Translating to {pdf_path}")
             Translate(pdf_path, merge_path, format="PDF")
-            logging.info("Translate complete")
             logging.info(
                 f"Reading PDF data to memory ({os.stat(pdf_path).st_size} bytes)"
             )
@@ -82,7 +79,6 @@ async def export_pdf(
                 pdf_data = pdf_file.read()
             logging.info("Deleting temp directory")
             rmtree(export_temp_dir)
-            logging.info("Deleted")
             return Response(pdf_data, media_type="application/pdf")
         else:
             logging.info("Deleting temp directory")

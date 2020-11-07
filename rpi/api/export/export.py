@@ -1,5 +1,5 @@
 from math import log, tan, radians, cos, pi, floor, degrees, atan, sinh
-from osgeo import gdal
+from gdal import Translate
 
 
 """Adapted from https://github.com/jimutt/tiles-to-tiff"""
@@ -58,6 +58,6 @@ def georeference_raster_tile(x, y, z, input_path, output_path, expandRgba):
     }
     if expandRgba:
         named_args["rgbExpand"] = "rgba"
-    gdal.Translate(
+    Translate(
         output_path, input_path, **named_args,
     )

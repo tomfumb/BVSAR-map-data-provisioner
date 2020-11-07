@@ -36,4 +36,4 @@ RUN chown -R pi: /www
 
 WORKDIR /www
 
-CMD [ "gunicorn3", "-b", "0.0.0.0:80", "--log-file", "/www/api/log/main.log", "--access-logfile", "/www/api/log/access.log", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "api.main:app" ]
+CMD [ "gunicorn3", "-b", "0.0.0.0:80", "--log-file", "/www/api/log/main.log", "--access-logfile", "/www/api/log/access.log", "--timeout", "3600", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "api.main:app" ]
