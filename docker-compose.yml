@@ -46,26 +46,12 @@ services:
     networks:
       - bvsar
     environment:
-      HTTP_URL: http://httpd
+      HTTP_URL: http://rpi
       TILEMILL_URL: http://tilemill:20009
       AREAS_LOCATION: /tiledata/areas/areas.gpkg
       LOCAL_FEATURES_LOCATION: /tiledata/local-features/local-features.gpkg
     depends_on: 
       - tilemill
-
-  httpd:
-    container_name: bvsar-httpd
-    build:
-      context: ./httpd
-    image: tomfumb/bvsar-httpd:latest
-    ports:
-      - "8001:80"
-    volumes:
-      - type: volume
-        source: bvsar-result
-        target: /usr/local/apache2/htdocs
-    networks:
-      - bvsar
 
   rpi:
     container_name: bvsar-rpi

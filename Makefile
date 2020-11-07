@@ -14,15 +14,6 @@ stop-tilemill:
 push-tilemill:
 	docker push $(TILEMILL_IMAGE_NAME)
 
-build-http:
-	docker build httpd -t $(HTTPD_IMAGE_NAME)
-start-http:
-	docker run -p 8011:80 -v $(DATA_LOCATION)/result:/usr/local/apache2/htdocs -d --name ${HTTPD_NAME} --rm $(HTTPD_IMAGE_NAME)
-stop-http:
-	docker stop ${HTTPD_NAME}
-push-http:
-	docker push $(HTTPD_IMAGE_NAME)
-
 build-provisioner:
 	docker build provisioning -t $(PROVISIONER_IMAGE_NAME)
 start-provisioner:
@@ -49,8 +40,6 @@ web-deploy-prod:
 
 build-push-all:
 	make build-tilemill
-	make build-http
 	make build-provisioner
 	make push-tilemill
-	make push-http
 	make push-provisioner
