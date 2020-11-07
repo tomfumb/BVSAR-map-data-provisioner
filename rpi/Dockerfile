@@ -1,3 +1,12 @@
+FROM node:12
+
+RUN npm install -g @angular/cli
+COPY ui/viewer /viewer
+WORKDIR /viewer
+RUN npm install
+RUN ng build --prod --baseHref=/web/
+
+
 FROM navikey/raspbian-buster
 
 RUN apt-get update
@@ -6,6 +15,7 @@ RUN apt-get install -y python3-pip
 RUN apt-get install -y gdal-bin
 RUN apt-get install -y libgdal-dev
 RUN apt-get install -y gunicorn3
+RUN apt-get install -y libxcb1-dev
 
 RUN adduser --disabled-password --gecos "" pi
 
@@ -14,13 +24,16 @@ RUN pip3 install -r /requirements.txt
 
 RUN mkdir -p /www/tiles
 RUN mkdir /www/uploads
-RUN mkdir /www/web
-RUN chown -R pi: /www
-
-RUN mkdir -p /var/log/gunicorn
 
 COPY api /www/api
+RUN mkdir -p /www/api/log
+RUN mkdir -p /www/api/export/temp
+
+COPY --from=0 /viewer/dist/viewer /www/web
+
+RUN chown -R pi: /www
+
 
 WORKDIR /www
 
-CMD [ "gunicorn3", "-b", "0.0.0.0:80", "--log-file", "/var/log/gunicorn/main.log", "--access-logfile /var/log/gunicorn/access.log", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "api.main:app" ]
+CMD [ "gunicorn3", "-b", "0.0.0.0:80", "--log-file", "/www/api/log/main.log", "--access-logfile", "/www/api/log/access.log", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "api.main:app" ]

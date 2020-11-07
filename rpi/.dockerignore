@@ -1,1 +1,7 @@
-ui/**
+config
+api/export/temp/**
+api/log/**
+api/uploads/**
+ui/viewer/dist
+ui/viewer/node_modules
+ui/viewer/e2e

@@ -38,7 +38,7 @@ api-deploy-prod:
 	scp -r `pwd`/rpi/api pi@pi-wired:/www/
 
 web-build-prod:
-	rm -rf fpi/ui/viewer/dist
+	rm -rf rpi/ui/viewer/dist
 	docker run --rm -v `pwd`/rpi/ui/viewer:/workdir -w /workdir tomfumb/bvsar-angular-cli ng build --prod --baseHref=/web/
 
 web-deploy-prod:
