@@ -46,7 +46,7 @@ services:
     networks:
       - bvsar
     environment:
-      HTTP_URL: http://rpi
+      HTTP_URL: http://rpi/tiles/files
       TILEMILL_URL: http://tilemill:20009
       AREAS_LOCATION: /tiledata/areas/areas.gpkg
       LOCAL_FEATURES_LOCATION: /tiledata/local-features/local-features.gpkg

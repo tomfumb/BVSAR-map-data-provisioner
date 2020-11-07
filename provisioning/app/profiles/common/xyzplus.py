@@ -49,10 +49,12 @@ def execute(
             )
             os.makedirs(os.path.dirname(xyz_copy_path), exist_ok=True)
             copyfile(xyz_tile, xyz_copy_path)
-    edge_tiles = [
-        os.path.join(generate_result.tile_dir, tile_path)
-        for tile_path in get_edge_tiles(generate_result.tile_dir)
-    ]
-    transparent_clip_to_bbox(edge_tiles, bbox)
+    transparent_clip_to_bbox(
+        [
+            os.path.join(generate_result.tile_dir, tile_path)
+            for tile_path in get_edge_tiles(generate_result.tile_dir)
+        ],
+        bbox,
+    )
     logging.info("Transferring combined tile set to result directory")
     add_or_update(generate_result.tile_dir, get_result_path((profile_name,)))

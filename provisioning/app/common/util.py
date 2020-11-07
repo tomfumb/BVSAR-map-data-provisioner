@@ -1,3 +1,4 @@
+import asyncio
 import errno
 import logging
 import os
@@ -137,3 +138,14 @@ def skip_file_creation(path: str) -> bool:
 
 def remove_intermediaries() -> bool:
     return int(os.environ.get("REMOVE_INTERMEDIARIES", 1)) == 1
+
+
+# https://stackoverflow.com/a/61478547/519575
+async def gather_with_concurrency(n: int, tasks) -> None:
+    semaphore = asyncio.Semaphore(n)
+
+    async def sem_task(task):
+        async with semaphore:
+            return await task
+
+    await asyncio.gather(*(sem_task(task) for task in tasks))

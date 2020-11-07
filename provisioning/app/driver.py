@@ -43,7 +43,8 @@ def provision(bbox: BBOX, profile_name: str, xyz_url: str) -> None:
         xyz_check_builder(
             bbox,
             "{0}/{1}/{{z}}/{{x}}/{{y}}.png".format(
-                os.environ.get("HTTP_URL", "http://localhost:9000"), profile_name
+                os.environ.get("HTTP_URL", "http://localhost:9000/tiles/files"),
+                profile_name,
             ),
             profiles[profile_name]["zoom_min"],
             profiles[profile_name]["zoom_max"],
