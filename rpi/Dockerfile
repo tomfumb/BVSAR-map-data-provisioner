@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:12 as ng-builder
 
 RUN npm install -g @angular/cli
 COPY ui/viewer /viewer
@@ -7,7 +7,7 @@ RUN npm install
 RUN ng build --prod --baseHref=/web/
 
 
-FROM navikey/raspbian-buster
+FROM debian:buster
 
 RUN apt-get update
 RUN apt-get install -y python3
@@ -29,7 +29,7 @@ COPY api /www/api
 RUN mkdir -p /www/api/log
 RUN mkdir -p /www/api/export/temp
 
-COPY --from=0 /viewer/dist/viewer /www/web
+COPY --from=ng-builder /viewer/dist/viewer /www/web
 
 RUN chown -R pi: /www
 
