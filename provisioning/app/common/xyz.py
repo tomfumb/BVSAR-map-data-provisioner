@@ -3,6 +3,7 @@ import math
 import os
 import re
 
+from multiprocessing.dummy import Pool as ThreadPool
 from PIL import Image
 from typing import Final, List
 
@@ -80,7 +81,8 @@ def get_edge_tiles(tile_dir: str) -> List[str]:
 def transparent_clip_to_bbox(tile_paths: List[str], bbox: BBOX) -> None:
     logging.info("Clipping edge tiles to bbox")
     min_x, max_x, min_y, max_y = bbox.transform_as_geom("EPSG:3857").GetEnvelope()
-    for tile_path in tile_paths:
+
+    def inspect_and_clip(tile_path: str) -> None:
         match_groups = re.match(r".+/(\d+)/(\d+)/(\d+)\.png$", tile_path)
         z, x, y = (
             int(match_groups.group(1)),
@@ -135,6 +137,10 @@ def transparent_clip_to_bbox(tile_paths: List[str], bbox: BBOX) -> None:
                         new_values = (0, 0, 0, 0)
                         tile.putpixel(coord, new_values)
             tile.quantize(method=2).save(tile_path)
+
+    ThreadPool(int(os.environ.get("TRANSPARENT_CLIP_CONCURRENCY", 4))).map(
+        inspect_and_clip, tile_paths
+    )
 
 
 def merge_tiles(base_path: str, overlay_path: str, output_path: str) -> None:

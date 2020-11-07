@@ -30,7 +30,6 @@ async def list_uploads():
     return uploads
 
 
-# curl -F "file=@/Users/tc/Desktop/chips.txt" localhost:9000/upload
 @router.post("")
 async def create_file(file: UploadFile = File(...)):
     filename_parts = file.filename.split(".")
