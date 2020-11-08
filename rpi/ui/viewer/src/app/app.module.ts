@@ -8,14 +8,12 @@ import { AppComponent } from './app.component';
 import { MapComponent } from './map/map.component';
 import { HttpClientModule } from '@angular/common/http';
 import { ShareComponent } from './share/share.component';
-import { HeaderComponent } from './header/header.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MapComponent,
     ShareComponent,
-    HeaderComponent
   ],
   imports: [
     BrowserModule,

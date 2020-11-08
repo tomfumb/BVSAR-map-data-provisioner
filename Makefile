@@ -40,14 +40,6 @@ web-deploy-prod:
 	ssh pi@pi-wired 'rm -rf /www/web'
 	scp -r `pwd`/rpi/ui/viewer/dist/viewer pi@pi-wired:/www/web
 
-
-build-push-all:
-	make build-tilemill
-	make build-provisioner
-	make push-tilemill
-	make push-provisioner
-
-
 ng-serve-start:
 	docker build -t $(NG_SERVE_IMAGE_NAME) ./angular-cli
 	docker run --rm -d --name $(NG_SERVE_NAME) -v `pwd`/rpi/ui/viewer:/workdir -w /workdir $(NG_SERVE_IMAGE_NAME)
