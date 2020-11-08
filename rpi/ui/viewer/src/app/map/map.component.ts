@@ -5,6 +5,7 @@ import { environment } from 'src/environments/environment';
 import { map } from 'rxjs/operators'
 import { forkJoin, Observable, Observer } from 'rxjs';
 import { CopyService } from '../copy.service';
+import { TouchService } from '../touch.service';
 
 interface Tileset {
   name: string;
@@ -44,10 +45,15 @@ export class MapComponent implements OnInit, OnDestroy {
   private tilesetSelected: Tileset;
   private leafletMap: any;
   private initObserver: Observer<void>;
+  
+  private updateExportOptionsTimeout: number = null;
+  private readonly updateExportOptionsAfterBind = () => { this.updateExportOptionsAfter(500); };
+
 
   constructor(
     private http: HttpClient,
-    private copyService: CopyService
+    private copyService: CopyService,
+    private touchService: TouchService
   ) {
     forkJoin([
       this.http.get<Tileset[]>(`${environment.tile_domain}/tile/list`),
@@ -83,6 +89,10 @@ export class MapComponent implements OnInit, OnDestroy {
     this.copyService.copyText(url);
   }
 
+  public get hasTilesets(): boolean {
+    return this.tilesets.length > 0;
+  }
+
   public initiateExport(): void {
     if (!this.leafletMap) {
       console.error("Attempt to export before map is ready");
@@ -90,13 +100,14 @@ export class MapComponent implements OnInit, OnDestroy {
     }
     this.exportInProgress = true;
     this.updateExportOptions();
-    this.leafletMap.on("moveend", () => {
-      this.updateExportOptions();
-   });
+    this.leafletMap.on("moveend", this.updateExportOptionsAfterBind);
+    this.leafletMap.on("resize", this.updateExportOptionsAfterBind);
   }
 
   public endExport(): void {
     this.exportInProgress = false;
+    this.leafletMap.off("moveend", this.updateExportOptionsAfterBind);
+    this.leafletMap.off("resize", this.updateExportOptionsAfterBind);
   }
 
   public requestExport(zoom: number): void {
@@ -107,16 +118,28 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   private updateExportOptions(): void {
-    this.exportInfos = [];
-    const mapState = this.getMapState();
-    const minZoom = Math.max(mapState.zoom, this.tilesetSelected.zoom_min);
-    const infoRequestObservables = [];
-    for(let i = minZoom; i <= this.tilesetSelected.zoom_max; i++) {
-      infoRequestObservables.push(this.http.get(`${environment.tile_domain}/export/info/${i}/${mapState.minX}/${mapState.minY}/${mapState.maxX}/${mapState.maxY}/${this.tilesetSelected.name}`));
+    if (this.exportInProgress) {
+      this.exportInfos = [];
+      const mapState = this.getMapState();
+      const minZoom = Math.max(mapState.zoom, this.tilesetSelected.zoom_min);
+      const infoRequestObservables = [];
+      for(let i = minZoom; i <= this.tilesetSelected.zoom_max; i++) {
+        infoRequestObservables.push(this.http.get(`${environment.tile_domain}/export/info/${i}/${mapState.minX}/${mapState.minY}/${mapState.maxX}/${mapState.maxY}/${this.tilesetSelected.name}`));
+      }
+      forkJoin(infoRequestObservables).subscribe((results: HttpResponse<ExportInfo>[]) => {
+        this.exportInfos = (<any>results).filter((exportInfo: ExportInfo) => exportInfo.permitted);
+      });
     }
-    forkJoin(infoRequestObservables).subscribe((results: HttpResponse<ExportInfo>[]) => {
-      this.exportInfos = (<any>results).filter((exportInfo: ExportInfo) => exportInfo.permitted);
-    });
+  }
+
+  private updateExportOptionsAfter(delay: number): void {
+    if (this.updateExportOptionsTimeout !== null) {
+      window.clearTimeout(this.updateExportOptionsTimeout);
+    }
+    this.updateExportOptionsTimeout = window.setTimeout(() => {
+      this.updateExportOptions();
+      this.updateExportOptionsTimeout = null;
+    }, delay);
   }
 
   private getMapState(): MapState {
@@ -139,7 +162,7 @@ export class MapComponent implements OnInit, OnDestroy {
         })
         return accumulator;
       }, {});
-      this.leafletMap = l.map("map");
+      this.leafletMap = l.map("map", {dragging: !this.touchService.touchEnabled});
       this.leafletMap.on("baselayerchange", event => {
         this.tilesetSelected = this.tilesets.find(tileset => {
           return tileset.name === event.name;

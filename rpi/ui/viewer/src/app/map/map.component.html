@@ -1,4 +1,4 @@
-<ng-container [ngSwitch]="tilesets.length > 0">
+<ng-container [ngSwitch]="hasTilesets">
     <ng-container *ngSwitchCase="true">
         <div id="map-container">
             <div id="map"></div>
@@ -22,12 +22,10 @@
         <table>
             <tr>
                 <th>App</th>
-                <th>Url</th>
                 <th></th>
             </tr>
             <tr *ngFor="let tileUrl of tileUrls | keyvalue:keepOriginalOrder">
                 <td>{{ tileUrl.key }}</td>
-                <td>{{ tileUrl.value }}</td>
                 <td class="url-copier" (click)="copyUrl(tileUrl.value)">Copy Url</td>
             </tr>
         </table>
