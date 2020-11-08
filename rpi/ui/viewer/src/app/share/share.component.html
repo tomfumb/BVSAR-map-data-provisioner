@@ -1,7 +1,7 @@
 <div id="upload-container">
     <div class="action-label">Upload a File</div>
     <div id="upload-controls-container">
-        <input #fileSelector type="file" (change)="fileChange($event)" placeholder="Upload file" accept="*">
+        <input #fileSelector type="file" (change)="fileChange($event)" placeholder="Upload file">
         <button class="primary-button" type="button" (click)="uploadFile()" [disabled]="!pendingUploadExists">{{ pendingUploadButtonText }}</button>
     </div>
 </div>
@@ -15,7 +15,7 @@
             </colgroup>
             <tr *ngFor="let upload of uploads">
                 <td class="ellips-overflow">
-                    <a [href]="uploadDomain + upload.path" target="_blank">{{ upload.filename }}</a>
+                    <a [download]="upload.filename" [href]="uploadDomain + upload.path" target="_blank">{{ upload.filename }}</a>
                 </td>
             </tr>
         </table>

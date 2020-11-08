@@ -116,11 +116,13 @@ export class MapComponent implements OnInit, OnDestroy {
     this.leafletMap.off("resize", this.updateExportOptionsAfterBind);
   }
 
-  public requestExport(zoom: number): void {
+  public getExportLink(zoom: number): string {
     const mapState = this.getMapState();
-    const exportUrl = `${environment.tile_domain}/export/pdf/${zoom}/${mapState.minX}/${mapState.minY}/${mapState.maxX}/${mapState.maxY}/${this.tilesetSelected.name}`
-    window.open(exportUrl, "PDF Export");
-    this.endExport();
+    return `${environment.tile_domain}/export/pdf/${zoom}/${mapState.minX}/${mapState.minY}/${mapState.maxX}/${mapState.maxY}/${this.tilesetSelected.name}`
+  }
+
+  public getExportName(zoom: number): string {
+    return `${this.tilesetSelected.name}-${zoom}.pdf`
   }
 
   private updateExportOptions(): void {

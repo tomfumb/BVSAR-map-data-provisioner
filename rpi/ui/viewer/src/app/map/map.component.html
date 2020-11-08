@@ -24,7 +24,9 @@
                         <div class="export-option-container" *ngFor="let exportInfo of exportInfos">
                             <div class="export-sample" style="background: url('{{exportInfo.sample}}')">
                                 <div class="export-sample-info">{{ 256 * exportInfo.x_tiles }} x {{ 256 * exportInfo.y_tiles }}px</div>
-                                <button type="button" class="export-control-button export-requestor" (click)="requestExport(exportInfo.z)">Export at z{{exportInfo.z}}</button>
+                                <a [download]="getExportName(exportInfo.z)" [href]="getExportLink(exportInfo.z)">
+                                    <button type="button" class="export-control-button export-requestor">Export at z{{exportInfo.z}}</button>
+                                </a>
                             </div>
                         </div>
                     </div>
