@@ -1,3 +1,4 @@
+import math
 import os
 
 from fastapi.routing import APIRouter
@@ -20,7 +21,16 @@ async def tile_info():
                     if os.path.isdir(os.path.join(profile_path, zoomdir))
                 ]
             )
+
             tilesets.append(
-                {"name": dirname, "zoom_min": zooms[0], "zoom_max": zooms[-1],}
+                {
+                    "name": dirname,
+                    "zoom_min": zooms[0],
+                    "zoom_max": zooms[-1],
+                    "last_modified": math.floor(
+                        os.stat(os.path.join(profile_path, "coverage.geojson")).st_mtime
+                        * 1000
+                    ),
+                }
             )
     return tilesets

@@ -11,6 +11,7 @@ interface Tileset {
   name: string;
   zoom_min: number;
   zoom_max: number;
+  last_modified: number;
 }
 
 interface ExportInfo {
@@ -91,6 +92,11 @@ export class MapComponent implements OnInit, OnDestroy {
 
   public get hasTilesets(): boolean {
     return this.tilesets.length > 0;
+  }
+
+  public get tilesetLastModified(): string {
+    const modifiedDate = new Date(this.tilesetSelected.last_modified);
+    return `${modifiedDate.getFullYear()}/${("0" + (modifiedDate.getMonth() + 1)).slice(-2)}/${("0" + modifiedDate.getDate()).slice(-2)}`;
   }
 
   public initiateExport(): void {

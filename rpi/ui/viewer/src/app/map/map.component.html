@@ -3,6 +3,7 @@
         <div id="map-container">
             <div id="map"></div>
         </div>
+        <div id="last-modified-label">Data last updated {{ tilesetLastModified }}</div>
         <div id="export-container" class="after-map-container">
             <ng-container [ngSwitch]="exportInProgress">
                 <div *ngSwitchCase="false">

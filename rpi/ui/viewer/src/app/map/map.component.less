@@ -1,15 +1,21 @@
 @import '../theme.less';
 
+@common-vert-spacing: 0.3em;
+
 #map {
     height: 70vh;
     width: 100%;
 }
 
+#last-modified-label {
+    color: @brand-colour-primary;
+    font-size: smaller;
+    padding: @common-vert-spacing;
+}
+
 .url-copier {
     cursor: pointer;
 }
-
-@common-vert-spacing: 0.3em;
 
 .after-map-container {
     background-color: @brand-colour-secondary;
