@@ -5,6 +5,9 @@ HTTPD_IMAGE_NAME=tomfumb/$(HTTPD_NAME)
 PROVISIONER_NAME=bvsar-provisioner
 PROVISIONER_IMAGE_NAME=tomfumb/$(PROVISIONER_NAME)
 
+NG_SERVE_NAME=bvsar-ng-serve
+NG_SERVE_IMAGE_NAME=tomfumb/bvsar-angular-cli
+
 build-tilemill:
 	docker build tilemill -t $(TILEMILL_IMAGE_NAME)
 start-tilemill:
@@ -43,3 +46,12 @@ build-push-all:
 	make build-provisioner
 	make push-tilemill
 	make push-provisioner
+
+
+ng-serve-start:
+	docker build -t $(NG_SERVE_IMAGE_NAME) ./angular-cli
+	docker run --rm -d --name $(NG_SERVE_NAME) -v `pwd`/rpi/ui/viewer:/workdir -w /workdir $(NG_SERVE_IMAGE_NAME)
+	docker logs -f $(NG_SERVE_NAME)
+
+ng-serve-stop:
+	docker stop $(NG_SERVE_NAME)

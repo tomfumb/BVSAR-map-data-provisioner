@@ -142,9 +142,13 @@ export class MapComponent implements OnInit, OnDestroy {
     })).subscribe(geojson => {
       const zoomMin = tileset.zoom_min;
       const zoomMax = tileset.zoom_max;
-      let initialBounds = l.geoJson(geojson).getBounds();
+      let newBounds = l.geoJson(geojson).getBounds();
       if (this.leafletMap) {
         // TODO: determine if the current bounds and new bounds intersect and share the same zoom levels. If they do, set current as new
+        const currentBounds = this.leafletMap.getBounds();
+        if (newBounds.intersects(currentBounds)) {
+          newBounds = currentBounds
+        }
         this.leafletMap.off();
         this.leafletMap.remove();
       }
@@ -153,7 +157,7 @@ export class MapComponent implements OnInit, OnDestroy {
         minZoom: zoomMin,
         maxZoom: zoomMax
       }).addTo(this.leafletMap);
-      this.leafletMap.fitBounds(initialBounds);
+      this.leafletMap.fitBounds(newBounds);
     });
     this.tileUrls = this.buildTileUrls();
   }
