@@ -29,7 +29,7 @@ push-provisioner:
 
 api-deploy-prod:
 	ssh pi@pi-wired 'rm -rf /www/api'
-	scp -r `pwd`/rpi/api pi@pi-wired:/www/
+	rsync -rv -e ssh --exclude='**.log' --exclude='**.DS_Store' --exclude='**.pyc' --exclude='**.gitkeep' --exclude='**/__pycache__' --exclude='api/uploads/**' `pwd`/rpi/api pi@pi-wired:/www/
 
 web-build-prod:
 	rm -rf rpi/ui/viewer/dist
