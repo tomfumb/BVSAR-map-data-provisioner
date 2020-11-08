@@ -1,4 +1,4 @@
-import { HttpClient, HttpEventType, HttpParams, HttpRequest, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpRequest } from '@angular/common/http';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { SpaceService } from '../space.service';
@@ -21,7 +21,6 @@ export class ShareComponent {
   public uploadDomain: string = environment.tile_domain;
   
   private pendingUpload: File;
-  private pendingDeleteFilename: string;
 
   @ViewChild("fileSelector")
   private fileSelector: ElementRef;
@@ -67,21 +66,7 @@ export class ShareComponent {
   }
 
   public get pendingUploadButtonText(): string {
-    return "Upload" + (this.pendingUpload ? ` ${this.pendingUpload.name} (${this.spaceService.fromBytes(this.pendingUpload.size)})` : "")
-  }
-
-  public deleteFileInitiate(filename: string): void {
-    this.pendingDeleteFilename = filename;
-  }
-
-  public deleteFileCancel(): void {
-    this.pendingDeleteFilename = null;
-  }
-
-  public deleteFile(): void {
-    this.http.delete(`${environment.tile_domain}/upload/${this.pendingDeleteFilename}`).subscribe(() => {
-      this.updateFileList();
-    });
+    return "Upload" + (this.pendingUpload ? ` (${this.spaceService.fromBytes(this.pendingUpload.size)})` : "")
   }
 
   private updateFileList(): void {

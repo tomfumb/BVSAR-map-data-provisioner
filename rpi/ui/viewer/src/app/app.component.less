@@ -1,15 +1,19 @@
+@import './theme.less';
+
 #nav-container {
     display: flex;
     div.nav-link {
         cursor: pointer;
-        color: #E0E0E0;
+        background-color: @brand-colour-secondary;
+        color: @brand-colour-primary;
         padding: 0.8em;
         flex: 1;
         &:focus {
             outline: none;
         }
         &.active {
-            color: #fff;
+            background-color: @brand-colour-primary;
+            color: @brand-colour-secondary;
             font-weight: bold;
             &:after {
                 content: "";
@@ -23,11 +27,5 @@
                 margin-left: 5px;
             }
         }
-    }
-    .nav-map {
-        background-color: #2E8B57;
-    }
-    .nav-share {
-        background-color: #FD6A02
     }
 }

@@ -1,3 +1,5 @@
+@import '../theme.less';
+
 #map {
     height: 70vh;
     width: 100%;
@@ -7,13 +9,99 @@
     cursor: pointer;
 }
 
-.export-info-container {
+@common-vert-spacing: 0.3em;
 
-    .export-sample {
-        width: 256px;
-        height: 256px;
+.after-map-container {
+    background-color: @brand-colour-secondary;
+    margin-top: @common-vert-spacing;
+    padding: 0.5em;
+}
+
+
+#export-container {
+
+    .export-control-button {
+        .primary-button;
+        margin-left: auto;
+    }
+
+    #export-header-container {
         display: flex;
         justify-content: space-between;
+        padding-bottom: @common-vert-spacing;
         align-items: baseline;
+
+        #export-zoom-instruction {
+            color: @brand-colour-primary;
+            font-weight: bold;
+        }
+    }
+
+    #export-info-container {
+        color: @brand-colour-primary;
+        font-style: italic;
+        margin: 1em 0;
+        padding-right: 0.5em;
+    }
+
+    #export-options-container {
+        margin-top: @common-vert-spacing;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .export-option-container {
+    
+        margin: 0 0.2em 0.2em 0.2em;
+        border: 1px solid @brand-colour-primary;
+
+        .export-sample {
+            width: 256px;
+            height: 256px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .export-requestor {
+            margin: @common-vert-spacing;
+            border: 1px solid @brand-colour-secondary;
+        }
+
+        .export-sample-info {
+            color: @brand-colour-secondary;
+            text-shadow: 0 0 10px #000;
+            margin: @common-vert-spacing;
+            font-size: smaller;
+        }
+    }
+}
+
+#urls-container {
+
+    #tile-urls-label {
+        color: @brand-colour-primary;
+    }
+
+    #urls-table {
+        width: 100%;
+        font-size: smaller;
+        border-collapse: collapse;
+        color: @brand-colour-primary;
+
+        td:first-child {
+            text-align: right;
+            padding-right: 0.5em;
+        }
+
+        td {
+            white-space: nowrap;
+            padding: @common-vert-spacing 0;
+        }
+    }
+
+    .url-copier-button {
+        .primary-button;
+        padding: 0.5em;
     }
 }
