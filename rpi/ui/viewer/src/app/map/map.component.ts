@@ -14,7 +14,13 @@ interface Tileset {
   last_modified: number;
 }
 
-interface ExportInfo {
+interface ExportInfoCommon {
+  is_placeholder: boolean;
+}
+
+interface ExportInfoPlaceholder extends ExportInfoCommon { }
+
+interface ExportInfo extends ExportInfoCommon {
   z: number;
   x_tiles: number;
   y_tiles: number;
@@ -40,7 +46,7 @@ export class MapComponent implements OnInit, OnDestroy {
   public tileUrls: {[index: string]: string} = {};
 
   public exportInProgress: boolean = false;
-  public exportInfos: ExportInfo[] = [];
+  public exportInfos: ExportInfoCommon[] = [];
 
   private tilesets: Tileset[] = [];
   private tilesetSelected: Tileset;
@@ -127,7 +133,9 @@ export class MapComponent implements OnInit, OnDestroy {
 
   private updateExportOptions(): void {
     if (this.exportInProgress) {
-      this.exportInfos = [];
+      this.exportInfos = this.exportInfos.map(() => {
+        return {is_placeholder: true};
+      });
       const mapState = this.getMapState();
       const minZoom = Math.max(mapState.zoom, this.tilesetSelected.zoom_min);
       const infoRequestObservables = [];
@@ -135,7 +143,7 @@ export class MapComponent implements OnInit, OnDestroy {
         infoRequestObservables.push(this.http.get(`${environment.tile_domain}/export/info/${i}/${mapState.minX}/${mapState.minY}/${mapState.maxX}/${mapState.maxY}/${this.tilesetSelected.name}`));
       }
       forkJoin(infoRequestObservables).subscribe((results: HttpResponse<ExportInfo>[]) => {
-        this.exportInfos = (<any>results).filter((exportInfo: ExportInfo) => exportInfo.permitted);
+        this.exportInfos = (<any>results).filter((exportInfo: ExportInfo) => exportInfo.permitted).map(exportInfo => Object.assign({}, exportInfo, {is_placeholder: false}));
       });
     }
   }
