@@ -35,13 +35,13 @@ interface MapState {
 })
 export class MapComponent implements OnInit, OnDestroy {
 
-  public tilesetSelected: Tileset;
-  public tilesets: Tileset[] = [];
   public tileUrls: {[index: string]: string} = {};
 
   public exportInProgress: boolean = false;
   public exportInfos: ExportInfo[] = [];
 
+  private tilesets: Tileset[] = [];
+  private tilesetSelected: Tileset;
   private leafletMap: any;
   private initObserver: Observer<void>;
 
@@ -58,7 +58,7 @@ export class MapComponent implements OnInit, OnDestroy {
       this.tilesets = results[0];
       if (this.tilesets.length) {
         this.tilesetSelected = this.tilesets[0];
-        this.initMap(this.tilesetSelected);
+        this.initMap();
       }
     });
   }
@@ -73,11 +73,6 @@ export class MapComponent implements OnInit, OnDestroy {
       this.leafletMap.off();
       this.leafletMap.remove();
     }
-  }
-
-  public tilesetSelectedChanged(): void {
-    this.endExport();
-    this.initMap(this.tilesetSelected);
   }
 
   public keepOriginalOrder(a: any, _: any): string {
@@ -135,28 +130,39 @@ export class MapComponent implements OnInit, OnDestroy {
     };
   }
 
-  private initMap(tileset: Tileset): void {
-    const rootPath = `${environment.tile_domain}/tiles/files/${this.tilesetSelected.name}`;
-    this.http.get(`${rootPath}/coverage.geojson`).pipe(map((response: HttpResponse<object>) => {
+  private initMap(): void {
+    window.setTimeout(() => {
+      const tileLayers = this.tilesets.reduce((accumulator, currentValue) => {
+        accumulator[currentValue.name] = l.tileLayer(`${environment.tile_domain}/tiles/files/${currentValue.name}/{z}/{x}/{y}.png`, {
+          minZoom: currentValue.zoom_min,
+          maxZoom: currentValue.zoom_max
+        })
+        return accumulator;
+      }, {});
+      this.leafletMap = l.map("map");
+      this.leafletMap.on("baselayerchange", event => {
+        this.tilesetSelected = this.tilesets.find(tileset => {
+          return tileset.name === event.name;
+        });
+        this.tilesetSelectedChanged(true);
+      });
+      tileLayers[this.tilesetSelected.name].addTo(this.leafletMap);
+      l.control.layers(tileLayers).addTo(this.leafletMap);
+      this.tilesetSelectedChanged(false);
+    });
+  }
+
+  private tilesetSelectedChanged(respectCurrentBounds: boolean): void {
+    this.http.get(`${environment.tile_domain}/tiles/files/${this.tilesetSelected.name}/coverage.geojson`).pipe(map((response: HttpResponse<object>) => {
       return response;
     })).subscribe(geojson => {
-      const zoomMin = tileset.zoom_min;
-      const zoomMax = tileset.zoom_max;
       let newBounds = l.geoJson(geojson).getBounds();
-      if (this.leafletMap) {
-        // TODO: determine if the current bounds and new bounds intersect and share the same zoom levels. If they do, set current as new
+      if (respectCurrentBounds) {
         const currentBounds = this.leafletMap.getBounds();
-        if (newBounds.intersects(currentBounds)) {
+        if (respectCurrentBounds && newBounds.intersects(currentBounds)) {
           newBounds = currentBounds
         }
-        this.leafletMap.off();
-        this.leafletMap.remove();
       }
-      this.leafletMap = l.map("map");
-      l.tileLayer(`${rootPath}/{z}/{x}/{y}.png`, {
-        minZoom: zoomMin,
-        maxZoom: zoomMax
-      }).addTo(this.leafletMap);
       this.leafletMap.fitBounds(newBounds);
     });
     this.tileUrls = this.buildTileUrls();

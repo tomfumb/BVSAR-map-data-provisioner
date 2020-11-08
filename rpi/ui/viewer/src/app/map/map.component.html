@@ -1,19 +1,5 @@
 <ng-container [ngSwitch]="tilesets.length > 0">
     <ng-container *ngSwitchCase="true">
-        <div
-            *ngIf="tilesets.length > 1"
-            id="tile-select-container">
-            <form>
-                <label for="tilesetSelector">Viewing Tiles: </label>
-                <select 
-                    name="tilesetSelector" 
-                    id="tilesetSelector"
-                    [(ngModel)]="tilesetSelected"
-                    (ngModelChange)="tilesetSelectedChanged()">
-                    <option *ngFor="let tileset of tilesets" [ngValue]="tileset">{{ tileset.name }}</option>
-                </select>
-            </form>
-        </div>
         <div id="map-container">
             <div id="map"></div>
         </div>
