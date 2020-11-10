@@ -4,9 +4,10 @@ HTTPD_NAME=bvsar-httpd
 HTTPD_IMAGE_NAME=tomfumb/$(HTTPD_NAME)
 PROVISIONER_NAME=bvsar-provisioner
 PROVISIONER_IMAGE_NAME=tomfumb/$(PROVISIONER_NAME)
-
-NG_SERVE_NAME=bvsar-ng-serve
-NG_SERVE_IMAGE_NAME=tomfumb/bvsar-angular-cli
+NG_BUILD_NAME=bvsar-ng-build
+NG_BUILD_IMAGE_NAME=tomfumb/bvsar-angular-cli
+SSH_SERVE_NAME=bvsar-sshd
+SSH_SERVE_IMAGE_NAME=tomfumb/bvsar-sshd
 
 build-tilemill:
 	docker build tilemill -t $(TILEMILL_IMAGE_NAME)
@@ -33,17 +34,24 @@ api-deploy-prod:
 
 web-build-prod:
 	rm -rf rpi/ui/viewer/dist
-	docker run --rm -v `pwd`/rpi/ui/viewer:/workdir -w /workdir tomfumb/bvsar-angular-cli ng build --prod --baseHref=/web/
+	docker run --rm -v `pwd`/rpi/ui/viewer:/workdir -w /workdir $(NG_BUILD_IMAGE_NAME) ng build --prod --baseHref=/web/
 
 web-deploy-prod:
 	make web-build-prod
 	ssh pi@pi-wired 'rm -rf /www/web'
 	scp -r `pwd`/rpi/ui/viewer/dist/viewer pi@pi-wired:/www/web
 
-ng-serve-start:
-	docker build -t $(NG_SERVE_IMAGE_NAME) ./angular-cli
-	docker run --rm -d --name $(NG_SERVE_NAME) -v `pwd`/rpi/ui/viewer:/workdir -w /workdir $(NG_SERVE_IMAGE_NAME)
-	docker logs -f $(NG_SERVE_NAME)
+ng-build-start:
+	docker build -t $(NG_BUILD_IMAGE_NAME) ./angular-cli
+	docker run --rm -d --name $(NG_BUILD_NAME) -v `pwd`/rpi/ui/viewer:/workdir -w /workdir $(NG_BUILD_IMAGE_NAME)
+	docker logs -f $(NG_BUILD_NAME)
 
 ng-serve-stop:
-	docker stop $(NG_SERVE_NAME)
+	docker stop $(NG_BUILD_NAME)
+
+ssh-serve-start:
+	docker build -t $(SSH_SERVE_IMAGE_NAME) ./sshd
+	docker run --rm -d --name $(SSH_SERVE_NAME) -v bvsar-map-data-provisioner_bvsar-result:/tiledata/result -v $$SSH_PUB_KEY_LOCATION:/root/.ssh/authorized_keys -p 2222:22 $(SSH_SERVE_IMAGE_NAME)
+
+ssh-serve-stop:
+	docker stop $(SSH_SERVE_NAME)

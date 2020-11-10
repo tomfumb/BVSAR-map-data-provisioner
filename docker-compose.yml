@@ -70,8 +70,8 @@ services:
     networks:
       - bvsar
     ports:
-      - 9000:80
-      - 9080:8080
+      - "9000:80"
+      - "9080:8080"
 
   # angular-cli:
   #   container_name: bvsar-angular-cli
