@@ -6,6 +6,8 @@ import { map } from 'rxjs/operators'
 import { forkJoin, Observable, Observer } from 'rxjs';
 import { CopyService } from '../copy.service';
 import { TouchService } from '../touch.service';
+import { MatDialog } from '@angular/material/dialog';
+import { TileUrlsComponent } from './tile-urls/tile-urls.component';
 
 interface Tileset {
   name: string;
@@ -60,7 +62,8 @@ export class MapComponent implements OnInit, OnDestroy {
   constructor(
     private http: HttpClient,
     private copyService: CopyService,
-    private touchService: TouchService
+    private touchService: TouchService,
+    private dialog: MatDialog
   ) {
     forkJoin([
       this.http.get<Tileset[]>(`${environment.tile_domain}/tile/list`),
@@ -188,6 +191,23 @@ export class MapComponent implements OnInit, OnDestroy {
       tileLayers[this.tilesetSelected.name].addTo(this.leafletMap);
       l.control.layers(tileLayers).addTo(this.leafletMap);
       this.tilesetSelectedChanged(false);
+
+      // === custom controls
+      l.Control.TileURLs = l.Control.extend({
+        onAdd: function(_) {
+            var btn = l.DomUtil.create('button');
+            btn.innerHTML = "URLs"
+            btn.onclick = this.openModal
+            return btn;
+        },
+        openModal: () => {
+          this.dialog.open(TileUrlsComponent, { data: {
+            message:  "Error!!!"
+          }});
+        }
+      });
+      new l.Control.TileURLs({ position: 'bottomright', context: this }).addTo(this.leafletMap);
+      // ===
     });
   }
 

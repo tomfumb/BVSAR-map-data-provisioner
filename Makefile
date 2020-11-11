@@ -46,7 +46,7 @@ ng-build-start:
 	docker run --rm -d --name $(NG_BUILD_NAME) -v `pwd`/rpi/ui/viewer:/workdir -w /workdir $(NG_BUILD_IMAGE_NAME)
 	docker logs -f $(NG_BUILD_NAME)
 
-ng-serve-stop:
+ng-build-stop:
 	docker stop $(NG_BUILD_NAME)
 
 ssh-serve-start:
