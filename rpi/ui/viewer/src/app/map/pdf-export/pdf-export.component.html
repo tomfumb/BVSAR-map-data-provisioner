@@ -1,0 +1,24 @@
+<mat-dialog-content>
+    <div id="export-header-container">
+        <div id="exports-warning" class="info-container">
+            Exports at higher zoom levels can take several minutes and affect the device's performance. Please use sparingly.
+        </div>
+    </div>
+    <div id="export-options-container">
+        <div class="export-option-container" *ngFor="let exportInfo of exportInfos">
+            <ng-container [ngSwitch]="exportInfo.is_placeholder">
+                <ng-container *ngSwitchCase="true">
+                    <div class="export-sample"></div>
+                </ng-container>
+                <ng-container *ngSwitchCase="false">
+                    <div class="export-sample" style="background: url('{{exportInfo.sample}}')">
+                        <div class="export-sample-info">{{ 256 * exportInfo.x_tiles }} x {{ 256 * exportInfo.y_tiles }}px</div>
+                        <a [download]="getExportName(exportInfo.z)" [href]="getExportLink(exportInfo.z)" (click)="exportInitiated()">
+                            <button [disabled]="exportInProgress" type="button" class="export-control-button export-requestor">Export at z{{exportInfo.z}}</button>
+                        </a>
+                    </div>
+                </ng-container>
+            </ng-container>
+        </div>
+    </div>
+</mat-dialog-content>

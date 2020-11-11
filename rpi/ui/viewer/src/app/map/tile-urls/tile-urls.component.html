@@ -1,1 +1,14 @@
-<p>tile-urls works! ({{ data.message }})</p>
+<div id="urls-container">
+    <table id="urls-table">
+        <colgroup>
+            <col width="0%" />
+            <col width="100%" />
+            <col width="0%" />
+        </colgroup>
+        <tr *ngFor="let tileUrl of tileUrls | keyvalue:keepOriginalOrder">
+            <td>{{ tileUrl.key }}:</td>
+            <td class="ellips-overflow">{{ tileUrl.value }}</td>
+            <td><button type="button" class="url-copier-button" (click)="copyUrl(tileUrl.value)">Copy URL</button></td>
+        </tr>
+    </table>
+</div>

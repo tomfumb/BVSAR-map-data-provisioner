@@ -4,39 +4,10 @@ import * as l from 'leaflet';
 import { environment } from 'src/environments/environment';
 import { map } from 'rxjs/operators'
 import { forkJoin, Observable, Observer } from 'rxjs';
-import { CopyService } from '../copy.service';
-import { TouchService } from '../touch.service';
 import { MatDialog } from '@angular/material/dialog';
 import { TileUrlsComponent } from './tile-urls/tile-urls.component';
-
-interface Tileset {
-  name: string;
-  zoom_min: number;
-  zoom_max: number;
-  last_modified: number;
-}
-
-interface ExportInfoCommon {
-  is_placeholder: boolean;
-}
-
-interface ExportInfoPlaceholder extends ExportInfoCommon { }
-
-interface ExportInfo extends ExportInfoCommon {
-  z: number;
-  x_tiles: number;
-  y_tiles: number;
-  sample: string;
-  permitted: boolean;
-}
-
-interface MapState {
-  minX: number;
-  minY: number;
-  maxX: number;
-  maxY: number;
-  zoom: number;
-}
+import { PdfExportComponent } from './pdf-export/pdf-export.component';
+import { Tileset } from './tileset';
 
 @Component({
   selector: 'app-map',
@@ -45,24 +16,14 @@ interface MapState {
 })
 export class MapComponent implements OnInit, OnDestroy {
 
-  public tileUrls: {[index: string]: string} = {};
-
-  public exportInProgress: boolean = false;
-  public exportInfos: ExportInfoCommon[] = [];
-
   private tilesets: Tileset[] = [];
   private tilesetSelected: Tileset;
   private leafletMap: any;
   private initObserver: Observer<void>;
-  
-  private updateExportOptionsTimeout: number = null;
-  private readonly updateExportOptionsAfterBind = () => { this.updateExportOptionsAfter(500); };
-
+  private dataModifiedLabel: l.Control;
 
   constructor(
     private http: HttpClient,
-    private copyService: CopyService,
-    private touchService: TouchService,
     private dialog: MatDialog
   ) {
     forkJoin([
@@ -73,7 +34,23 @@ export class MapComponent implements OnInit, OnDestroy {
     ]).subscribe(results => {
       this.tilesets = results[0];
       if (this.tilesets.length) {
-        this.tilesetSelected = this.tilesets[0];
+        try {
+          // if there is a dataset that appears suitable for the time of year, select it by default
+          const season = [3,4,5,6,7,8,9].indexOf((new Date().getMonth())) > -1 ? "summer" : "winter";
+          const seasonRegex = new RegExp(`${season}`, "i");
+          const seasonTilesets = this.tilesets.filter(tileset => {
+            return !!tileset.name.match(seasonRegex);
+          });
+          if (seasonTilesets.length > 0) {
+            this.tilesetSelected = seasonTilesets[0];
+          }
+        } catch (ex) {
+          console.log(`Failed to select a seasonal tileset: ${ex}`);
+        } finally {
+          if (!this.tilesetSelected) {
+            this.tilesetSelected = this.tilesets[0];
+          }
+        }
         this.initMap();
       }
     });
@@ -91,85 +68,8 @@ export class MapComponent implements OnInit, OnDestroy {
     }
   }
 
-  public keepOriginalOrder(a: any, _: any): string {
-    return a.key;
-  }
-
-  public copyUrl(url: string): void {
-    this.copyService.copyText(url);
-  }
-
   public get hasTilesets(): boolean {
     return this.tilesets.length > 0;
-  }
-
-  public get tilesetLastModified(): string {
-    const modifiedDate = new Date(this.tilesetSelected.last_modified);
-    return `${modifiedDate.getFullYear()}/${("0" + (modifiedDate.getMonth() + 1)).slice(-2)}/${("0" + modifiedDate.getDate()).slice(-2)}`;
-  }
-
-  public initiateExport(): void {
-    if (!this.leafletMap) {
-      console.error("Attempt to export before map is ready");
-      return;
-    }
-    this.exportInProgress = true;
-    this.updateExportOptions();
-    this.leafletMap.on("moveend", this.updateExportOptionsAfterBind);
-    this.leafletMap.on("resize", this.updateExportOptionsAfterBind);
-  }
-
-  public endExport(): void {
-    this.exportInProgress = false;
-    this.leafletMap.off("moveend", this.updateExportOptionsAfterBind);
-    this.leafletMap.off("resize", this.updateExportOptionsAfterBind);
-  }
-
-  public getExportLink(zoom: number): string {
-    const mapState = this.getMapState();
-    return `${environment.tile_domain}/export/pdf/${zoom}/${mapState.minX}/${mapState.minY}/${mapState.maxX}/${mapState.maxY}/${this.tilesetSelected.name}`
-  }
-
-  public getExportName(zoom: number): string {
-    return `${this.tilesetSelected.name}-${zoom}.pdf`
-  }
-
-  private updateExportOptions(): void {
-    if (this.exportInProgress) {
-      this.exportInfos = this.exportInfos.map(() => {
-        return {is_placeholder: true};
-      });
-      const mapState = this.getMapState();
-      const minZoom = Math.max(mapState.zoom, this.tilesetSelected.zoom_min);
-      const infoRequestObservables = [];
-      for(let i = minZoom; i <= this.tilesetSelected.zoom_max; i++) {
-        infoRequestObservables.push(this.http.get(`${environment.tile_domain}/export/info/${i}/${mapState.minX}/${mapState.minY}/${mapState.maxX}/${mapState.maxY}/${this.tilesetSelected.name}`));
-      }
-      forkJoin(infoRequestObservables).subscribe((results: HttpResponse<ExportInfo>[]) => {
-        this.exportInfos = (<any>results).filter((exportInfo: ExportInfo) => exportInfo.permitted).map(exportInfo => Object.assign({}, exportInfo, {is_placeholder: false}));
-      });
-    }
-  }
-
-  private updateExportOptionsAfter(delay: number): void {
-    if (this.updateExportOptionsTimeout !== null) {
-      window.clearTimeout(this.updateExportOptionsTimeout);
-    }
-    this.updateExportOptionsTimeout = window.setTimeout(() => {
-      this.updateExportOptions();
-      this.updateExportOptionsTimeout = null;
-    }, delay);
-  }
-
-  private getMapState(): MapState {
-    const [minX, minY, maxX, maxY] = this.leafletMap.getBounds().toBBoxString().split(",")
-    return {
-      minX: minX,
-      minY: minY,
-      maxX: maxX,
-      maxY: maxY,
-      zoom: this.leafletMap.getZoom()
-    };
   }
 
   private initMap(): void {
@@ -181,7 +81,7 @@ export class MapComponent implements OnInit, OnDestroy {
         })
         return accumulator;
       }, {});
-      this.leafletMap = l.map("map", {dragging: !this.touchService.touchEnabled});
+      this.leafletMap = l.map("map");
       this.leafletMap.on("baselayerchange", event => {
         this.tilesetSelected = this.tilesets.find(tileset => {
           return tileset.name === event.name;
@@ -191,27 +91,62 @@ export class MapComponent implements OnInit, OnDestroy {
       tileLayers[this.tilesetSelected.name].addTo(this.leafletMap);
       l.control.layers(tileLayers).addTo(this.leafletMap);
       this.tilesetSelectedChanged(false);
-
-      // === custom controls
-      l.Control.TileURLs = l.Control.extend({
-        onAdd: function(_) {
-            var btn = l.DomUtil.create('button');
-            btn.innerHTML = "URLs"
-            btn.onclick = this.openModal
-            return btn;
-        },
-        openModal: () => {
-          this.dialog.open(TileUrlsComponent, { data: {
-            message:  "Error!!!"
-          }});
+      new (this.leafletModalOpener("Export", PdfExportComponent, () => {
+        return {
+          tileset: this.tilesetSelected,
+          map: this.leafletMap
+        };
+      }))({ position: "bottomright" }).addTo(this.leafletMap);
+      new (this.leafletModalOpener("URLs", TileUrlsComponent, () => {
+        return {
+          tilesetName: this.tilesetSelected.name
+        };
+      }))({ position: "bottomright" }).addTo(this.leafletMap);
+      const initialText = this.getModifiedText();
+      this.dataModifiedLabel = new (l.Control.extend({
+        onAdd: function() {
+          const lastModifiedLabel = l.DomUtil.create("div");
+          lastModifiedLabel.innerHTML = initialText;
+          lastModifiedLabel.id = "last-modified-label";
+          return lastModifiedLabel;
         }
-      });
-      new l.Control.TileURLs({ position: 'bottomright', context: this }).addTo(this.leafletMap);
-      // ===
+      }))({ position: "bottomleft" });
+      this.dataModifiedLabel.addTo(this.leafletMap)
+      new (l.Control.extend({
+        onAdd: function(map) {
+            const btn = l.DomUtil.create("button");
+            btn.innerHTML = `<img src="assets/locate.png" />`;
+            btn.onclick = function() { map.locate({ setView: true }); }
+            return btn;
+        }
+      }))({ position: "topright" }).addTo(this.leafletMap);
+    });
+  }
+
+  private leafletModalOpener(label: string, componentType: any, dataProvider: () => any): l.Control {
+    return l.Control.extend({
+      onAdd: function() {
+          const btn = l.DomUtil.create("button");
+          btn.innerHTML = label;
+          btn.onclick = this.openModal
+          btn.className="primary-button";
+          btn.type="button";
+          return btn;
+      },
+      openModal: () => {
+        this.dialog.open(componentType, {
+          data: dataProvider(),
+          width: componentType.WIDTH,
+          panelClass: componentType.PANEL_CLASS
+        });
+      }
     });
   }
 
   private tilesetSelectedChanged(respectCurrentBounds: boolean): void {
+    if (this.dataModifiedLabel) {
+      this.dataModifiedLabel.getContainer().innerHTML = this.getModifiedText();
+    }
     this.http.get(`${environment.tile_domain}/tiles/files/${this.tilesetSelected.name}/coverage.geojson`).pipe(map((response: HttpResponse<object>) => {
       return response;
     })).subscribe(geojson => {
@@ -224,15 +159,10 @@ export class MapComponent implements OnInit, OnDestroy {
       }
       this.leafletMap.fitBounds(newBounds);
     });
-    this.tileUrls = this.buildTileUrls();
   }
 
-  private buildTileUrls(): {[index: string]: string} {
-    const baseUrl = `${window.location.protocol}//${window.location.host}/tiles/files/${this.tilesetSelected.name}/`
-    return {
-      "GIS Kit": `${baseUrl}#Z#/#X#/#Y#.png`,
-      "Touch GIS": `${baseUrl}{z}/{x}/{y}.png`,
-      "QGIS": `${baseUrl}{z}/{x}/{y}.png`
-    };
+  private getModifiedText(): string {
+    const modifiedDate = new Date(this.tilesetSelected.last_modified);
+    return `${this.tilesetSelected.name} last updated ${modifiedDate.getFullYear()}/${("0" + (modifiedDate.getMonth() + 1)).slice(-2)}/${("0" + modifiedDate.getDate()).slice(-2)}`;
   }
 }

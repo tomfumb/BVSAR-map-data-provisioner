@@ -3,57 +3,6 @@
         <div id="map-container">
             <div id="map"></div>
         </div>
-        <div id="last-modified-label">Data last updated {{ tilesetLastModified }}</div>
-        <div id="export-container" class="after-map-container">
-            <ng-container [ngSwitch]="exportInProgress">
-                <div *ngSwitchCase="false">
-                    <div id="export-header-container">
-                        <button class="export-control-button" type="button" (click)="initiateExport()">Export PDF</button>
-                    </div>
-                </div>
-                <div *ngSwitchCase="true">
-                    <div id="export-header-container">
-                        <div id="exports-warning" class="info-container">
-                            Exports at higher zoom levels can take several minutes and affect the device's performance. Please use sparingly.
-                        </div>
-                        <div>
-                            <button class="export-control-button" type="button" (click)="endExport()">Cancel Export</button>
-                        </div>
-                    </div>
-                    <div id="export-options-container">
-                        <div class="export-option-container" *ngFor="let exportInfo of exportInfos">
-                            <ng-container [ngSwitch]="exportInfo.is_placeholder">
-                                <ng-container *ngSwitchCase="true">
-                                    <div class="export-sample"></div>
-                                </ng-container>
-                                <ng-container *ngSwitchCase="false">
-                                    <div class="export-sample" style="background: url('{{exportInfo.sample}}')">
-                                        <div class="export-sample-info">{{ 256 * exportInfo.x_tiles }} x {{ 256 * exportInfo.y_tiles }}px</div>
-                                        <a [download]="getExportName(exportInfo.z)" [href]="getExportLink(exportInfo.z)">
-                                            <button type="button" class="export-control-button export-requestor">Export at z{{exportInfo.z}}</button>
-                                        </a>
-                                    </div>
-                                </ng-container>
-                            </ng-container>
-                        </div>
-                    </div>
-                </div>
-            </ng-container>
-        </div>
-        <div id="urls-container" class="after-map-container">
-            <table id="urls-table">
-                <colgroup>
-                    <col width="0%" />
-                    <col width="100%" />
-                    <col width="0%" />
-                </colgroup>
-                <tr *ngFor="let tileUrl of tileUrls | keyvalue:keepOriginalOrder">
-                    <td>{{ tileUrl.key }}:</td>
-                    <td class="ellips-overflow">{{ tileUrl.value }}</td>
-                    <td><button type="button" class="url-copier-button" (click)="copyUrl(tileUrl.value)">Copy URL</button></td>
-                </tr>
-            </table>
-        </div>
     </ng-container>
     <ng-container *ngSwitchCase="false">
         <h4 style="padding: 1em;">There are currently no tilesets</h4>

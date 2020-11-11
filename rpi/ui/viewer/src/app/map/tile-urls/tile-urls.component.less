@@ -1,0 +1,30 @@
+@import '../../theme.less';
+
+#urls-container {
+
+    #tile-urls-label {
+        color: @brand-colour-primary;
+    }
+
+    #urls-table {
+        width: 100%;
+        font-size: smaller;
+        border-collapse: collapse;
+        color: @brand-colour-primary;
+
+        td:first-child {
+            text-align: right;
+            padding-right: 0.5em;
+        }
+
+        td {
+            white-space: nowrap;
+            padding: @common-vert-spacing 0;
+        }
+    }
+
+    .url-copier-button {
+        .primary-button;
+        padding: 0.5em;
+    }
+}

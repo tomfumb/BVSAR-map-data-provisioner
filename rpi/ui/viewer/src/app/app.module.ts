@@ -10,7 +10,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { ShareComponent } from './share/share.component';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBarModule } from '@angular/material/snack-bar'
 import { TileUrlsComponent } from './map/tile-urls/tile-urls.component';
+import { PdfExportComponent } from './map/pdf-export/pdf-export.component';
 
 @NgModule({
   declarations: [
@@ -18,6 +20,7 @@ import { TileUrlsComponent } from './map/tile-urls/tile-urls.component';
     MapComponent,
     ShareComponent,
     TileUrlsComponent,
+    PdfExportComponent,
   ],
   imports: [
     BrowserModule,
@@ -26,7 +29,8 @@ import { TileUrlsComponent } from './map/tile-urls/tile-urls.component';
     FormsModule,
     CommonModule,
     NoopAnimationsModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSnackBarModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -1,5 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 @import "~leaflet/dist/leaflet.css";
+@import "app/theme.less";
 
 @font-face {
     font-family: droid;
@@ -9,6 +10,7 @@
 body {
     font-family: droid;
     margin: 0;
+    height: 100%;
 }
 
 td.ellips-overflow {
@@ -16,4 +18,18 @@ td.ellips-overflow {
     overflow: hidden;
     max-width: 1px;
     white-space: nowrap;
+}
+
+.common-modal-panel,.mat-dialog-container {
+    background-color: @brand-colour-secondary;
+    padding: 0.5em !important;
+    box-shadow: none;
+}
+
+#last-modified-label {
+    color: @brand-colour-primary;
+    font-size: small;
+    padding: @common-vert-spacing;
+    margin: 0;
+    background-color: @brand-colour-secondary;
 }
