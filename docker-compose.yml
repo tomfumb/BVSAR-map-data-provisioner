@@ -72,18 +72,6 @@ services:
     ports:
       - "9000:80"
       - "9080:8080"
-
-  # angular-cli:
-  #   container_name: bvsar-angular-cli
-  #   build:
-  #     context: ./angular-cli
-  #   image: tomfumb/bvsar-angular-cli
-  #   volumes:
-  #     - type: bind
-  #       source: ./rpi/ui/viewer
-  #       target: /workdir
-  #   ports:
-  #     - 4200:4200
         
 networks:
   bvsar:

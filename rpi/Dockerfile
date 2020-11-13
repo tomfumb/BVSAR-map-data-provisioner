@@ -16,6 +16,7 @@ RUN apt-get install -y gdal-bin
 RUN apt-get install -y libgdal-dev
 RUN apt-get install -y gunicorn3
 RUN apt-get install -y libxcb1-dev
+RUN apt-get install -y default-jre
 
 RUN adduser --disabled-password --gecos "" pi
 

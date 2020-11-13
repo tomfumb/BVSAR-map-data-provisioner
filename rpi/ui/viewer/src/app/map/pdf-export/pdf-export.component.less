@@ -1,0 +1,55 @@
+@import '../../theme.less';
+
+#export-header-container {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: @common-vert-spacing;
+    align-items: baseline;
+
+    #export-zoom-instruction {
+        color: @brand-colour-primary;
+        font-weight: bold;
+    }
+}
+
+#exports-warning {
+    margin: 1em 0;
+    padding-right: 0.5em;
+}
+
+#export-options-container {
+    margin-top: @common-vert-spacing;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.export-option-container {
+
+    margin: 0 0.2em 0.2em 0.2em;
+    border: 1px solid @brand-colour-primary;
+
+    .export-sample {
+        width: 256px;
+        height: 256px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .export-requestor {
+        margin: @common-vert-spacing;
+        border: 1px solid @brand-colour-secondary;
+    }
+
+    .export-sample-info {
+        color: @brand-colour-secondary;
+        text-shadow: 0 0 10px #000;
+        margin: @common-vert-spacing;
+        font-size: smaller;
+    }
+}
+
+.export-control-button {
+    .primary-button;
+    padding: 0.5em;
+}

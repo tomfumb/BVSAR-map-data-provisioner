@@ -15,8 +15,6 @@ start-tilemill:
 	docker run -p 20009:20009 -p 20008:20008 -v $(DATA_LOCATION)/run:/tiledata/run -v $(DATA_LOCATION)/export:/root/Documents/MapBox/export -d --name ${TILEMILL_NAME} --rm $(TILEMILL_IMAGE_NAME)
 stop-tilemill:
 	docker stop ${TILEMILL_NAME}
-push-tilemill:
-	docker push $(TILEMILL_IMAGE_NAME)
 
 build-provisioner:
 	docker build provisioning -t $(PROVISIONER_IMAGE_NAME)
@@ -24,9 +22,6 @@ start-provisioner:
 	docker run -v $(DATA_LOCATION)/result:/tiledata/result -v $(DATA_LOCATION)/run:/tiledata/run -v $(DATA_LOCATION)/export:/tiledata/export -v $(DATA_LOCATION)/cache:/tiledata/cache -d --name ${PROVISIONER_NAME} --rm --network bvsar $(PROVISIONER_IMAGE_NAME)
 stop-provisioner:
 	docker stop $(PROVISIONER_NAME)
-push-provisioner:
-	docker push $(PROVISIONER_IMAGE_NAME)
-
 
 api-deploy-prod:
 	ssh pi@pi-wired 'rm -rf /www/api'
@@ -46,7 +41,7 @@ ng-build-start:
 	docker run --rm -d --name $(NG_BUILD_NAME) -v `pwd`/rpi/ui/viewer:/workdir -w /workdir $(NG_BUILD_IMAGE_NAME)
 	docker logs -f $(NG_BUILD_NAME)
 
-ng-serve-stop:
+ng-build-stop:
 	docker stop $(NG_BUILD_NAME)
 
 ssh-serve-start:
