@@ -1,14 +1,21 @@
-<div id="urls-container">
-    <table id="urls-table">
-        <colgroup>
-            <col width="0%" />
-            <col width="100%" />
-            <col width="0%" />
-        </colgroup>
-        <tr *ngFor="let tileUrl of tileUrls | keyvalue:keepOriginalOrder">
-            <td>{{ tileUrl.key }}:</td>
-            <td class="ellips-overflow">{{ tileUrl.value }}</td>
-            <td><button type="button" class="url-copier-button" (click)="copyUrl(tileUrl.value)">Copy URL</button></td>
-        </tr>
-    </table>
+<div mat-dialog-title class="dialog-title-container">
+    <div class="dialog-title">URLs</div>
+    <button mat-button class="dialog-close-icon primary-button" [mat-dialog-close]="true">X</button>
+</div>
+<hr />
+<div mat-dialog-content>
+    <div id="urls-container">
+        <table id="urls-table">
+            <colgroup>
+                <col width="0%" />
+                <col width="100%" />
+                <col width="0%" />
+            </colgroup>
+            <tr *ngFor="let tileUrl of tileUrls | keyvalue:keepOriginalOrder">
+                <td>{{ tileUrl.key }}:</td>
+                <td class="ellips-overflow">{{ tileUrl.value }}</td>
+                <td><button type="button" class="url-copier-button" (click)="copyUrl(tileUrl.value)">Copy URL</button></td>
+            </tr>
+        </table>
+    </div>
 </div>

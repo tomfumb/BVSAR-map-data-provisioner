@@ -44,6 +44,11 @@ async def export_pdf(
     export_temp_dir = os.path.join(PARENT_TEMP_DIR, str(uuid4()))
     os.makedirs(export_temp_dir)
     xml_file_path = os.path.join(export_temp_dir, "gdal.xml")
+    # Hack for development purposes:
+    # While debugging via dev server you will likely only have a single thread that can only handle one HTTP request at a time
+    # In this scenario if tile requests for PDF export go to localhost:port for the dev server you will see a deadlock. The export process waits for tile HTTP requests to complete and tile requests cannot complete until the export process returns.
+    # If you have a separate device serving the same tiles, use this device's domain for PDF_EXPORT_TILE_HOST
+    # If you do not have a separate device, start a simple web server container (e.g. httpd) to serve the same tiles and enter that localhost:port for PDF_EXPORT_TILE_HOST
     tile_host = os.environ.get("PDF_EXPORT_TILE_HOST", "localhost")
     base_url = f"http://{tile_host}"
     with open(xml_file_path, "w") as xml_file:

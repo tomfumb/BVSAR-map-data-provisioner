@@ -112,14 +112,18 @@ export class MapComponent implements OnInit, OnDestroy {
         }
       }))({ position: "bottomleft" });
       this.dataModifiedLabel.addTo(this.leafletMap)
-      new (l.Control.extend({
-        onAdd: function(map) {
-            const btn = l.DomUtil.create("button");
-            btn.innerHTML = `<img src="assets/locate.png" />`;
-            btn.onclick = function() { map.locate({ setView: true }); }
-            return btn;
-        }
-      }))({ position: "topright" }).addTo(this.leafletMap);
+      // locate will work on localhost but not via IP address / domain without HTTPS
+      // HTTPS unavailable / impractical with pi device over the long term
+      // new (l.Control.extend({
+      //   onAdd: function(map: l.map) {
+      //       const btn = l.DomUtil.create("button");
+      //       btn.innerHTML = `<img src="assets/locate.png" width="32px" height="34px" />`;
+      //       btn.onclick = function() { alert(`fish, ${map}`); map.locate({ setView: true }); };
+      //       btn.className = "clickable";
+      //       btn.type="button";
+      //       return btn;
+      //   }
+      // }))({ position: "topright" }).addTo(this.leafletMap);
     });
   }
 
@@ -128,8 +132,8 @@ export class MapComponent implements OnInit, OnDestroy {
       onAdd: function() {
           const btn = l.DomUtil.create("button");
           btn.innerHTML = label;
-          btn.onclick = this.openModal
-          btn.className="primary-button";
+          btn.onclick = this.openModal;
+          btn.className="primary-button map-action-button";
           btn.type="button";
           return btn;
       },
