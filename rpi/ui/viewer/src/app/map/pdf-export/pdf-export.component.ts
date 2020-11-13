@@ -44,6 +44,8 @@ export class PdfExportComponent implements OnInit {
 
   public exportInfos: ExportInfoCommon[] = [];
   public exportInProgress: boolean = false;
+  public tilesetName: string;
+  public maxZoom: number;
 
   private map: l.map;
   private tileset: Tileset;
@@ -58,6 +60,8 @@ export class PdfExportComponent implements OnInit {
   ) {
     this.map = data.map;
     this.tileset = data.tileset;
+    this.tilesetName = data.tileset.name;
+    this.maxZoom = data.tileset.zoom_max;
   }
 
   public ngOnInit(): void {

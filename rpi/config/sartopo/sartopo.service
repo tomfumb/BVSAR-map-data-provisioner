@@ -1,0 +1,10 @@
+[Unit]
+Description=SARTopo Mount Trigger
+Requires=media-usb.mount
+After=media-usb.mount
+
+[Service]
+ExecStart=/www/sartopo.sh
+
+[Install]
+WantedBy=media-usb.mount

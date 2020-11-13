@@ -2,9 +2,10 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from  '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CopyService } from 'src/app/copy.service';
+import { Tileset } from '../tileset';
 
 interface Parameters {
-  tilesetName: string;
+  tileset: Tileset;
 }
 
 @Component({
@@ -18,6 +19,8 @@ export class TileUrlsComponent {
   public static readonly PANEL_CLASS = "common-modal-panel";
 
   public tileUrls: {[index: string]: string} = {};
+  public maxZoom: number;
+  public tilesetName: string;
   
   constructor(
     private dialogRef: MatDialogRef<TileUrlsComponent>,
@@ -26,6 +29,8 @@ export class TileUrlsComponent {
     @Inject(MAT_DIALOG_DATA) public data: Parameters
   ) {
     this.tileUrls = this.buildTileUrls(data);
+    this.maxZoom = data.tileset.zoom_max;
+    this.tilesetName = data.tileset.name;
   }
 
   public close() {
@@ -47,11 +52,11 @@ export class TileUrlsComponent {
   }
 
   private buildTileUrls(parameters: Parameters): {[index: string]: string} {
-    const baseUrl = `${window.location.protocol}//${window.location.host}/tiles/files/${parameters.tilesetName}/`
+    const baseUrl = `${window.location.protocol}//${window.location.host}/tiles/files/${parameters.tileset.name}/`
     return {
       "GIS Kit": `${baseUrl}#Z#/#X#/#Y#.png`,
       "Touch GIS": `${baseUrl}{z}/{x}/{y}.png`,
-      "QGIS": `${baseUrl}{z}/{x}/{y}.png`
+      "SAR Topo": `http://localhost/tiles/files/${parameters.tileset.name}/{Z}/{X}/{Y}.png`
     };
   }
 }

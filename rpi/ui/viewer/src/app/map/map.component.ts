@@ -99,7 +99,7 @@ export class MapComponent implements OnInit, OnDestroy {
       }))({ position: "bottomright" }).addTo(this.leafletMap);
       new (this.leafletModalOpener("URLs", TileUrlsComponent, () => {
         return {
-          tilesetName: this.tilesetSelected.name
+          tileset: this.tilesetSelected
         };
       }))({ position: "bottomright" }).addTo(this.leafletMap);
       const initialText = this.getModifiedText();
