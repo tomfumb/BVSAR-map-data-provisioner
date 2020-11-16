@@ -1,0 +1,2 @@
+sudo systemctl disable hciuart.service
+sudo systemctl disable keyboard-setup.service

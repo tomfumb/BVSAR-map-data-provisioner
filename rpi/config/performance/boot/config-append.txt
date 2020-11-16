@@ -1,0 +1,10 @@
+### boot perf changes (append to /boot/config.txt)
+### http://himeshp.blogspot.com/2018/08/fast-boot-with-raspberry-pi.html
+# Disable the rainbow splash screen
+disable_splash=1
+
+# Disable bluetooth
+dtoverlay=pi3-disable-bt
+
+# Set the bootloader delay to 0 seconds. The default is 1s if not specified.
+boot_delay=0
