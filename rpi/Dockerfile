@@ -25,6 +25,7 @@ RUN pip3 install -r /requirements.txt
 
 RUN mkdir -p /www/tiles
 RUN mkdir /www/uploads
+RUN mkdir /www/files
 
 COPY api /www/api
 RUN mkdir -p /www/api/log

@@ -71,7 +71,6 @@ services:
       - bvsar
     ports:
       - "9000:80"
-      - "9080:8080"
         
 networks:
   bvsar:

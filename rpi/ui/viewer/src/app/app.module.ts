@@ -13,6 +13,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar'
 import { TileUrlsComponent } from './map/tile-urls/tile-urls.component';
 import { PdfExportComponent } from './map/pdf-export/pdf-export.component';
+import { FilesComponent } from './files/files.component';
 
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { PdfExportComponent } from './map/pdf-export/pdf-export.component';
     ShareComponent,
     TileUrlsComponent,
     PdfExportComponent,
+    FilesComponent,
   ],
   imports: [
     BrowserModule,
