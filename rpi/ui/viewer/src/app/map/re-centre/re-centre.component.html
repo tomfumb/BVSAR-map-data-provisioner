@@ -1,0 +1,52 @@
+<div mat-dialog-title class="dialog-title-container">
+    <div class="dialog-title">Re-Centre Map</div>
+    <button mat-button class="dialog-close-icon primary-button" [mat-dialog-close]="true">X</button>
+</div>
+<hr />
+<mat-dialog-content>
+    <table>
+        <tr>
+            <th>Format</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+        </tr>
+        <tr>
+            <td>DD</td>
+            <td>
+                <input type="number" max="90" min="-90" step="0.001" [(ngModel)]="latitudeDd" (ngModelChange)="conversions.fromDecimal()" class="input-decimal" />°
+            </td>
+            <td>
+                <input type="number" max="180" min="-180" step="0.001" [(ngModel)]="longitudeDd" (ngModelChange)="conversions.fromDecimal()" class="input-decimal" />°
+            </td>
+        </tr>
+        <tr>
+            <td>DDM</td>
+            <td>
+                <input type="number" max="90" min="-90" step="1" [(ngModel)]="latitudeDdmD" class="input-ddm-d" />°
+                <input type="number" max="60" min="0" step="0.001" [(ngModel)]="latitudeDdmM" class="input-ddm-m" />'
+            </td>
+            <td>
+                <input type="number" max="180" min="-180" step="1" [(ngModel)]="longitudeDdmD" class="input-ddm-d" />°
+                <input type="number" max="60" min="0" step="0.001" [(ngModel)]="longitudeDdmM" class="input-ddm-m" />'
+            </td>
+        </tr>
+        <tr>
+            <td>DMS</td>
+            <td>
+                <input type="number" max="90" min="-90" step="1" [(ngModel)]="latitudeDmsD" class="input-dms-d" />°
+                <input type="number" max="60" min="0" step="1" [(ngModel)]="latitudeDmsM" class="input-dms-m" />'
+                <input type="number" max="60" min="0" step="1" [(ngModel)]="latitudeDmsS" class="input-dms-s" />"
+            </td>
+            <td>
+                <input type="number" max="180" min="-180" step="1" [(ngModel)]="longitudeDmsD" class="input-dms-d" />°
+                <input type="number" max="60" min="0" step="1" [(ngModel)]="longitudeDmsM" class="input-dms-m" />'
+                <input type="number" max="60" min="0" step="1" [(ngModel)]="longitudeDmsS" class="input-dms-s" />"
+            </td>
+        </tr>
+    </table>
+
+
+
+
+    <button type="button" (click)="update()">Go</button>
+</mat-dialog-content>

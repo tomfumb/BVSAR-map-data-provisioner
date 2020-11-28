@@ -14,6 +14,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar'
 import { TileUrlsComponent } from './map/tile-urls/tile-urls.component';
 import { PdfExportComponent } from './map/pdf-export/pdf-export.component';
 import { FilesComponent } from './files/files.component';
+import { ReCentreComponent } from './map/re-centre/re-centre.component';
 
 @NgModule({
   declarations: [
@@ -23,6 +24,7 @@ import { FilesComponent } from './files/files.component';
     TileUrlsComponent,
     PdfExportComponent,
     FilesComponent,
+    ReCentreComponent,
   ],
   imports: [
     BrowserModule,

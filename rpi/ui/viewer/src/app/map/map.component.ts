@@ -8,6 +8,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { TileUrlsComponent } from './tile-urls/tile-urls.component';
 import { PdfExportComponent } from './pdf-export/pdf-export.component';
 import { Tileset } from './tileset';
+import { ReCentreComponent } from './re-centre/re-centre.component';
 
 @Component({
   selector: 'app-map',
@@ -97,7 +98,12 @@ export class MapComponent implements OnInit, OnDestroy {
           map: this.leafletMap
         };
       }))({ position: "bottomright" }).addTo(this.leafletMap);
-      new (this.leafletModalOpener("URLs", TileUrlsComponent, () => {
+      new (this.leafletModalOpener("Re-Centre", ReCentreComponent, () => {
+        return {
+          map: this.leafletMap
+        };
+      }))({ position: "bottomright" }).addTo(this.leafletMap);
+      new (this.leafletModalOpener("Get URLs", TileUrlsComponent, () => {
         return {
           tileset: this.tilesetSelected
         };
