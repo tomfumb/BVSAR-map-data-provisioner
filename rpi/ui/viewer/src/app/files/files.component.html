@@ -1,1 +1,16 @@
-<p>files works!</p>
+<div id="dirs-container">
+    <div *ngFor="let entry of dirFiles | keyvalue" class="dir-container">
+        <a [id]="stripParentDirs(entry.key)"></a>
+        <div class="dir-label action-label">{{ stripParentDirs(entry.key) }}</div>
+        <table class="files-table">
+            <colgroup>
+                <col width="100%" />
+            </colgroup>
+            <tr *ngFor="let file of entry.value">
+                <td class="ellips-overflow">
+                    <a [download]="stripParentDirs(file)" [href]="file" target="_blank">{{ stripParentDirs(file) }}</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>

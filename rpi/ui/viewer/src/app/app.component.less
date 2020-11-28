@@ -11,10 +11,12 @@
         flex: 1;
         display: flex;
         align-items: center;
+        border-bottom: 3px solid;
         &:focus {
             outline: none;
         }
         &.active {
+            border-bottom-color: @brand-colour-primary;
             background-color: @brand-colour-primary;
             color: @brand-colour-secondary;
             font-weight: bold;
@@ -30,5 +32,17 @@
                 margin-left: 5px;
             }
         }
+    }
+
+    .nav-map:not(.active) {
+        border-bottom-color: lightgreen !important;
+    }
+
+    .nav-share:not(.active) {
+        border-bottom-color: orange !important;
+    }
+
+    .nav-files:not(.active) {
+        border-bottom-color: red !important;
     }
 }
