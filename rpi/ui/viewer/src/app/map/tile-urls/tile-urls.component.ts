@@ -56,8 +56,7 @@ export class TileUrlsComponent {
     return {
       "GIS Kit": `${baseUrl}#Z#/#X#/#Y#.png`,
       "Touch GIS": `${baseUrl}{z}/{x}/{y}.png`,
-      "SAR Topo (local)": `http://localhost/tiles/files/${parameters.tileset.name}/{Z}/{X}/{Y}.png`,
-      "SAR Topo (remote)": `${baseUrl}{Z}/{X}/{Y}.png`
+      "SAR Topo": `${baseUrl}{Z}/{X}/{Y}.png`
     };
   }
 }
