@@ -1,22 +1,10 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import * as l from 'leaflet';
+import { CoordinateService } from 'src/app/coordinate.service';
 
 interface Parameters {
   map: l.map;
-}
-
-type DD = number;
-
-interface DDM {
-  d: number;
-  m: number;
-}
-
-interface DMS {
-  d: number;
-  m: number;
-  s: number;
 }
 
 @Component({
@@ -45,11 +33,10 @@ export class ReCentreComponent implements OnInit {
   public longitudeDmsS: number;
 
   private map: l.map;
-  private readonly MAX_PRECISION_DD = 5;
-  private readonly MAX_PRECISION_DDM = 4;
 
   constructor(
     private dialogRef: MatDialogRef<ReCentreComponent>,
+    private coordinateService: CoordinateService,
     @Inject(MAT_DIALOG_DATA) public data: Parameters
   ) {
     this.map = data.map;
@@ -57,8 +44,8 @@ export class ReCentreComponent implements OnInit {
 
   public ngOnInit(): void {
     const centre = this.map.getCenter()
-    this.latitudeDd = this.roundTo(centre.lat, this.MAX_PRECISION_DD);
-    this.longitudeDd = this.roundTo(centre.lng, this.MAX_PRECISION_DD);
+    this.latitudeDd = this.coordinateService.roundTo(centre.lat, CoordinateService.MAX_PRECISION_DD);
+    this.longitudeDd = this.coordinateService.roundTo(centre.lng, CoordinateService.MAX_PRECISION_DD);
     this.ddChanged();
   }
 
@@ -73,34 +60,34 @@ export class ReCentreComponent implements OnInit {
   }
 
   public ddmChanged(): void {
-    this.latitudeDd = this.roundTo(this.conversions.ddmToDd({
+    this.latitudeDd = this.coordinateService.roundTo(this.coordinateService.ddmToDd({
       d: this.latitudeDdmD,
       m: this.latitudeDdmM
-    }), this.MAX_PRECISION_DD);
-    this.longitudeDd = this.roundTo(this.conversions.ddmToDd({
+    }), CoordinateService.MAX_PRECISION_DD);
+    this.longitudeDd = this.coordinateService.roundTo(this.coordinateService.ddmToDd({
       d: this.longitudeDdmD,
       m: this.longitudeDdmM
-    }), this.MAX_PRECISION_DD);
+    }), CoordinateService.MAX_PRECISION_DD);
     this.updateDmsFromDd();
   }
 
   public dmsChanged(): void {
-    this.latitudeDd = this.roundTo(this.conversions.dmsToDd({
+    this.latitudeDd = this.coordinateService.roundTo(this.coordinateService.dmsToDd({
       d: this.latitudeDmsD,
       m: this.latitudeDmsM,
       s: this.latitudeDmsS
-    }), this.MAX_PRECISION_DD);
-    this.longitudeDd = this.roundTo(this.conversions.dmsToDd({
+    }), CoordinateService.MAX_PRECISION_DD);
+    this.longitudeDd = this.coordinateService.roundTo(this.coordinateService.dmsToDd({
       d: this.longitudeDmsD,
       m: this.longitudeDmsM,
       s: this.longitudeDmsS
-    }), this.MAX_PRECISION_DD);
+    }), CoordinateService.MAX_PRECISION_DD);
     this.updateDdmFromDd();
   }
 
   private updateDmsFromDd(): void {
-    const latitudeDms = this.conversions.ddToDms(this.latitudeDd);
-    const longitudeDms = this.conversions.ddToDms(this.longitudeDd);
+    const latitudeDms = this.coordinateService.ddToDms(this.latitudeDd);
+    const longitudeDms = this.coordinateService.ddToDms(this.longitudeDd);
     this.latitudeDmsD = latitudeDms.d;
     this.latitudeDmsM = latitudeDms.m;
     this.latitudeDmsS = latitudeDms.s;
@@ -110,42 +97,11 @@ export class ReCentreComponent implements OnInit {
   }
 
   private updateDdmFromDd(): void {
-    const latitudeDdm = this.conversions.ddToDdm(this.latitudeDd);
-    const longitudeDdm = this.conversions.ddToDdm(this.longitudeDd);
+    const latitudeDdm = this.coordinateService.ddToDdm(this.latitudeDd);
+    const longitudeDdm = this.coordinateService.ddToDdm(this.longitudeDd);
     this.latitudeDdmD = latitudeDdm.d;
-    this.latitudeDdmM = this.roundTo(latitudeDdm.m, this.MAX_PRECISION_DDM);
+    this.latitudeDdmM = this.coordinateService.roundTo(latitudeDdm.m, CoordinateService.MAX_PRECISION_DDM);
     this.longitudeDdmD = longitudeDdm.d;
-    this.longitudeDdmM = this.roundTo(longitudeDdm.m, this.MAX_PRECISION_DDM);
+    this.longitudeDdmM = this.coordinateService.roundTo(longitudeDdm.m, CoordinateService.MAX_PRECISION_DDM);
   }
-
-  private roundTo(input: number, precision: number): number {
-    const scaleFactor = Math.pow(10, precision);
-    return Math.round(input * scaleFactor) / scaleFactor;
-  }
-
-  public readonly conversions = {
-    ddToDms: (dd: DD): DMS => {
-      const M = this.conversions.ddToM(dd);
-      return {
-          d : 0|dd,
-          m : 0|M/1e7,
-          s : (0|Math.abs(dd)*60%1*6000)/100
-      };
-    },
-    ddToDdm: (dd: DD): DDM => {
-      return {
-          d : 0|dd,
-          m : this.conversions.ddToM(dd)/1e7
-      };
-    },
-    dmsToDd: (dms: DMS): DD => {
-      return dms.d + dms.m/60 + dms.s/(60*60);
-    },
-    ddmToDd: (ddm: DDM): DD => {
-      return ddm.d + ddm.m / 60;
-    },
-    ddToM: (dd: DD): number => {
-      return 0|((dd<0?-dd:dd)%1)*60e7;
-    }
-  };
 }

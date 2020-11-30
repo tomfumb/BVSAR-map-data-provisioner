@@ -4,49 +4,61 @@
 </div>
 <hr />
 <mat-dialog-content>
-    <table>
-        <tr>
-            <th>Format</th>
-            <th>Latitude</th>
-            <th>Longitude</th>
-        </tr>
-        <tr>
-            <td>DD</td>
-            <td>
-                <input type="number" max="90" min="-90" step="0.001" [(ngModel)]="latitudeDd" (ngModelChange)="ddChanged()" class="input-decimal" />°
-            </td>
-            <td>
-                <input type="number" max="180" min="-180" step="0.001" [(ngModel)]="longitudeDd" (ngModelChange)="ddChanged()" class="input-decimal" />°
-            </td>
-        </tr>
-        <tr>
-            <td>DDM</td>
-            <td>
-                <input type="number" max="90" min="-90" step="1" [(ngModel)]="latitudeDdmD" (ngModelChange)="ddmChanged()" class="input-ddm-d" />°
-                <input type="number" max="60" min="0" step="0.001" [(ngModel)]="latitudeDdmM" (ngModelChange)="ddmChanged()" class="input-ddm-m" />'
-            </td>
-            <td>
-                <input type="number" max="180" min="-180" step="1" [(ngModel)]="longitudeDdmD" (ngModelChange)="ddmChanged()" class="input-ddm-d" />°
-                <input type="number" max="60" min="0" step="0.001" [(ngModel)]="longitudeDdmM" (ngModelChange)="ddmChanged()" class="input-ddm-m" />'
-            </td>
-        </tr>
-        <tr>
-            <td>DMS</td>
-            <td>
-                <input type="number" max="90" min="-90" step="1" [(ngModel)]="latitudeDmsD" (ngModelChange)="dmsChanged()" class="input-dms-d" />°
-                <input type="number" max="60" min="0" step="1" [(ngModel)]="latitudeDmsM" (ngModelChange)="dmsChanged()" class="input-dms-m" />'
-                <input type="number" max="60" min="0" step="1" [(ngModel)]="latitudeDmsS" (ngModelChange)="dmsChanged()" class="input-dms-s" />"
-            </td>
-            <td>
-                <input type="number" max="180" min="-180" step="1" [(ngModel)]="longitudeDmsD" (ngModelChange)="dmsChanged()" class="input-dms-d" />°
-                <input type="number" max="60" min="0" step="1" [(ngModel)]="longitudeDmsM" (ngModelChange)="dmsChanged()" class="input-dms-m" />'
-                <input type="number" max="60" min="0" step="1" [(ngModel)]="longitudeDmsS" (ngModelChange)="dmsChanged()" class="input-dms-s" />"
-            </td>
-        </tr>
-    </table>
-
-
-
-
-    <button type="button" (click)="update()">Go</button>
+    <div id="controls-container">
+        <table>
+            <tr>
+                <th>Format</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+            </tr>
+            <tr>
+                <td>Decimal Degrees</td>
+                <td>
+                    <input type="number" max="90" min="-90" step="0.00001" [(ngModel)]="latitudeDd" (ngModelChange)="ddChanged()" class="input-decimal" />
+                    <span class="unit-suffix">°</span>
+                </td>
+                <td>
+                    <input type="number" max="180" min="-180" step="0.00001" [(ngModel)]="longitudeDd" (ngModelChange)="ddChanged()" class="input-decimal" />
+                    <span class="unit-suffix">°</span>
+                </td>
+            </tr>
+            <tr>
+                <td>Degrees, Decimal Minutes</td>
+                <td>
+                    <input type="number" max="90" min="-90" step="1" [(ngModel)]="latitudeDdmD" (ngModelChange)="ddmChanged()" class="input-ddm-d" />
+                    <span class="unit-suffix">°</span>
+                    <input type="number" max="60" min="0" step="0.0001" [(ngModel)]="latitudeDdmM" (ngModelChange)="ddmChanged()" class="input-ddm-m" />
+                    <span class="unit-suffix">'</span>
+                </td>
+                <td>
+                    <input type="number" max="180" min="-180" step="1" [(ngModel)]="longitudeDdmD" (ngModelChange)="ddmChanged()" class="input-ddm-d" />
+                    <span class="unit-suffix">°</span>
+                    <input type="number" max="60" min="0" step="0.0001" [(ngModel)]="longitudeDdmM" (ngModelChange)="ddmChanged()" class="input-ddm-m" />
+                    <span class="unit-suffix">'</span>
+                </td>
+            </tr>
+            <tr>
+                <td>Degrees, Minutes, Seconds</td>
+                <td>
+                    <input type="number" max="90" min="-90" step="1" [(ngModel)]="latitudeDmsD" (ngModelChange)="dmsChanged()" class="input-dms-d" />
+                    <span class="unit-suffix">°</span>
+                    <input type="number" max="60" min="0" step="1" [(ngModel)]="latitudeDmsM" (ngModelChange)="dmsChanged()" class="input-dms-m" />
+                    <span class="unit-suffix">'</span>
+                    <input type="number" max="60" min="0" step="0.01" [(ngModel)]="latitudeDmsS" (ngModelChange)="dmsChanged()" class="input-dms-s" />
+                    <span class="unit-suffix">&#x22;</span>
+                </td>
+                <td>
+                    <input type="number" max="180" min="-180" step="1" [(ngModel)]="longitudeDmsD" (ngModelChange)="dmsChanged()" class="input-dms-d" />
+                    <span class="unit-suffix">°</span>
+                    <input type="number" max="60" min="0" step="1" [(ngModel)]="longitudeDmsM" (ngModelChange)="dmsChanged()" class="input-dms-m" />
+                    <span class="unit-suffix">'</span>
+                    <input type="number" max="60" min="0" step="0.01" [(ngModel)]="longitudeDmsS" (ngModelChange)="dmsChanged()" class="input-dms-s" />
+                    <span class="unit-suffix">&#x22;</span>
+                </td>
+            </tr>
+        </table>
+        <div id="action-container">
+            <button type="button" class="re-centre-control-button" (click)="update()">Re-Centre</button>
+        </div>
+    </div>
 </mat-dialog-content>

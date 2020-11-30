@@ -1,25 +1,67 @@
 @import '../../theme.less';
 
-input.input-decimal {
-    width: 11em;
-}
+#controls-container {
 
-input.input-ddm-d {
-    width: 4em;
-}
+    color: @brand-colour-primary;
 
-input.input-ddm-m {
-    width: 7em;
-}
+    input[type=number] {
+        border: 1px solid @brand-colour-primary;
+        padding: 0.4em;
+    }
 
-input.input-dms-d {
-    width: 4em;
-}
+    input.input-decimal {
+        width: 11em;
+    }
 
-input.input-dms-m {
-    width: 3em;
-}
+    input.input-ddm-d {
+        width: 4em;
+    }
 
-input.input-dms-s {
-    width: 5em;
+    input.input-ddm-m {
+        width: 7em;
+    }
+
+    input.input-dms-d {
+        width: 4em;
+    }
+
+    input.input-dms-m {
+        width: 3em;
+    }
+
+    input.input-dms-s {
+        width: 5em;
+    }
+
+    .re-centre-control-button {
+        .primary-button;
+        padding: 0.5em;
+    }
+
+    table {
+        tr {
+            td:first-child,th:first-child {
+                text-align: right;
+            }
+            td:first-child {
+                font-size: smaller;
+            }
+            td:not(:first-child),th:not(:first-child) {
+                text-align: left;
+                padding-left: 1em;
+            }
+        }
+
+        .unit-suffix {
+            font-size: large;
+            font-weight: bold;
+            padding: 0 0.3em;
+        }
+    }
+
+    #action-container {
+        margin-top: 2em;
+        display: flex;
+        justify-content: flex-end;
+    }
 }

@@ -9,6 +9,7 @@ import { TileUrlsComponent } from './tile-urls/tile-urls.component';
 import { PdfExportComponent } from './pdf-export/pdf-export.component';
 import { Tileset } from './tileset';
 import { ReCentreComponent } from './re-centre/re-centre.component';
+import { CoordinateService } from '../coordinate.service';
 
 @Component({
   selector: 'app-map',
@@ -22,10 +23,12 @@ export class MapComponent implements OnInit, OnDestroy {
   private leafletMap: any;
   private initObserver: Observer<void>;
   private dataModifiedLabel: l.Control;
+  private mapCentreLabel: l.Control;
 
   constructor(
     private http: HttpClient,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private coordinateService: CoordinateService
   ) {
     forkJoin([
       this.http.get<Tileset[]>(`${environment.tile_domain}/tile/list`),
@@ -89,6 +92,11 @@ export class MapComponent implements OnInit, OnDestroy {
         });
         this.tilesetSelectedChanged(true);
       });
+      this.leafletMap.on("moveend", _ => {
+        if (this.mapCentreLabel) {
+          this.mapCentreLabel.getContainer().innerHTML = this.getCentreText();
+        }
+      });
       tileLayers[this.tilesetSelected.name].addTo(this.leafletMap);
       l.control.layers(tileLayers).addTo(this.leafletMap);
       this.tilesetSelectedChanged(false);
@@ -114,10 +122,21 @@ export class MapComponent implements OnInit, OnDestroy {
           const lastModifiedLabel = l.DomUtil.create("div");
           lastModifiedLabel.innerHTML = initialText;
           lastModifiedLabel.id = "last-modified-label";
+          lastModifiedLabel.className = "map-state-label-text";
           return lastModifiedLabel;
         }
       }))({ position: "bottomleft" });
       this.dataModifiedLabel.addTo(this.leafletMap)
+      this.mapCentreLabel = new (l.Control.extend({
+        onAdd: function() {
+          const mapCentreLabel = l.DomUtil.create("div");
+          mapCentreLabel.innerHTML = "...";
+          mapCentreLabel.id = "map-centre-label";
+          mapCentreLabel.className = "map-state-label-text";
+          return mapCentreLabel;
+        }
+      }))({ position: "bottomleft" });
+      this.mapCentreLabel.addTo(this.leafletMap)
       // locate will work on localhost but not via IP address / domain without HTTPS
       // HTTPS unavailable / impractical with pi device over the long term
       // new (l.Control.extend({
@@ -174,5 +193,10 @@ export class MapComponent implements OnInit, OnDestroy {
   private getModifiedText(): string {
     const modifiedDate = new Date(this.tilesetSelected.last_modified);
     return `${this.tilesetSelected.name} last updated ${modifiedDate.getFullYear()}/${("0" + (modifiedDate.getMonth() + 1)).slice(-2)}/${("0" + modifiedDate.getDate()).slice(-2)}`;
+  }
+
+  private getCentreText(): string {
+    const latLng = this.leafletMap.getCenter();
+    return `Centre: ${this.coordinateService.roundTo(latLng.lat, CoordinateService.MAX_PRECISION_DD)}, ${this.coordinateService.roundTo(latLng.lng, CoordinateService.MAX_PRECISION_DD)}`
   }
 }
