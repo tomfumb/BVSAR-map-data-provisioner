@@ -15,11 +15,13 @@
         <table id="uploads-table">
             <colgroup>
                 <col width="100%" />
+                <col width="0%" />
             </colgroup>
             <tr *ngFor="let upload of uploads">
                 <td class="ellips-overflow">
                     <a [download]="upload.filename" [href]="uploadDomain + upload.path" target="_blank">{{ upload.filename }}</a>
                 </td>
+                <td>{{ formatSize(upload.bytes) }}</td>
             </tr>
         </table>
     </ng-container>

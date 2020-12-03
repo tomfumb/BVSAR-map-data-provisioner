@@ -69,6 +69,10 @@ export class ShareComponent {
     return "Upload" + (this.pendingUpload ? ` (${this.spaceService.fromBytes(this.pendingUpload.size)})` : "")
   }
 
+  public formatSize(bytes: number): string {
+    return this.spaceService.fromBytes(bytes);
+  }
+
   private updateFileList(): void {
     this.http.get<Upload[]>(`${environment.tile_domain}/upload/list`).subscribe(response => {
       this.uploads = response.sort((a, b) => {

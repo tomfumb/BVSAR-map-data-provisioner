@@ -5,11 +5,13 @@
         <table class="files-table">
             <colgroup>
                 <col width="100%" />
+                <col width="0%" />
             </colgroup>
             <tr *ngFor="let file of entry.value">
                 <td class="ellips-overflow">
-                    <a [download]="stripParentDirs(file)" [href]="file" target="_blank">{{ stripParentDirs(file) }}</a>
+                    <a [download]="stripParentDirs(file.path)" [href]="file.path" target="_blank">{{ stripParentDirs(file.path) }}</a>
                 </td>
+                <td>{{ formatSize(file.size) }}</td>
             </tr>
         </table>
     </div>
