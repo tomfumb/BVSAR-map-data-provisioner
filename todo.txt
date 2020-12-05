@@ -1,4 +1,3 @@
-- Re-order XYZ winter to put trails & roads over ATES
 - Additional cabins from Ben
 - FTP problem: support FTP recovery similar to HTTP
 - minimal area intersection in runner.py

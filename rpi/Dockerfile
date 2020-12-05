@@ -29,6 +29,7 @@ RUN mkdir /www/files
 
 COPY api /www/api
 RUN mkdir -p /www/api/log
+RUN mkdir -p /www/web
 RUN mkdir -p /www/api/export/temp
 
 COPY --from=ng-builder /viewer/dist/viewer /www/web

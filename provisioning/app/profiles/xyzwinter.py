@@ -30,11 +30,11 @@ def execute(bbox: BBOX, run_id: str, args: Dict[str, object] = dict()) -> None:
         run_id,
         args["xyz_url"],
         NAME,
-        bc_resource_roads(bbox, run_id)
-        + trails(bbox, run_id)
-        + shelters(bbox, run_id)
-        + bc_ates_zones(bbox, run_id)
+        bc_ates_zones(bbox, run_id)
         + bc_ates_avpaths(bbox, run_id)
         + bc_ates_poi(bbox, run_id)
-        + bc_ates_dec_points(bbox, run_id),
+        + bc_ates_dec_points(bbox, run_id)
+        + bc_resource_roads(bbox, run_id)
+        + trails(bbox, run_id)
+        + shelters(bbox, run_id),
     )

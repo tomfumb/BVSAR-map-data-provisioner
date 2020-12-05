@@ -4,10 +4,10 @@
 **/*.pyc
 **/output/**
 **/.DS_Store
-.envrc
 .autoenv*.zsh
 *.gpkg-shm
 *.gpkg-wal
+.env-dev
 rpi/ui/viewer/node_modules/**
 rpi/ui/viewer/dist/**
 rpi/api/export/temp/**
