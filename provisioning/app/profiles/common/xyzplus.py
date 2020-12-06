@@ -32,15 +32,16 @@ def execute(
     logging.info(
         f"Merging {len(generate_result.tile_paths)} generated tile(s) to xyz base"
     )
-    for data_tile in generate_result.tile_paths:
-        matching_raw_xyz_tile = data_tile.replace(
-            generate_result.tile_dir, xyz_result.tile_dir
+    path_tuples = [
+        (
+            data_tile.replace(generate_result.tile_dir, xyz_result.tile_dir),
+            data_tile,
+            data_tile,
         )
-        logging.debug(f"Base tile {matching_raw_xyz_tile}, overlay {data_tile}")
-        merge_tiles(
-            matching_raw_xyz_tile, data_tile, data_tile,
-        )
-        xyz_tiles_merged.append(matching_raw_xyz_tile)
+        for data_tile in generate_result.tile_paths
+    ]
+    merge_tiles(path_tuples)
+    xyz_tiles_merged = [path_tuple[0] for path_tuple in path_tuples]
     logging.info("Collecting non-generated xyz tiles")
     for xyz_tile in xyz_result.tile_paths:
         if xyz_tile not in xyz_tiles_merged:

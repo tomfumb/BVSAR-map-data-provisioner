@@ -1,13 +1,14 @@
 import logging
 import math
+import multiprocessing
 import os
 import re
 
-from multiprocessing.dummy import Pool as ThreadPool
 from PIL import Image
-from typing import Final, List
+from typing import Final, List, Tuple
 
 from app.common.bbox import BBOX
+from app.common.util import get_process_pool_count
 
 
 EXTENT_LIMIT: Final = 20037508.3427892
@@ -81,8 +82,27 @@ def get_edge_tiles(tile_dir: str) -> List[str]:
 def transparent_clip_to_bbox(tile_paths: List[str], bbox: BBOX) -> None:
     logging.info("Clipping edge tiles to bbox")
     min_x, max_x, min_y, max_y = bbox.transform_as_geom("EPSG:3857").GetEnvelope()
+    _transparent_clip_to_bbox_executor(min_x, min_y, max_x, max_y, tile_paths).parallel(
+        get_process_pool_count()
+    )
 
-    def inspect_and_clip(tile_path: str) -> None:
+
+class _transparent_clip_to_bbox_executor:
+    def __init__(
+        self,
+        min_x: float,
+        min_y: float,
+        max_x: float,
+        max_y: float,
+        tile_paths: List[str],
+    ):
+        self.min_x = min_x
+        self.min_y = min_y
+        self.max_x = max_x
+        self.max_y = max_y
+        self.tile_paths = tile_paths
+
+    def __call__(self, tile_path: str):
         match_groups = re.match(r".+/(\d+)/(\d+)/(\d+)\.png$", tile_path)
         z, x, y = (
             int(match_groups.group(1)),
@@ -94,29 +114,29 @@ def transparent_clip_to_bbox(tile_paths: List[str], bbox: BBOX) -> None:
         tile_min_y = EXTENT_LIMIT - METRES_PER_TILE[z] * (y + 1)
         tile_max_y = tile_min_y + METRES_PER_TILE[z]
         if not (
-            tile_min_x >= max_x
-            or tile_max_x <= min_x
-            or tile_min_y >= max_y
-            or tile_max_y <= min_y
+            tile_min_x >= self.max_x
+            or tile_max_x <= self.min_x
+            or tile_min_y >= self.max_y
+            or tile_max_y <= self.min_y
         ):
             left_pixels = (
-                math.floor((min_x - tile_min_x) / METRES_PER_PIXEL[z])
-                if min_x > tile_min_x
+                math.floor((self.min_x - tile_min_x) / METRES_PER_PIXEL[z])
+                if self.min_x > tile_min_x
                 else 0
             )
             bottom_pixels = (
-                math.floor((min_y - tile_min_y) / METRES_PER_PIXEL[z])
-                if min_y > tile_min_y
+                math.floor((self.min_y - tile_min_y) / METRES_PER_PIXEL[z])
+                if self.min_y > tile_min_y
                 else 0
             )
             right_pixels = (
-                math.floor((tile_max_x - max_x) / METRES_PER_PIXEL[z])
-                if tile_max_x > max_x
+                math.floor((tile_max_x - self.max_x) / METRES_PER_PIXEL[z])
+                if tile_max_x > self.max_x
                 else 0
             )
             top_pixels = (
-                math.floor((tile_max_y - max_y) / METRES_PER_PIXEL[z])
-                if tile_max_y > max_y
+                math.floor((tile_max_y - self.max_y) / METRES_PER_PIXEL[z])
+                if tile_max_y > self.max_y
                 else 0
             )
             logging.debug(
@@ -138,35 +158,53 @@ def transparent_clip_to_bbox(tile_paths: List[str], bbox: BBOX) -> None:
                         tile.putpixel(coord, new_values)
             tile.quantize(method=2).save(tile_path)
 
-    ThreadPool(int(os.environ.get("TRANSPARENT_CLIP_CONCURRENCY", 4))).map(
-        inspect_and_clip, tile_paths
-    )
+    def parallel(self, pool_size: int):
+        pool = multiprocessing.Pool(processes=pool_size)
+        pool.map(self, self.tile_paths)
+        pool.close()
 
 
-def merge_tiles(base_path: str, overlay_path: str, output_path: str) -> None:
-    overlay_image_src = overlay_image = Image.open(overlay_path)
-    # overlay_has_palette = overlay_image.mode == "P"
-    overlay_has_palette = overlay_image_src.getpalette() is not None
-    base_image_src = Image.open(base_path)
-    base_has_palette = base_image_src.getpalette is not None
-    overlay_image = (
-        overlay_image_src.convert("RGBA") if overlay_has_palette else overlay_image_src
-    )
-    base_image = base_image_src.convert("RGBA") if base_has_palette else base_image_src
-    for i in range(TILE_SIZE):
-        for j in range(TILE_SIZE):
-            coord = (i, j)
-            overlay_values = overlay_image.getpixel(coord)
-            if len(overlay_values) == 3:
-                overlay_values += (255,)
-            if overlay_values[3] > 0:
-                base_image.putpixel(
-                    coord,
-                    _combine_pixels(
-                        base_image.getpixel(coord) + (255,), overlay_values
-                    ),
-                )
-    base_image.quantize(method=2).save(output_path)
+def merge_tiles(paths: List[Tuple[str]]) -> None:
+    _merge_tiles_executor(paths).parallel(get_process_pool_count())
+
+
+class _merge_tiles_executor:
+    def __init__(self, paths: List[Tuple[str]]):
+        self.paths = paths
+
+    def __call__(self, paths: Tuple[str]):
+        base_path, overlay_path, output_path = paths
+        overlay_image_src = overlay_image = Image.open(overlay_path)
+        overlay_has_palette = overlay_image_src.getpalette() is not None
+        base_image_src = Image.open(base_path)
+        base_has_palette = base_image_src.getpalette is not None
+        overlay_image = (
+            overlay_image_src.convert("RGBA")
+            if overlay_has_palette
+            else overlay_image_src
+        )
+        base_image = (
+            base_image_src.convert("RGBA") if base_has_palette else base_image_src
+        )
+        for i in range(TILE_SIZE):
+            for j in range(TILE_SIZE):
+                coord = (i, j)
+                overlay_values = overlay_image.getpixel(coord)
+                if len(overlay_values) == 3:
+                    overlay_values += (255,)
+                if overlay_values[3] > 0:
+                    base_image.putpixel(
+                        coord,
+                        _combine_pixels(
+                            base_image.getpixel(coord) + (255,), overlay_values
+                        ),
+                    )
+        base_image.quantize(method=2).save(output_path)
+
+    def parallel(self, pool_size: int):
+        pool = multiprocessing.Pool(processes=pool_size)
+        pool.map(self, self.paths)
+        pool.close()
 
 
 # https://stackoverflow.com/a/52993128/519575

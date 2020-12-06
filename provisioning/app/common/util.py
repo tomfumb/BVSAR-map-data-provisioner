@@ -1,6 +1,7 @@
 import asyncio
 import errno
 import logging
+import multiprocessing
 import os
 import re
 import shutil
@@ -149,3 +150,13 @@ async def gather_with_concurrency(n: int, tasks) -> None:
             return await task
 
     await asyncio.gather(*(sem_task(task) for task in tasks))
+
+
+def get_process_pool_count() -> int:
+    if int(os.environ.get("PERMIT_MULTIPROCESSING", 1)) == 1:
+        pool_count = max(1, multiprocessing.cpu_count() - 1)
+        logging.info(f"Multiprocessing: up to {pool_count} process(es) may be used")
+        return pool_count
+    else:
+        logging.info("Multiprocessing: disabled")
+        return 1
