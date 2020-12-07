@@ -1,10 +1,6 @@
 - Additional cabins from Ben
-- FTP problem: support FTP recovery similar to HTTP
 - minimal area intersection in runner.py
-- differential area processing in runner.py ? 
-- asyncio
-    - ftp get
-- ftp stall issue
+- differential area processing in runner.py?
 - pyproj suppress warnings when exporting proj4
 - move from common to profiles/common where appropriate
 - try to detect stalled tilemill issue 

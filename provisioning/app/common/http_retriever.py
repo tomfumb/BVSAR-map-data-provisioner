@@ -43,7 +43,6 @@ def retrieve(
 ) -> None:
     if len(retrieval_requests) == 0:
         return
-    start_time = time.time()
     requests_remaining = retrieval_requests.copy()
     requests_failed = list()
     iteration = 0
@@ -115,9 +114,6 @@ def retrieve(
             requests_failed.clear()
             iteration += 1
         else:
-            logging.info(
-                f"Retrieved {len(retrieval_requests)} resource(s) in {time.time() - start_time}s"
-            )
             return
 
 
