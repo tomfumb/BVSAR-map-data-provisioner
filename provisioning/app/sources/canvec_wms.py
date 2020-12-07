@@ -10,6 +10,7 @@ from app.sources.common.wms import (
 CACHE_DIR_NAME: Final = "canvec"
 OUTPUT_CRS_CODE: Final = "EPSG:3857"
 OUTPUT_TYPE: Final = WMS_OUTPUT_TYPE
+HTTP_RETRIEVAL_CONCURRENCY: Final = 2
 
 
 def provision(bbox: BBOX, scales: Tuple[int], run_id: str) -> Dict[int, List[str]]:
@@ -24,4 +25,5 @@ def provision(bbox: BBOX, scales: Tuple[int], run_id: str) -> Dict[int, List[str
         "png",
         CACHE_DIR_NAME,
         run_id,
+        HTTP_RETRIEVAL_CONCURRENCY,
     )

@@ -3,7 +3,6 @@
 - minimal area intersection in runner.py
 - differential area processing in runner.py ? 
 - asyncio
-    - http get
     - ftp get
 - ftp stall issue
 - pyproj suppress warnings when exporting proj4

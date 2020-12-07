@@ -5,13 +5,14 @@ import math
 from enum import Enum
 from pydantic import BaseModel
 from pygeotile.tile import Tile
-from typing import Dict, List
+from typing import Dict, List, Final
 
 from app.common.bbox import BBOX
 from app.common.http_retriever import retrieve, ExistsCheckRequest, RetrievalRequest
 from app.common.util import get_cache_path, skip_file_creation
 
-CACHE_DIR_NAME_BASE = "xyz-"
+CACHE_DIR_NAME_BASE: Final = "xyz-"
+HTTP_RETRIEVAL_CONCURRENCY: Final = 6
 
 
 class UrlFormat(Enum):
@@ -34,7 +35,8 @@ def provision(
 ) -> ProvisionResult:
     tiles = _identify_tiles(bbox, zoom_min, zoom_max)
     retrieve(
-        _build_retrieval_requests(tiles, url_template, image_format, file_extension,)
+        _build_retrieval_requests(tiles, url_template, image_format, file_extension,),
+        HTTP_RETRIEVAL_CONCURRENCY,
     )
     return ProvisionResult(
         tile_dir=get_output_dir(url_template),

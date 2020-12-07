@@ -142,14 +142,15 @@ def remove_intermediaries() -> bool:
 
 
 # https://stackoverflow.com/a/61478547/519575
-async def gather_with_concurrency(n: int, tasks) -> None:
+async def asyncio_with_concurrency(n: int, tasks) -> None:
+    logging.info(f"Executing coroutines with {n} concurrency")
     semaphore = asyncio.Semaphore(n)
 
     async def sem_task(task):
         async with semaphore:
             return await task
 
-    await asyncio.gather(*(sem_task(task) for task in tasks))
+    await asyncio.gather(*[asyncio.ensure_future(sem_task(task)) for task in tasks])
 
 
 def get_process_pool_count() -> int:

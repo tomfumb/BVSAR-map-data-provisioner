@@ -6,8 +6,12 @@ import requests
 import time
 import logging
 
+from aiohttp import request as aiorequest
+from asyncio import get_event_loop, Lock
 from pydantic import BaseModel
 from typing import List, Final
+
+from app.common.util import asyncio_with_concurrency
 
 
 MAX_REQUEST_ITERATION: Final = 3
@@ -34,11 +38,61 @@ def check_exists(check_requests: List[ExistsCheckRequest]) -> None:
     logging.info(log_format.format(len(check_requests)))
 
 
-def retrieve(retrieval_requests: List[RetrievalRequest]):
+def retrieve(
+    retrieval_requests: List[RetrievalRequest], max_concurrency: int = 1
+) -> None:
+    if len(retrieval_requests) == 0:
+        return
+    start_time = time.time()
     requests_remaining = retrieval_requests.copy()
     requests_failed = list()
     iteration = 0
+    requests_executed = 0
+    requests_executed_lock = Lock()
+
+    async def execute(request: RetrievalRequest) -> None:
+        nonlocal requests_executed
+        url = request.url
+        filePath = request.path
+        os.makedirs(os.path.dirname(filePath), exist_ok=True)
+        logging.debug(f"Requesting {filePath} from {url}")
+        try:
+            async with requests_executed_lock:
+                remaining_count = len(requests_remaining) - requests_executed
+
+            if (
+                remaining_count <= 10
+                or math.ceil(len(requests_remaining) / 10) % remaining_count == 0
+            ):
+                logging.info(f"{remaining_count} remaining")
+
+            async with aiorequest(
+                "get", url, headers={"User-Agent": get_random_user_agent()}
+            ) as response:
+                is_expected_type = is_expected_response_type(
+                    response, request.expected_type
+                )
+                if is_expected_type is None:
+                    logging.info(
+                        f"Cannot determine response type, may not be the desired response for {url}"
+                    )
+                else:
+                    if is_expected_type:
+                        logging.debug(f"Response is of expected type for {url}")
+                        out = open(filePath, "wb")
+                        out.write(await response.read())
+                        out.close()
+                    else:
+                        raise ValueError(f"Response for {url} is not the expected type")
+        except Exception as ex:
+            logging.debug(f"Error fetching {url}: {ex}")
+            requests_failed.append(request)
+        finally:
+            async with requests_executed_lock:
+                requests_executed += 1
+
     while iteration < MAX_REQUEST_ITERATION:
+        requests_executed = 0
         logging.info(
             f"Requesting {len(requests_remaining)} resource(s) over HTTP in iteration {iteration + 1} of {MAX_REQUEST_ITERATION}"
         )
@@ -49,37 +103,10 @@ def retrieve(retrieval_requests: List[RetrievalRequest]):
             )
             time.sleep(delay)
             logging.info("...resuming")
-        while len(requests_remaining) > 0:
-            if (
-                len(retrieval_requests) >= 10
-                and len(requests_remaining) % round(len(retrieval_requests) / 10) == 0
-            ):
-                logging.info(f"{len(requests_remaining)} remaining")
-            request = requests_remaining.pop(0)
-            url = request.url
-            filePath = request.path
-            os.makedirs(os.path.dirname(filePath), exist_ok=True)
-            logging.debug(f"Requesting {filePath} from {url}")
-            try:
-                response = requests.get(
-                    url, headers={"User-Agent": getRandomUserAgent()}
-                )
-                isExpectedType = isExpectedResponseType(response, request.expected_type)
-                if isExpectedType is None:
-                    logging.info(
-                        f"Cannot determine response type, may not be the desired response for {url}"
-                    )
-                else:
-                    if isExpectedType:
-                        logging.debug(f"Response is of expected type for {url}")
-                        out = open(filePath, "wb")
-                        out.write(response.content)
-                        out.close()
-                    else:
-                        raise ValueError(f"Response for {url} is not the expected type")
-            except Exception as ex:
-                logging.debug(f"Error fetching {url}: {ex}")
-                requests_failed.append(request)
+        async_requests = [execute(each) for each in requests_remaining]
+        get_event_loop().run_until_complete(
+            asyncio_with_concurrency(max_concurrency, async_requests)
+        )
         if len(requests_failed) > 0:
             logging.info(
                 f"{len(requests_failed)} of {len(retrieval_requests)} requests failed in iteration {iteration + 1}"
@@ -88,74 +115,13 @@ def retrieve(retrieval_requests: List[RetrievalRequest]):
             requests_failed.clear()
             iteration += 1
         else:
+            logging.info(
+                f"Retrieved {len(retrieval_requests)} resource(s) in {time.time() - start_time}s"
+            )
             return
 
 
-# def httpRetriever(retrieval_requests: List[RetrievalRequest], maxConcurrentRequests: int = 10):
-#     requests = retrieval_requests.copy()
-#     if len(requests) > 0:
-#         bestTimePerRequest = sys.maxsize
-#         bestConcurrency = 1
-#         concurrency = 1
-#         while concurrency <= maxConcurrentRequests:
-#             logging.debug(f"Testing request speed with {concurrency} concurrent requests")
-#             bestConcurrency = concurrency
-#             numRequestsToTest = min(concurrency, len(requests))
-#             logging.debug(f"Got {numRequestsToTest} requests to test with")
-#             if numRequestsToTest > 0:
-#                 testRequests = requests[:numRequestsToTest]
-#                 del requests[:numRequestsToTest]
-#                 start = timer()
-#                 with futures.ThreadPoolExecutor(max_workers = numRequestsToTest) as executor:
-#                     executeRequests(executor, testRequests)
-#                 end = timer()
-#                 testTimePerRequest = (end - start) / numRequestsToTest
-#                 logging.debug(f"Time per request {testTimePerRequest}")
-#                 if testTimePerRequest < bestTimePerRequest:
-#                     logging.debug('Got new best time')
-#                     bestTimePerRequest = testTimePerRequest
-#                 else:
-#                     bestConcurrency = concurrency - 1
-#                     logging.debug(f"Previous time per request was better, exit and use {bestConcurrency}")
-#                     break
-#                 concurrency += 1
-#             else:
-#                 break
-
-#         logging.info(f"Issuing requests with {bestConcurrency} concurrency")
-#         with futures.ThreadPoolExecutor(max_workers = bestConcurrency) as executor:
-#             executeRequests(executor, requests)
-
-
-# def executeRequests(executor, requests: List[RetrievalRequest]) -> None:
-#     requestFutures = (executor.submit(issueFileRequest, request) for request in requests)
-#     for future in futures.as_completed(requestFutures):
-#         try:
-#             future.result()
-#         except Exception as exc:
-#             logging.info(f'Exception: {type(exc)}')
-
-
-# def issueFileRequest(request: RetrievalRequest):
-#     filePath = request.path
-#     os.makedirs(os.path.dirname(filePath), exist_ok = True)
-#     url = request.url
-#     logging.info(f'Requesting {filePath} from {url}')
-#     response = requests.get(url, headers = { 'User-Agent': getRandomUserAgent() })
-#     isExpectedType = isExpectedResponseType(response, request.expected_type)
-#     if isExpectedType is None:
-#         logging.info('Cannot determine response type, may not be the desired response')
-#     else:
-#         if isExpectedType:
-#             logging.debug('Response is of expected type')
-#             out = open(filePath, 'wb')
-#             out.write(response.content)
-#             out.close()
-#         else:
-#             logging.error(f"Response is not of expected type {request.expected_type}")
-
-
-def isExpectedResponseType(response, expectedType: str) -> bool:
+def is_expected_response_type(response, expectedType: str) -> bool:
     responseType = response.headers.get("Content-Type")
     if responseType:
         if re.match(re.escape(expectedType), responseType):
@@ -167,7 +133,7 @@ def isExpectedResponseType(response, expectedType: str) -> bool:
 
 
 # https://www.scrapehero.com/how-to-fake-and-rotate-user-agents-using-python-3/
-def getRandomUserAgent() -> str:
+def get_random_user_agent() -> str:
     userAgentList = (
         # Chrome
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",

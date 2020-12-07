@@ -64,6 +64,7 @@ def provision(
     image_format: str,
     cache_dir_name: str,
     run_id: str,
+    http_retrieval_concurrency: int = 1,
 ) -> Dict[int, List[str]]:
     cache_directory = get_cache_path((cache_dir_name,))
     run_directory = get_run_data_path(run_id, (cache_dir_name,))
@@ -81,7 +82,7 @@ def provision(
     )
     grid_for_missing = _filter_grid_for_missing(grid_for_retrieval)
     requests = _convert_grid_to_requests(grid_for_missing, image_format)
-    retrieve(requests)
+    retrieve(requests, http_retrieval_concurrency)
     if image_format != TARGET_FILE_FORMAT:
         _convert_to_tif(grid_for_missing, wms_crs_code)
     return _create_run_output(bbox, grid_for_retrieval, run_id)

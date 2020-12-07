@@ -25,6 +25,7 @@ from app.common.util import (
 CACHE_DIR_NAME: Final = "bc-topo-20000"
 OUTPUT_CRS_CODE: Final = "EPSG:3857"
 OUTPUT_TYPE: Final = ProjectLayerType.RASTER
+HTTP_RETRIEVAL_CONCURRENCY: Final = 6
 
 
 class GenerationRequest(RetrievalRequest):
@@ -69,7 +70,7 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
             bbox_cells,
         )
     )
-    retrieve(to_generate)
+    retrieve(to_generate, HTTP_RETRIEVAL_CONCURRENCY)
 
     for generation_request in to_generate:
         try:
