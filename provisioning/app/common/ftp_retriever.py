@@ -63,7 +63,5 @@ def retrieve_directory(domain: str, path: str) -> str:
 
 def _fetch(file_name: str, destination_path: str, domain: str, path: str):
     wget.download(
-        f"ftp://{domain}{path}/{file_name}",
-        out=destination_path,
-        bar=wget.bar_thermometer,
+        f"ftp://{domain}{path}/{file_name}", out=destination_path,
     )

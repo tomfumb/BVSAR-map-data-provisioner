@@ -7,7 +7,7 @@ from shutil import rmtree
 
 from app.common.bbox import BBOX
 from app.common.http_retriever import check_exists
-from app.profiles import xyz, topo, xyzsummer, xyzwinter
+from app.profiles import xyz, topo, xyzsummer, xyzwinter, xyzhunting
 from app.record.run_recorder import record_run, has_prior_run
 from app.sources.xyz_service import build_exists_check_requests as xyz_check_builder
 from app.common.util import (
@@ -35,7 +35,7 @@ def provision(bbox: BBOX, profile_name: str, xyz_url: str) -> None:
             "zoom_max": profile.ZOOM_MAX,
             "format": profile.OUTPUT_FORMAT,
         }
-        for profile in [xyz, topo, xyzsummer, xyzwinter]
+        for profile in [xyz, topo, xyzsummer, xyzwinter, xyzhunting]
     }
     profiles[profile_name]["execute"](bbox, run_id, {"xyz_url": xyz_url})
     logging.info("Validating result")

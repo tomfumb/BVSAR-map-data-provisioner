@@ -62,6 +62,16 @@ from app.sources.bc_ates_poi import (
     OUTPUT_CRS_CODE as bc_ates_poi_crs_code,
     OUTPUT_TYPE as bc_ates_poi_output_type,
 )
+from app.sources.bc_parcels import (
+    provision as bc_parcels_provisioner,
+    OUTPUT_CRS_CODE as bc_parcels_crs_code,
+    OUTPUT_TYPE as bc_parcels_output_type,
+)
+from app.sources.bc_rec_sites import (
+    provision as bc_rec_sites_provisioner,
+    OUTPUT_CRS_CODE as bc_rec_sites_crs_code,
+    OUTPUT_TYPE as bc_rec_sites_output_type,
+)
 
 
 def canvec(bbox: BBOX, run_id: str, scales: List[int]) -> List[ProjectLayer]:
@@ -200,5 +210,27 @@ def bc_ates_poi(bbox: BBOX, run_id: str) -> List[ProjectLayer]:
             style_class="bc-ates-poi",
             crs_code=bc_ates_poi_crs_code,
             type=bc_ates_poi_output_type,
+        )
+    ]
+
+
+def bc_parcels(bbox: BBOX, run_id: str) -> List[ProjectLayer]:
+    return [
+        ProjectLayer(
+            path=bc_parcels_provisioner(bbox, run_id)[0],
+            style_class="parcels",
+            crs_code=bc_parcels_crs_code,
+            type=bc_parcels_output_type,
+        )
+    ]
+
+
+def bc_rec_sites(bbox: BBOX, run_id: str) -> List[ProjectLayer]:
+    return [
+        ProjectLayer(
+            path=bc_rec_sites_provisioner(bbox, run_id)[0],
+            style_class="rec-sites",
+            crs_code=bc_rec_sites_crs_code,
+            type=bc_rec_sites_output_type,
         )
     ]

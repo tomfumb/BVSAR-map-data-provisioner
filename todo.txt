@@ -6,6 +6,10 @@
 - try to detect stalled tilemill issue 
 - request permission for FTEN roads reproduction: https://www2.gov.bc.ca/gov/content/home/copyright
 - add hunting profile with private property
+    - requires removing fields from on-disk data and storing with git lfs
+        - problem editing fgdb in QGIS making this more difficult. How did I edit fgdb for resource roads?? (shapefile)
+        - dangerous to convert to .shp as may be too many records?
+    
 - remove BVSAR-map-data-runner and put docker-compose in main project
 - os-specific conda environment files
 - refuse to run if annual data is not updated
