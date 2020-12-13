@@ -29,11 +29,11 @@ dev-web-stop:
 
 api-deploy-wired:
 	ssh pi@pi-wired 'rm -rf /www/api'
-	rsync -rv -e ssh --exclude='**.log' --exclude='**.DS_Store' --exclude='**.pyc' --exclude='**.gitkeep' --exclude='**/__pycache__' --exclude='api/uploads/**' `pwd`/rpi/api pi@pi-wired:/www/
+	rsync -rv -e ssh --exclude='**.log' --exclude='**.DS_Store' --exclude='**.pyc' --exclude='**.gitkeep' --exclude='**/__pycache__' --exclude='api/uploads/**' --exclude='export/temp/**' `pwd`/rpi/api pi@pi-wired:/www/
 
 api-deploy-wireless:
 	ssh pi@pi-wireless 'rm -rf /www/api'
-	rsync -rv -e ssh --exclude='**.log' --exclude='**.DS_Store' --exclude='**.pyc' --exclude='**.gitkeep' --exclude='**/__pycache__' --exclude='api/uploads/**' `pwd`/rpi/api pi@pi-wireless:/www/
+	rsync -rv -e ssh --exclude='**.log' --exclude='**.DS_Store' --exclude='**.pyc' --exclude='**.gitkeep' --exclude='**/__pycache__' --exclude='api/uploads/**' --exclude='export/temp/**' `pwd`/rpi/api pi@pi-wireless:/www/
 
 web-build-prod:
 	rm -rf rpi/ui/viewer/dist
