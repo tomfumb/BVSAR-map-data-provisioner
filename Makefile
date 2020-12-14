@@ -13,7 +13,7 @@ dev-provisioning-start:
 	docker build tilemill -t $(TILEMILL_IMAGE_NAME)
 	docker build rpi -t $(WWW_IMAGE_NAME)
 	source .env-dev && docker run --rm -p 20009:20009 -p 20008:20008 -v $$DATA_LOCATION/run:/tiledata/run -v $$DATA_LOCATION/export:/root/Documents/MapBox/export -d --name ${TILEMILL_NAME} $(TILEMILL_IMAGE_NAME)
-	source .env-dev && docker run --rm -v $$DATA_LOCATION/result:/www/tiles -d --name $(WWW_NAME) -p 9000:80 $(WWW_IMAGE_NAME)
+	source .env-dev && docker run --rm -v $$DATA_LOCATION/result:/www/tiles -e PDF_EXPORT_MAX_TILES=32768 -d --name $(WWW_NAME) -p 9000:80 $(WWW_IMAGE_NAME)
 
 dev-provisioning-stop:
 	docker stop ${TILEMILL_NAME}
