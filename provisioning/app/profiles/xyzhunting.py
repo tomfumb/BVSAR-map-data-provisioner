@@ -37,4 +37,5 @@ def execute(bbox: BBOX, run_id: str, args: Dict[str, object] = dict()) -> None:
         + bc_resource_roads(bbox, run_id)
         + trails(bbox, run_id)
         + shelters(bbox, run_id),
+        ["common-summer"],
     )

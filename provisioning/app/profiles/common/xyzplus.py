@@ -20,13 +20,24 @@ OUTPUT_FORMAT: Final = "png"
 
 
 def execute(
-    bbox: BBOX, run_id: str, xyz_url: str, profile_name: str, layers: List[ProjectLayer]
+    bbox: BBOX,
+    run_id: str,
+    xyz_url: str,
+    profile_name: str,
+    layers: List[ProjectLayer],
+    extra_styles: List[str] = list(),
 ) -> None:
     xyz_result = xyz_provisioner(
         bbox, xyz_url, ZOOM_MIN, ZOOM_MAX, "image/jpeg", OUTPUT_FORMAT
     )
     generate_result = generate_tiles(
-        layers, ["common", profile_name], bbox, profile_name, ZOOM_MIN, ZOOM_MAX, run_id
+        layers,
+        ["common", profile_name] + extra_styles,
+        bbox,
+        profile_name,
+        ZOOM_MIN,
+        ZOOM_MAX,
+        run_id,
     )
     xyz_tiles_merged = list()
     logging.info(
