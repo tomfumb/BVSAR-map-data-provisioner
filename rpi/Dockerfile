@@ -9,14 +9,8 @@ RUN ng build --prod --baseHref=/web/
 
 FROM debian:buster
 
-RUN apt-get update
-RUN apt-get install -y python3
-RUN apt-get install -y python3-pip
-RUN apt-get install -y gdal-bin
-RUN apt-get install -y libgdal-dev
-RUN apt-get install -y gunicorn3
-RUN apt-get install -y libxcb1-dev
-RUN apt-get install -y default-jre
+RUN apt-get update && \ 
+    apt-get install -y python3 python3-pip gdal-bin libgdal-dev gunicorn3 libxcb1-dev
 
 RUN adduser --disabled-password --gecos "" pi
 
