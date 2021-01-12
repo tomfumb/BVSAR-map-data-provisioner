@@ -20,7 +20,7 @@ MAX_REQUEST_ITERATION: Final = 3
 class RetrievalRequest(BaseModel):
     path: str
     url: str
-    expected_type: str
+    expected_types: List[str]
 
 
 class ExistsCheckRequest(BaseModel):
@@ -69,7 +69,7 @@ def retrieve(
                 "get", url, headers={"User-Agent": get_random_user_agent()}
             ) as response:
                 is_expected_type = is_expected_response_type(
-                    response, request.expected_type
+                    response, request.expected_types
                 )
                 if is_expected_type is None:
                     logging.info(
@@ -117,13 +117,13 @@ def retrieve(
             return
 
 
-def is_expected_response_type(response, expectedType: str) -> bool:
-    responseType = response.headers.get("Content-Type")
-    if responseType:
-        if re.match(re.escape(expectedType), responseType):
-            return True
-        else:
-            return False
+def is_expected_response_type(response, expected_types: List[str]) -> bool:
+    response_type = response.headers.get("Content-Type")
+    if response_type:
+        for expected_type in expected_types:
+            if re.match(re.escape(expected_type), response_type):
+                return True
+        return False
     else:
         return None
 

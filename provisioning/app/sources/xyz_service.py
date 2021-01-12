@@ -30,17 +30,17 @@ def provision(
     url_template: str,
     zoom_min: int,
     zoom_max: int,
-    image_format: str,
+    image_formats: List[str],
     file_extension: str = None,
 ) -> ProvisionResult:
     tiles = _identify_tiles(bbox, zoom_min, zoom_max)
     retrieve(
-        _build_retrieval_requests(tiles, url_template, image_format, file_extension,),
+        _build_retrieval_requests(tiles, url_template, image_formats, file_extension),
         HTTP_RETRIEVAL_CONCURRENCY,
     )
     return ProvisionResult(
         tile_dir=get_output_dir(url_template),
-        tile_paths=_build_tile_paths(tiles, url_template, image_format, file_extension),
+        tile_paths=_build_tile_paths(tiles, url_template, file_extension),
     )
 
 
@@ -97,44 +97,35 @@ def _identify_tiles(
 def _build_retrieval_requests(
     tiles: Dict[int, Dict[int, List[int]]],
     url_template: str,
-    image_format: str,
-    file_extension: str = None,
+    image_formats: List[str],
+    file_extension: str,
 ) -> List[RetrievalRequest]:
     requests = list()
     url_format = _determine_format(url_template)
     for z, xs in tiles.items():
         for x, ys in xs.items():
             for y in ys:
-                path = _build_tile_path(
-                    z, x, y, url_template, image_format, file_extension
-                )
+                path = _build_tile_path(z, x, y, url_template, file_extension)
                 if skip_file_creation(path):
                     continue
                 requests.append(
                     RetrievalRequest(
                         url=_build_tile_url(url_format, url_template, z, x, y),
                         path=path,
-                        expected_type=image_format,
+                        expected_types=image_formats,
                     )
                 )
     return requests
 
 
 def _build_tile_paths(
-    tiles: Dict[int, Dict[int, List[int]]],
-    url_template: str,
-    image_format: str,
-    file_extension: str = None,
+    tiles: Dict[int, Dict[int, List[int]]], url_template: str, file_extension: str,
 ) -> List[str]:
     paths = list()
     for z, xs in tiles.items():
         for x, ys in xs.items():
             for y in ys:
-                paths.append(
-                    _build_tile_path(
-                        z, x, y, url_template, image_format, file_extension
-                    )
-                )
+                paths.append(_build_tile_path(z, x, y, url_template, file_extension))
     return paths
 
 
@@ -152,17 +143,11 @@ def _determine_format(url_template: str) -> UrlFormat:
 
 
 def _build_tile_path(
-    z: int,
-    x: int,
-    y: int,
-    url_template: str,
-    image_format: str,
-    file_extension: str = None,
+    z: int, x: int, y: int, url_template: str, file_extension: str,
 ) -> str:
     out_dir_path = get_output_dir(url_template)
-    image_extension = file_extension if file_extension else image_format.split("/")[1]
     x_dir = os.path.join(os.path.join(out_dir_path, str(z)), str(x))
-    return os.path.join(x_dir, f"{y}.{image_extension}")
+    return os.path.join(x_dir, f"{y}.{file_extension}")
 
 
 # https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames

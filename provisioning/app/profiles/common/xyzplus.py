@@ -28,7 +28,7 @@ def execute(
     extra_styles: List[str] = list(),
 ) -> None:
     xyz_result = xyz_provisioner(
-        bbox, xyz_url, ZOOM_MIN, ZOOM_MAX, "image/jpeg", OUTPUT_FORMAT
+        bbox, xyz_url, ZOOM_MIN, ZOOM_MAX, ["image/png", "image/jpeg"], OUTPUT_FORMAT
     )
     generate_result = generate_tiles(
         layers,

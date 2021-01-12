@@ -54,7 +54,7 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
                 GenerationRequest(
                     url=f"https://pub.data.gov.bc.ca/datasets/175624/{cell_parent.lower()}/{zip_file_name}",
                     path=get_cache_path((CACHE_DIR_NAME, zip_file_name)),
-                    expected_type="application/zip",
+                    expected_type=["application/zip"],
                     dem_path=get_cache_path((CACHE_DIR_NAME, f"{cell_part_name}.dem")),
                     prj_path=get_cache_path(
                         (CACHE_DIR_NAME, f"{cell_part_name}_prj.tif")

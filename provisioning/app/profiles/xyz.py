@@ -19,7 +19,12 @@ OUTPUT_FORMAT: Final = "png"
 
 def execute(bbox: BBOX, run_id: str, args: Dict[str, object] = dict()) -> None:
     xyz_result = xyz_provisioner(
-        bbox, args["xyz_url"], ZOOM_MIN, ZOOM_MAX, "image/jpeg", OUTPUT_FORMAT
+        bbox,
+        args["xyz_url"],
+        ZOOM_MIN,
+        ZOOM_MAX,
+        ["image/png", "image/jpeg"],
+        OUTPUT_FORMAT,
     )
     tmp_dir = get_run_data_path(run_id, (NAME,))
     tmp_tile_paths = list()
