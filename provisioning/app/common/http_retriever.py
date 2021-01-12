@@ -61,7 +61,7 @@ def retrieve(
 
             if (
                 remaining_count <= 10
-                or math.ceil(len(requests_remaining) / 10) % remaining_count == 0
+                or math.ceil(len(retrieval_requests) / 10) % remaining_count == 0
             ):
                 logging.info(f"{remaining_count} remaining")
 
