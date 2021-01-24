@@ -1,18 +1,13 @@
+- Makefile command to run from scratch
+- xyz attribution required
+
 - Additional cabins from Ben
-- minimal area intersection in runner.py
-- differential area processing in runner.py?
 - pyproj suppress warnings when exporting proj4
 - move from common to profiles/common where appropriate
 - try to detect stalled tilemill issue 
 - request permission for FTEN roads reproduction: https://www2.gov.bc.ca/gov/content/home/copyright
-- add hunting profile with private property
-    - requires removing fields from on-disk data and storing with git lfs
-        - problem editing fgdb in QGIS making this more difficult. How did I edit fgdb for resource roads?? (shapefile)
-        - dangerous to convert to .shp as may be too many records?
-    
 - remove BVSAR-map-data-runner and put docker-compose in main project
 - os-specific conda environment files
 - refuse to run if annual data is not updated
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
 - need some consistency in class file names, classes having their own files
-- only provision grid squares intersecting the drawn area to avoid filling unwanted gaps
