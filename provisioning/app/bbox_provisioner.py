@@ -3,6 +3,7 @@ import logging
 import uuid
 import os
 
+from pydantic import BaseModel
 from shutil import rmtree
 
 from app.common.bbox import BBOX
@@ -18,14 +19,25 @@ from app.common.util import (
 )
 
 
-def provision(bbox: BBOX, profile_name: str, xyz_url: str) -> None:
-    bbox_repeat_if_exists = int(os.environ.get("BBOX_REPEAT_IF_EXISTS", 0)) == 1
+class ProvisionArg(BaseModel):
+    bbox: BBOX
+    profile_name: str
+    xyz_url: str = None
+    skippable: bool
+
+
+def provision(arg: ProvisionArg) -> None:
+    bbox, profile_name, xyz_url = arg.bbox, arg.profile_name, arg.xyz_url
     bbox_exists = has_prior_run(get_result_path((profile_name,)), bbox)
-    if bbox_exists and not bbox_repeat_if_exists:
+    if bbox_exists and arg.skippable:
         logging.info(
             f"Skipping {profile_name} {bbox.min_x},{bbox.min_y} {bbox.max_x},{bbox.max_y} as it already exists"
         )
         return
+    else:
+        logging.info(
+            f"Provisioning {profile_name} {bbox.min_x},{bbox.min_y} {bbox.max_x},{bbox.max_y}"
+        )
 
     run_id = str(uuid.uuid4())
     profiles = {

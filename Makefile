@@ -8,6 +8,7 @@ SSH_SERVE_NAME=bvsar-sshd
 SSH_SERVE_IMAGE_NAME=tomfumb/bvsar-sshd
 WWW_NAME=bvsar-rpi
 WWW_IMAGE_NAME=tomfumb/bvsar-rpi
+# PROVISIONER_NAME=provision-runner
 
 dev-provisioning-start:
 	docker build tilemill -t $(TILEMILL_IMAGE_NAME)
@@ -55,3 +56,9 @@ ssh-serve-start:
 
 ssh-serve-stop:
 	docker stop $(SSH_SERVE_NAME)
+
+# provision-dev:
+# 	docker-compose up -d && \
+# 	source .env-dev && \
+# 	docker run --rm -d --name $(PROVISIONER_NAME) -v $$DATA_LOCATION:/rundata -e DATA_LOCATION=/rundata -e AREAS_LOCATION=/rundata/areas/areas-dev.gpkg -e LOCAL_FEATURES_LOCATION=/rundata/local-features/local-features.gpkg && \
+# 	docker logs -f $(PROVISIONER_NAME)
