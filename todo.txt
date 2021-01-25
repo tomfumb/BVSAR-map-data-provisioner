@@ -1,5 +1,9 @@
+- attempt to address topo join issues
 - Makefile command to run from scratch
 - xyz attribution required
+- versioning in UI
+- lighter blue for waterways
+- lighter purple for trails
 
 - Additional cabins from Ben
 - pyproj suppress warnings when exporting proj4

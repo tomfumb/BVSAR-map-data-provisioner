@@ -208,7 +208,7 @@ def _convert_grid_to_requests(
             lambda tile: RetrievalRequest(
                 path=tile.wms_path,
                 url=tile.wms_url,
-                expected_type=[f"image/{image_format}"],
+                expected_types=[f"image/{image_format}"],
             ),
             grid,
         )
