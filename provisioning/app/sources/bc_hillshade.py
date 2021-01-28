@@ -98,6 +98,7 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
             altitude=45,
             scale=1,
             zFactor=1,
+            computeEdges=True,
         )
         if remove_intermediaries():
             os.remove(generation_request.path)
@@ -113,7 +114,8 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
                     bbox, get_run_data_path(run_id, None)
                 ),
                 cutlineLayer=BBOX_LAYER_NAME,
-                cropToCutline=True,
+                cropToCutline=False,
+                cutlineBlend=1,
                 dstNodata=-1,
             )
         except Exception as ex:

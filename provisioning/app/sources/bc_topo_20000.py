@@ -84,7 +84,8 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
                 cutlineDSName=get_data_path(("grids.gpkg",)),
                 cutlineLayer="BC-20000",
                 cutlineWhere=f"MAP_TILE = '{generation_request.cell_name}'",
-                cropToCutline=True,
+                cropToCutline=False,
+                cutlineBlend=1,
                 dstNodata=-1,
                 srcSRS="EPSG:26909",
                 dstSRS=OUTPUT_CRS_CODE,
@@ -105,7 +106,8 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
                     bbox, get_run_data_path(run_id, None)
                 ),
                 cutlineLayer=BBOX_LAYER_NAME,
-                cropToCutline=True,
+                cropToCutline=False,
+                cutlineBlend=1,
                 dstNodata=-1,
             )
         except Exception as ex:

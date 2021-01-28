@@ -1,4 +1,4 @@
-- attempt to address topo join issues
+- try different scales for topo for better detail
 - Makefile command to run from scratch
 - xyz attribution required
 - versioning in UI

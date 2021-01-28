@@ -229,7 +229,8 @@ def _create_run_output(
                 tile.tif_path,
                 cutlineDSName=get_datasource_from_bbox(bbox, run_directory),
                 cutlineLayer=BBOX_LAYER_NAME,
-                cropToCutline=True,
+                cropToCutline=False,
+                cutlineBlend=1,
                 dstNodata=-1,
             )
             file_list[tile.scale].append(tile.final_path)
