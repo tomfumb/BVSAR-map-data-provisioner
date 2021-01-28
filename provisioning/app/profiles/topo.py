@@ -22,12 +22,13 @@ ZOOM_MAX: Final = 15
 OUTPUT_FORMAT: Final = "png"
 
 
+# scales taken from https://www.maptiler.com/google-maps-coordinates-tile-bounds-projection/
 def execute(bbox: BBOX, run_id: str, args: Dict[str, object] = dict()) -> None:
     layers = (
         canvec(
             bbox,
             run_id,
-            (10000000, 4000000, 2000000, 1000000, 500000, 250000, 150000, 70000, 35000),
+            (9244667, 4622334, 2311167, 1155583, 577792, 288896, 144448, 72224, 36112),
         )
         + bc_topo(bbox, run_id)
         + bc_hillshade(bbox, run_id)

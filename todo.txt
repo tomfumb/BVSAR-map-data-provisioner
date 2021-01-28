@@ -1,4 +1,4 @@
-- try different scales for topo for better detail
+- lighter colours / casing for trails and waterways on dark xyz imagery
 - Makefile command to run from scratch
 - xyz attribution required
 - versioning in UI
