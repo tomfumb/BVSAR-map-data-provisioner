@@ -55,8 +55,7 @@ def provision(arg: ProvisionArg) -> None:
         xyz_check_builder(
             bbox,
             "{0}/{1}/{{z}}/{{x}}/{{y}}.png".format(
-                os.environ.get("HTTP_URL", "http://localhost:9000/tiles/files"),
-                profile_name,
+                os.environ.get("HTTP_URL", "http://rpi/tiles/files"), profile_name,
             ),
             profiles[profile_name]["zoom_min"],
             profiles[profile_name]["zoom_max"],

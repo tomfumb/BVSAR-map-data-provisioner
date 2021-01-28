@@ -30,10 +30,6 @@ def get_data_path(path_parts: Tuple[str] = None) -> str:
     )
 
 
-def get_local_features_path() -> str:
-    return os.environ["LOCAL_FEATURES_LOCATION"]
-
-
 def get_cache_path(path_parts: Tuple[str] = None) -> str:
     return os.path.join(
         *(get_base_path(), "cache", *(path_parts if path_parts else list()))

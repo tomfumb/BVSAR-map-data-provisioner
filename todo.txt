@@ -1,9 +1,8 @@
 - lighter colours / casing for trails and waterways on dark xyz imagery
+- namespace env vars with BVSAR_ for cleaner use on other systems
 - Makefile command to run from scratch
 - xyz attribution required
 - versioning in UI
-- lighter blue for waterways
-- lighter purple for trails
 
 - Additional cabins from Ben
 - pyproj suppress warnings when exporting proj4

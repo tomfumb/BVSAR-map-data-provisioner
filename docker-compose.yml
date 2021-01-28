@@ -1,4 +1,5 @@
 version: "3.3"
+
 services:
 
   tilemill:
@@ -25,31 +26,31 @@ services:
       context: ./provisioning
     image: tomfumb/bvsar-provisioner:latest
     volumes:
-      - type: volume
-        source: bvsar-cache
+      - type: bind
+        source: "${BVSAR_DATA_ROOT}/cache"
         target: /tiledata/cache
       - type: volume
         source: bvsar-export
         target: /tiledata/export
-      - type: volume
-        source: bvsar-result
+      - type: bind
+        source: "${BVSAR_DATA_ROOT}/result"
         target: /tiledata/result
       - type: volume
         source: bvsar-run
         target: /tiledata/run
       - type: bind
-        source: ./runner-data/areas
+        source: "${BVSAR_DATA_ROOT}/areas"
         target: /tiledata/areas
       - type: bind
-        source: ./runner-data/local-features
+        source: "${BVSAR_DATA_ROOT}/local-features"
         target: /tiledata/local-features
     networks:
       - bvsar
     environment:
-      HTTP_URL: http://rpi/tiles/files
-      TILEMILL_URL: http://tilemill:20009
-      AREAS_LOCATION: /tiledata/areas/areas.gpkg
-      LOCAL_FEATURES_LOCATION: /tiledata/local-features/local-features.gpkg
+      - HTTP_URL
+      - TILEMILL_URL
+      - AREAS_LOCATION
+      - LOCAL_FEATURES_LOCATION
     depends_on: 
       - tilemill
 
@@ -59,14 +60,14 @@ services:
       context: ./rpi
     image: tomfumb/bvsar-rpi
     volumes:
-      - type: volume
-        source: bvsar-result
+      - type: bind
+        source: "${BVSAR_DATA_ROOT}/result"
         target: /www/tiles
       - type: bind
         source: ./rpi/api
         target: /www/api
     environment:
-      PDF_EXPORT_MAX_TILES:
+      - PDF_EXPORT_MAX_TILES
     networks:
       - bvsar
     ports:
@@ -76,7 +77,5 @@ networks:
   bvsar:
 
 volumes:
-  bvsar-cache:
   bvsar-export:
-  bvsar-result:
   bvsar-run:

@@ -17,3 +17,5 @@ RUN mkdir -p /tiledata/areas
 
 COPY data /data
 COPY app /app
+
+CMD [ "python", "-m", "app.runner" ]

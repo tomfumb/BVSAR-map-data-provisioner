@@ -46,7 +46,7 @@ def generate_tiles(
         project_creation_properties = ProjectCreationProperties(
             layers=layers, mss=stylesheet_content, **dict(project_properties)
         )
-        tilemill_url = os.environ.get("TILEMILL_URL", "http://localhost:20009")
+        tilemill_url = os.environ.get("TILEMILL_URL", "http://tilemill:20009")
         create_or_update_project(tilemill_url, project_creation_properties)
         export_file = request_export(tilemill_url, project_properties)
         result_dir_temp = get_result_path((run_id,))
