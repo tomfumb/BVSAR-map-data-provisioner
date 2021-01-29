@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams, HttpRequest } from '@angular/common/http';
+import { HttpClient, HttpEventType } from '@angular/common/http';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { SpaceService } from '../space.service';
@@ -21,6 +21,7 @@ export class ShareComponent {
   public uploadDomain: string = environment.tile_domain;
   
   private pendingUpload: File;
+  private readonly FILE_BYTE_LIMIT = 100000000;
 
   @ViewChild("fileSelector")
   private fileSelector: ElementRef;
@@ -36,8 +37,8 @@ export class ShareComponent {
     const candidateFile = event.target.files.length > 0 ? event.target.files[0] : null;
     if (candidateFile) {
       // not validated in API because limited user-base, likely not malicious users, and overlay fs means any damaga is undone by reboot
-      if (candidateFile.size > 100000000000) {
-        window.alert("File is too big and cannot be uploaded");
+      if (candidateFile.size > this.FILE_BYTE_LIMIT) {
+        window.alert(`File is too big and cannot be uploaded. File: ${this.spaceService.fromBytes(candidateFile.size)}, limit: ${this.spaceService.fromBytes(this.FILE_BYTE_LIMIT)}`);
         this.pendingUpload = null;
       } else {
         this.pendingUpload = candidateFile;
@@ -50,15 +51,15 @@ export class ShareComponent {
   public uploadFile(): void {
     const formData = new FormData();
     formData.append("file", this.pendingUpload);
-    const options = {
-      params: new HttpParams(),
+    this.http.post(`${environment.tile_domain}/upload`, formData, {
       reportProgress: true,
-    };
-    const req = new HttpRequest("POST", `${environment.tile_domain}/upload`, formData, options);
-    this.http.request(req).subscribe(() => {
-      this.pendingUpload = null;
-      this.fileSelector.nativeElement.value = null;
-      this.updateFileList();
+      observe: 'events'
+    }).subscribe(response => {
+      if (response.type === HttpEventType.Response) {
+        this.pendingUpload = null;
+        this.fileSelector.nativeElement.value = null;
+        this.updateFileList();
+      }
     });
   }
 

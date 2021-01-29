@@ -1,3 +1,4 @@
+- disable controls on upload, show some visual feedback
 - lighter colours / casing for trails and waterways on dark xyz imagery
 - namespace env vars with BVSAR_ for cleaner use on other systems
 - xyz attribution required
