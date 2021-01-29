@@ -35,7 +35,8 @@ export class ShareComponent {
   public fileChange(event): void {
     const candidateFile = event.target.files.length > 0 ? event.target.files[0] : null;
     if (candidateFile) {
-      if (candidateFile.size > 100000000) {
+      // not validated in API because limited user-base, likely not malicious users, and overlay fs means any damaga is undone by reboot
+      if (candidateFile.size > 100000000000) {
         window.alert("File is too big and cannot be uploaded");
         this.pendingUpload = null;
       } else {
