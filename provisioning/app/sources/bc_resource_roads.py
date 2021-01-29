@@ -18,7 +18,12 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     os.makedirs(run_directory)
     driver = ogr.GetDriverByName("ESRI Shapefile")
     datasource = driver.Open(
-        get_data_path(("FTEN_ROAD_SECTION_LINES_SVW", "FTEN_RS_LN_line.shp"))
+        get_data_path(
+            (
+                "WHSE_FOREST_TENURE_FTEN_ROAD_SECTION_LINES_SVW",
+                "WHSE_FOREST_TENURE_FTEN_ROAD_SECTION_LINES_SVW.shp",
+            )
+        )
     )
     result = ogr_to_shp(
         bbox,
