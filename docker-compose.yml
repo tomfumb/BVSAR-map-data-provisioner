@@ -6,7 +6,7 @@ services:
     container_name: bvsar-tilemill
     build:
       context: ./tilemill
-    image: tomfumb/bvsar-tilemill:latest
+    image: tomfumb/bvsar-tilemill
     ports:
       - "20009"
       - "20008"
@@ -24,7 +24,7 @@ services:
     container_name: bvsar-provisioner
     build:
       context: ./provisioning
-    image: tomfumb/bvsar-provisioner:latest
+    image: tomfumb/bvsar-provisioner
     volumes:
       - type: bind
         source: "${BVSAR_DATA_ROOT}/cache"
