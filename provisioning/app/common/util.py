@@ -157,3 +157,14 @@ def get_process_pool_count() -> int:
     else:
         logging.info("Multiprocessing: disabled")
         return 1
+
+
+def gdal_window_intersection(
+    window1: Tuple[float], window2: Tuple[float]
+) -> Tuple[float]:
+    return (
+        max(window1[0], window2[0]),
+        min(window1[1], window2[1]),
+        min(window1[2], window2[2]),
+        max(window1[3], window2[3]),
+    )

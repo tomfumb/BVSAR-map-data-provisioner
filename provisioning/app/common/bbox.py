@@ -17,6 +17,14 @@ class BBOX(BaseModel):
     def as_tuple(self):
         return (self.min_x, self.min_y, self.max_x, self.max_y)
 
+    def as_gdal_win(self):
+        return (self.min_x, self.max_y, self.max_x, self.min_y)
+
+    def as_gdal_win(self, target_crs_code: str):
+        transformed_geom = self.transform_as_geom(target_crs_code)
+        envelope = transformed_geom.GetEnvelope()
+        return (envelope[0], envelope[3], envelope[1], envelope[2])
+
     def get_wkt(self):
         return f"POLYGON (({self.min_x} {self.min_y},{self.max_x} {self.min_y},{self.max_x} {self.max_y},{self.min_x} {self.max_y},{self.min_x} {self.min_y}))"
 

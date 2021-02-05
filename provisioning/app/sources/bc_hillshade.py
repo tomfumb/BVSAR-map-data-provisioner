@@ -62,9 +62,7 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
                     hs_path=get_cache_path(
                         (CACHE_DIR_NAME, f"{cell_part_name}_hs.tif")
                     ),
-                    run_path=get_run_data_path(
-                        run_id, (CACHE_DIR_NAME, f"{cell_part_name}.tif")
-                    ),
+                    run_path=os.path.join(run_directory, f"{cell_part_name}.tif"),
                 )
             )
 
@@ -121,13 +119,15 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
         except Exception as ex:
             swallow_unimportant_warp_error(ex)
 
-    return list(
-        filter(
-            lambda run_path: os.path.exists(run_path),
-            map(lambda generation_request: generation_request.run_path, bbox_cells),
-        )
+    merged_output_path = os.path.join(run_directory, "merged.tif")
+    Warp(
+        merged_output_path,
+        list(
+            filter(
+                lambda run_path: os.path.exists(run_path),
+                map(lambda generation_request: generation_request.run_path, bbox_cells),
+            )
+        ),
     )
 
-
-def _get_final_cache_path(cell_name: str) -> str:
-    return get_cache_path((CACHE_DIR_NAME, f"{cell_name}_hs.tif"))
+    return [merged_output_path]

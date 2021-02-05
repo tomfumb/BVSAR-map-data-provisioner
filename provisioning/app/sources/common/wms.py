@@ -3,16 +3,13 @@ import math
 import os
 import re
 
-from gdal import Open, Translate, GA_ReadOnly, Warp
+from collections import defaultdict
+from gdal import Open, Translate, GA_ReadOnly
 from pydantic import BaseModel
 from pyproj import Transformer, CRS
 from typing import Dict, Final, List, Tuple
 
 from app.common.bbox import BBOX
-from app.common.get_datasource_from_bbox import (
-    get_datasource_from_bbox,
-    BBOX_LAYER_NAME,
-)
 from app.common.http_retriever import retrieve, RetrievalRequest
 from app.tilemill.ProjectLayerType import ProjectLayerType
 from app.common.util import (
@@ -21,6 +18,7 @@ from app.common.util import (
     swallow_unimportant_warp_error,
     skip_file_creation,
     remove_intermediaries,
+    gdal_window_intersection,
 )
 
 DEFAULT_WMS_VERSION: Final = "1.1.1"
@@ -85,7 +83,7 @@ def provision(
     retrieve(requests, http_retrieval_concurrency)
     if image_format != TARGET_FILE_FORMAT:
         _convert_to_tif(grid_for_missing, wms_crs_code)
-    return _create_run_output(bbox, grid_for_retrieval, run_id)
+    return _create_run_output(bbox, grid_for_retrieval, wms_crs_code)
 
 
 def _build_grid_for_bbox(
@@ -216,22 +214,23 @@ def _convert_grid_to_requests(
 
 
 def _create_run_output(
-    bbox: BBOX, grid: List[PartialCoverageTile], run_id: str
+    bbox: BBOX, grid: List[PartialCoverageTile], wms_crs_code: str
 ) -> Dict[int, List[str]]:
-    file_list = dict()
-    run_directory = get_run_data_path(run_id, None)
+    file_list = defaultdict(list)
     for tile in grid:
-        if tile.scale not in file_list:
-            file_list[tile.scale] = list()
         try:
-            Warp(
+            Translate(
                 tile.final_path,
                 tile.tif_path,
-                cutlineDSName=get_datasource_from_bbox(bbox, run_directory),
-                cutlineLayer=BBOX_LAYER_NAME,
-                cropToCutline=False,
-                cutlineBlend=1,
-                dstNodata=-1,
+                projWin=[
+                    math.floor(value) if i in [0, 3] else math.ceil(value)
+                    for i, value in enumerate(
+                        gdal_window_intersection(
+                            bbox.as_gdal_win(wms_crs_code),
+                            (tile.x_min, tile.y_max, tile.x_max, tile.y_min),
+                        )
+                    )
+                ],
             )
             file_list[tile.scale].append(tile.final_path)
         except Exception as ex:
@@ -259,10 +258,6 @@ def _convert_to_tif(
                 os.remove(tile.wms_path)
         else:
             logging.warn(f"Expected file {tile.wms_path} does not exist")
-
-
-def _map_units_to_pixels(map_units: float, scale: int, map_crs: CRS) -> float:
-    return (map_units / scale) / _get_map_units_in_one_inch(map_crs) * DEFAULT_DPI
 
 
 def _pixels_to_map_units(pixels: float, scale: int, map_crs: CRS) -> float:

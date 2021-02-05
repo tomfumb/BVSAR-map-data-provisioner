@@ -1,4 +1,8 @@
-- disable controls on upload, show some visual feedback
+- transparency on black in Warped images can be fixed by using translate instead. Just have to give projwin and projwinsrs where projwin is the min of the bbox or the raster extent
+- merge bc-hillshade files in run directory to avoid edge overlap effect
+- provide count and current bbox being provisioned
+- disable controls on upload, sho w some visual feedback
+- can bbox provisioning be multiprocess forked, with optional disable for dev/debug? Could eliminate some downtime from the provisioning process
 - lighter colours / casing for trails and waterways on dark xyz imagery
 - namespace env vars with BVSAR_ for cleaner use on other systems
 - xyz attribution required
