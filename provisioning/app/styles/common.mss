@@ -24,11 +24,11 @@
   }
   [zoom >= 15] {
     ::case {
-      line-width: 5;
+      line-width: 4;
       line-color: #e3ad8c;
     }
     ::fill {
-      line-width: 3;
+      line-width: 2;
       line-color:#CD5406;
     }
   }
@@ -51,11 +51,11 @@
   }
   [zoom >= 15] {
     ::case {
-      line-width: 5;
+      line-width: 4;
       line-color: #cd92d2;
     }
     ::fill {
-      line-width: 3;
+      line-width: 2;
       line-color: #960BA4;
     }
   }
