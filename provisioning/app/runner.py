@@ -8,7 +8,7 @@ if __name__ == "__main__":
     from typing import List
 
     from app.common.bbox import BBOX
-    from app.bbox_provisioner import provision, ProvisionArg
+    from app.bbox_provisioner import provision, ProvisionArg, ProvisionResult
     from app.common.util import configure_logging
     from app.run_strategy import RunStrategy
     from app.settings import AREAS_PATH
@@ -16,6 +16,7 @@ if __name__ == "__main__":
     configure_logging()
 
     BBOX_DIVISION = float(os.environ.get("BBOX_DIVISION", 0.5))
+    BATCH_SIZE = int(os.environ.get("BVSAR_BATCH_SIZE", 0))
 
     datasource = ogr.Open(AREAS_PATH)
     if not datasource:
@@ -133,5 +134,12 @@ if __name__ == "__main__":
                 min_y += increment_y
             min_x += increment_x
 
+    batch_count = 0
     for provision_arg in provision_args:
-        provision(provision_arg)
+        provision_result = provision(provision_arg)
+        if provision_result != ProvisionResult.SKIPPED:
+            batch_count += 1
+        logging.info(f"Batch {batch_count} of {BATCH_SIZE}")
+        if BATCH_SIZE > 0 and batch_count >= BATCH_SIZE:
+            logging.info(f"Batch complete at {batch_count}")
+            exit(0)

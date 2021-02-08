@@ -1,3 +1,4 @@
+from enum import Enum
 import argparse
 import logging
 import uuid
@@ -28,14 +29,19 @@ class ProvisionArg(BaseModel):
     skippable: bool
 
 
-def provision(arg: ProvisionArg) -> None:
+class ProvisionResult(Enum):
+    SKIPPED = 0
+    SUCCESS = 1
+
+
+def provision(arg: ProvisionArg) -> ProvisionResult:
     bbox, profile_name, xyz_url = arg.bbox, arg.profile_name, arg.xyz_url
     bbox_exists = has_prior_run(get_result_path((profile_name,)), bbox)
     if bbox_exists and arg.skippable:
         logging.info(
             f"Skipping {profile_name} {bbox.min_x},{bbox.min_y} {bbox.max_x},{bbox.max_y} as it already exists"
         )
-        return
+        return ProvisionResult.SKIPPED
     else:
         logging.info(
             f"Provisioning {profile_name} {bbox.min_x},{bbox.min_y} {bbox.max_x},{bbox.max_y}"
@@ -73,6 +79,7 @@ def provision(arg: ProvisionArg) -> None:
         if os.path.exists(result_temp_dir):
             rmtree(result_temp_dir)
     logging.info("Finished")
+    return ProvisionResult.SUCCESS
 
 
 if __name__ == "__main__":
