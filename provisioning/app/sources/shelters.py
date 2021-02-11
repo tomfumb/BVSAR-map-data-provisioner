@@ -19,12 +19,13 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     os.makedirs(run_directory)
     driver = ogr.GetDriverByName("GPKG")
     datasource = driver.Open(LOCAL_FEATURES_PATH)
-    result = ogr_to_shp(
+    path = os.path.join(run_directory, "shelters.shp")
+    ogr_to_shp(
         bbox,
         [datasource.GetLayerByName("shelters")],
-        os.path.join(run_directory, "shelters.shp"),
+        path,
         "shelters",
         OUTPUT_CRS_CODE,
     )
     datasource = None
-    return result
+    return [path]

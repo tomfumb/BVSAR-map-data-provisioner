@@ -26,12 +26,13 @@ def provision(
     ]
     run_directory = get_run_data_path(run_id, (CACHE_DIR_NAME,))
     os.makedirs(run_directory, exist_ok=True)
-    result = ogr_to_shp(
+    path = os.path.join(run_directory, f"{dst_layer_name}.shp")
+    ogr_to_shp(
         bbox,
         [ds.GetLayerByName(src_layer_name) for ds in kmz_datasets],
-        os.path.join(run_directory, f"{dst_layer_name}.shp"),
+        path,
         dst_layer_name,
         OUTPUT_CRS_CODE,
     )
     kmz_datasets = None
-    return result
+    return [path]

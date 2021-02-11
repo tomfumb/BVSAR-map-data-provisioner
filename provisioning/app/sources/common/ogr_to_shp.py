@@ -5,15 +5,36 @@ from typing import List
 from app.common.bbox import BBOX
 
 
+def ogr_to_provided(
+    bbox: BBOX,
+    src_layers: List[ogr.Layer],
+    dst_datasource: ogr.DataSource,
+    dst_layer_name: str,
+    dst_crs_code: str,
+):
+    ogr_to_ogr(bbox, src_layers, dst_datasource, dst_layer_name, dst_crs_code)
+
+
 def ogr_to_shp(
     bbox: BBOX,
     src_layers: List[ogr.Layer],
     dst_path: str,
     dst_layer_name: str,
     dst_crs_code: str,
-) -> List[str]:
-    gen_driver = ogr.GetDriverByName("ESRI Shapefile")
-    gen_datasource = gen_driver.CreateDataSource(dst_path)
+) -> None:
+    dst_driver = ogr.GetDriverByName("ESRI Shapefile")
+    dst_datasource = dst_driver.CreateDataSource(dst_path)
+    ogr_to_ogr(bbox, src_layers, dst_datasource, dst_layer_name, dst_crs_code)
+    dst_datasource = None
+
+
+def ogr_to_ogr(
+    bbox: BBOX,
+    src_layers: List[ogr.Layer],
+    dst_datasource: ogr.DataSource,
+    dst_layer_name: str,
+    dst_crs_code: str,
+) -> None:
     gen_srs = ogr.osr.SpatialReference()
     gen_srs.ImportFromEPSG(int(dst_crs_code.split(":")[-1]))
     for i, src_layer in enumerate(src_layers):
@@ -27,7 +48,7 @@ def ogr_to_shp(
             f"{src_layer_srs.GetAuthorityName(None)}:{src_layer_srs.GetAuthorityCode(None)}"
         )
         if i == 0:
-            gen_layer = gen_datasource.CreateLayer(
+            gen_layer = dst_datasource.CreateLayer(
                 dst_layer_name, gen_srs, src_layer.GetLayerDefn().GetGeomType()
             )
             for j in range(src_layer.GetLayerDefn().GetFieldCount()):
@@ -47,8 +68,3 @@ def ogr_to_shp(
                 contained_geometry.TransformTo(gen_srs)
                 contained_feature.SetGeometryDirectly(contained_geometry)
                 gen_layer.CreateFeature(contained_feature)
-
-    gen_datasource = None
-    return [
-        dst_path,
-    ]

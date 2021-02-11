@@ -28,12 +28,13 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     os.makedirs(run_directory)
     driver = ogr.GetDriverByName("OpenFileGDB")
     datasource = driver.Open(fgdb)
-    result = ogr_to_shp(
+    path = os.path.join(run_directory, "bc_wetlands.shp")
+    ogr_to_shp(
         bbox,
         [datasource.GetLayerByName("FWA_WETLANDS_POLY")],
-        os.path.join(run_directory, "bc_wetlands.shp"),
+        path,
         "bc_wetlands",
         OUTPUT_CRS_CODE,
     )
     datasource = None
-    return result
+    return [path]

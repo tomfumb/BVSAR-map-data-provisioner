@@ -19,12 +19,9 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     os.makedirs(run_directory)
     driver = ogr.GetDriverByName("GPKG")
     datasource = driver.Open(LOCAL_FEATURES_PATH)
-    result = ogr_to_shp(
-        bbox,
-        [datasource.GetLayerByName("trails")],
-        os.path.join(run_directory, "trails.shp"),
-        "trails",
-        OUTPUT_CRS_CODE,
+    path = os.path.join(run_directory, "trails.shp")
+    ogr_to_shp(
+        bbox, [datasource.GetLayerByName("trails")], path, "trails", OUTPUT_CRS_CODE,
     )
     datasource = None
-    return result
+    return [path]
