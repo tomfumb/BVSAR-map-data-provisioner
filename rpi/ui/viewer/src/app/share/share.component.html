@@ -1,3 +1,4 @@
+<div class="section-label">Uploads</div>
 <div id="uploads-warning" class="info-container">
     ** All uploads are lost when the device restarts. Use this feature for sharing, not storage **
 </div>
@@ -10,17 +11,19 @@
 </div>
 
 <div id="uploads-container">
-    <div class="action-label">Uploads</div>
     <ng-container *ngIf="uploads.length > 0">
+        <div class="action-label">Files</div>
         <table id="uploads-table">
             <colgroup>
                 <col width="100%" />
+                <col width="0%" />
                 <col width="0%" />
             </colgroup>
             <tr *ngFor="let upload of uploads">
                 <td class="ellips-overflow">
                     <a [download]="upload.filename" [href]="uploadDomain + upload.path" target="_blank">{{ upload.filename }}</a>
                 </td>
+                <td>{{ upload.uploaded | datetime }}</td>
                 <td>{{ formatSize(upload.bytes) }}</td>
             </tr>
         </table>

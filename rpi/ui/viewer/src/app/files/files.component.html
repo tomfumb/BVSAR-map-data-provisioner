@@ -1,4 +1,9 @@
 <div id="dirs-container">
+
+    <div id="share-container">
+        <app-share></app-share>
+    </div>
+
     <div *ngFor="let entry of dirFiles | keyvalue" class="dir-container">
         <a [id]="stripParentDirs(entry.key)"></a>
         <div class="dir-label action-label">{{ stripParentDirs(entry.key) }}</div>

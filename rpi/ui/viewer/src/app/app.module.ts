@@ -15,6 +15,7 @@ import { TileUrlsComponent } from './map/tile-urls/tile-urls.component';
 import { PdfExportComponent } from './map/pdf-export/pdf-export.component';
 import { FilesComponent } from './files/files.component';
 import { ReCentreComponent } from './map/re-centre/re-centre.component';
+import { DatetimePipe } from './datetime.pipe';
 
 @NgModule({
   declarations: [
@@ -25,6 +26,7 @@ import { ReCentreComponent } from './map/re-centre/re-centre.component';
     PdfExportComponent,
     FilesComponent,
     ReCentreComponent,
+    DatetimePipe,
   ],
   imports: [
     BrowserModule,
