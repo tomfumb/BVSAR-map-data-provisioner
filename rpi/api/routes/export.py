@@ -9,7 +9,7 @@ from shutil import rmtree
 from typing import Tuple
 from uuid import uuid4
 
-from api.export.export import bbox_to_xyz
+from api.export.export import bbox_to_xyz, latlon_to_xyz
 from api.settings import TILES_PATH, PARENT_TEMP_DIR, PDF_EXPORT_MAX_TILES
 
 
@@ -20,13 +20,19 @@ router = APIRouter()
 async def export_info(
     profile: str, zoom: int, x_min: float, y_min: float, x_max: float, y_max: float
 ):
+    sample_tile = [
+        str(floor(val))
+        for val in latlon_to_xyz(
+            y_min + (y_max - y_min) / 2, x_min + (x_max - x_min) / 2, zoom
+        )
+    ]
     export_tile_bounds = bbox_to_xyz(x_min, x_max, y_min, y_max, zoom)
     export_tile_counts = tile_counts(*export_tile_bounds)
     return {
         "z": zoom,
         "x_tiles": export_tile_counts[0],
         "y_tiles": export_tile_counts[1],
-        "sample": f"{TILES_PATH}/{profile}/{zoom}/{export_tile_bounds[0] + floor(export_tile_counts[0] / 2)}/{export_tile_bounds[1] + floor(export_tile_counts[1] / 2)}.png",
+        "sample": f"{TILES_PATH}/{profile}/{zoom}/{'/'.join(sample_tile)}.png",
         "permitted": tile_count_permitted(export_tile_counts[0], export_tile_counts[1]),
     }
 
