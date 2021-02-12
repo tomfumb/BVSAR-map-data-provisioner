@@ -1,4 +1,4 @@
-import { HttpClient, HttpEventType } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpEventType } from '@angular/common/http';
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -12,6 +12,12 @@ interface Upload {
   uploaded: number;
 }
 
+interface UploadControlStatus {
+  pickerEnabled: boolean;
+  executeEnabled: boolean;
+  message: string;
+}
+
 @Component({
   selector: 'app-share',
   templateUrl: './share.component.html',
@@ -22,10 +28,13 @@ export class ShareComponent {
   public uploads: Upload[] = [];
   public uploadDomain: string = environment.tile_domain;
   
-  private pendingUpload: File;
   private readonly FILE_BYTE_LIMIT = 100000000;
+
+  private pendingUpload: File;
+  private uploadPermitted: boolean = true;
   private uploadInProgress: boolean = false;
   private uploadProgress = 0;
+  private uploadError: string = "";
 
   @ViewChild("fileSelector")
   private fileSelector: ElementRef;
@@ -38,17 +47,15 @@ export class ShareComponent {
   }
 
   public fileChange(event): void {
-    const candidateFile = event.target.files.length > 0 ? event.target.files[0] : null;
-    if (candidateFile) {
+    this.uploadError = "";
+    this.uploadPermitted = true;
+    this.pendingUpload = event.target.files.length > 0 ? event.target.files[0] : null;
+    if (this.pendingUpload) {
       // not validated in API because limited user-base, likely not malicious users, and overlay fs means any damaga is undone by reboot
-      if (candidateFile.size > this.FILE_BYTE_LIMIT) {
-        window.alert(`File is too big and cannot be uploaded. File: ${this.spaceService.fromBytes(candidateFile.size)}, limit: ${this.spaceService.fromBytes(this.FILE_BYTE_LIMIT)}`);
-        this.pendingUpload = null;
-      } else {
-        this.pendingUpload = candidateFile;
+      if (this.pendingUpload.size > this.FILE_BYTE_LIMIT) {
+        this.uploadError = `File is too big. File: ${this.spaceService.fromBytes(this.pendingUpload.size)}, limit: ${this.spaceService.fromBytes(this.FILE_BYTE_LIMIT)}`;
+        this.uploadPermitted = false;
       }
-    } else {
-      this.pendingUpload = null;
     }
   }
 
@@ -59,9 +66,10 @@ export class ShareComponent {
     this.http.post(`${environment.tile_domain}/upload`, formData, {
       reportProgress: true,
       observe: 'events'
-    }).pipe(catchError(error => {
+    }).pipe(catchError((error: HttpErrorResponse) => {
       this.uploadInProgress = false;
       this.uploadProgress = 0;
+      window.alert(error.message);
       return throwError(error);
     })).subscribe(response => {
       switch (response.type) {
@@ -81,20 +89,30 @@ export class ShareComponent {
     });
   }
 
-  public get pendingUploadExists(): boolean {
-    return !!this.pendingUpload;
-  }
-
-  public get pendingUploadButtonText(): string {
-    return "Upload" + (this.pendingUpload ? ` (${this.spaceService.fromBytes(this.pendingUpload.size)})` : "")
+  public get uploadControlStatus(): UploadControlStatus {
+    let message: string = "";
+    if (this.uploadPermitted) {
+      if (this.uploadInProgress) {
+        message = "Uploading..."
+      } else {
+        if (this.pendingUpload) {
+          message = `Ready to upload (${this.spaceService.fromBytes(this.pendingUpload ? this.pendingUpload.size : 0)})`;
+        }
+      }
+    } else {
+      if (this.uploadError) {
+        message = this.uploadError;
+      }
+    }
+    return {
+      pickerEnabled: !this.uploadInProgress,
+      executeEnabled: this.uploadPermitted && !!this.pendingUpload && !this.uploadInProgress,
+      message: message
+    };
   }
 
   public get uploadProgressPct(): string {
     return `${this.uploadProgress}%`;
-  }
-
-  public get disableUploads(): boolean {
-    return this.uploadInProgress;
   }
 
   public formatSize(bytes: number): string {

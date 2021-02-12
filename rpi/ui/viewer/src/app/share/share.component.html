@@ -5,8 +5,18 @@
 <div id="upload-container">
     <div class="action-label">Upload a File</div>
     <div id="upload-controls-container">
-        <input #fileSelector type="file" (change)="fileChange($event)" [disabled]="disableUploads" placeholder="Upload file">
-        <button class="primary-button" type="button" (click)="uploadFile()" [disabled]="!pendingUploadExists || disableUploads">{{ pendingUploadButtonText }}</button>
+        <input #fileSelector type="file" (change)="fileChange($event)" [disabled]="!uploadControlStatus.pickerEnabled" placeholder="Upload file">
+        <div>
+            {{ uploadControlStatus.message }}
+            <ng-container [ngSwitch]="uploadControlStatus.executeEnabled">
+                <ng-container *ngSwitchCase="true">
+                    <button class="primary-button" type="button" (click)="uploadFile()">Upload</button>
+                </ng-container>
+                <ng-container *ngSwitchCase="false">
+                    <button class="disabled-button" type="button" [disabled]="true">Upload</button>
+                </ng-container>
+            </ng-container>
+        </div>
     </div>
     <div id="upload-progress-container">
         <div id="upload-progress-bar" [ngStyle]="{ 'width': uploadProgressPct }"></div>
