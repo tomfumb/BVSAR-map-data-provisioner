@@ -1,4 +1,4 @@
-- Pixel counts on exports are no longer valid
+- different strategy for unique file names - maybe a display name and file name with well-known separator
 - tilemill -> mapnik, converter for cartocss -> mapnik XML
 - cache-bust headers for empty tiles
 - Attempt TouchGIS tile substitution
