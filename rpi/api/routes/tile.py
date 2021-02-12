@@ -13,7 +13,8 @@ async def tile_info():
     tilesets = list()
     for dirname in os.listdir(TILES_DIR):
         profile_path = os.path.join(TILES_DIR, dirname)
-        if os.path.isdir(profile_path):
+        geojson_path = os.path.join(profile_path, "coverage.geojson")
+        if os.path.isdir(profile_path) and os.path.exists(geojson_path):
             zooms = sorted(
                 [
                     int(zoomdir)
@@ -27,10 +28,7 @@ async def tile_info():
                     "name": dirname,
                     "zoom_min": zooms[0],
                     "zoom_max": zooms[-1],
-                    "last_modified": math.floor(
-                        os.stat(os.path.join(profile_path, "coverage.geojson")).st_mtime
-                        * 1000
-                    ),
+                    "last_modified": math.floor(os.stat(geojson_path).st_mtime * 1000),
                 }
             )
     return tilesets
