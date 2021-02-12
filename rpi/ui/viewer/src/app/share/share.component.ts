@@ -1,5 +1,7 @@
 import { HttpClient, HttpEventType } from '@angular/common/http';
 import { Component, ElementRef, ViewChild } from '@angular/core';
+import { throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { SpaceService } from '../space.service';
 
@@ -22,6 +24,8 @@ export class ShareComponent {
   
   private pendingUpload: File;
   private readonly FILE_BYTE_LIMIT = 100000000;
+  private uploadInProgress: boolean = false;
+  private uploadProgress = 0;
 
   @ViewChild("fileSelector")
   private fileSelector: ElementRef;
@@ -51,14 +55,28 @@ export class ShareComponent {
   public uploadFile(): void {
     const formData = new FormData();
     formData.append("file", this.pendingUpload);
+    this.uploadInProgress = true;
     this.http.post(`${environment.tile_domain}/upload`, formData, {
       reportProgress: true,
       observe: 'events'
-    }).subscribe(response => {
-      if (response.type === HttpEventType.Response) {
-        this.pendingUpload = null;
-        this.fileSelector.nativeElement.value = null;
-        this.updateFileList();
+    }).pipe(catchError(error => {
+      this.uploadInProgress = false;
+      this.uploadProgress = 0;
+      return throwError(error);
+    })).subscribe(response => {
+      switch (response.type) {
+        case HttpEventType.Response:
+          this.uploadProgress = 0;
+          this.uploadInProgress = false;
+          this.pendingUpload = null;
+          this.fileSelector.nativeElement.value = null;
+          this.updateFileList();
+          break;
+        case HttpEventType.UploadProgress:
+          if (response.total > 0) {
+            this.uploadProgress = response.loaded / response.total * 100;
+          }
+          break;
       }
     });
   }
@@ -69,6 +87,14 @@ export class ShareComponent {
 
   public get pendingUploadButtonText(): string {
     return "Upload" + (this.pendingUpload ? ` (${this.spaceService.fromBytes(this.pendingUpload.size)})` : "")
+  }
+
+  public get uploadProgressPct(): string {
+    return `${this.uploadProgress}%`;
+  }
+
+  public get disableUploads(): boolean {
+    return this.uploadInProgress;
   }
 
   public formatSize(bytes: number): string {
