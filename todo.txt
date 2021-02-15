@@ -1,4 +1,12 @@
 - different strategy for unique file names - maybe a display name and file name with well-known separator
+- websocket upload monitoring
+    - sse : https://stackoverflow.com/questions/58895486/how-to-send-server-side-events-from-python-fastapi-upon-calls-to-a-function-th
+    - have client pass when last file update was that it knows of 
+
+    - web socket : easier for client to communicate last known file?
+
+- show all export zoom levels but disable and provide an explanation
+- make usb stick files available via Files tab
 - tilemill -> mapnik, converter for cartocss -> mapnik XML
 - cache-bust headers for empty tiles
 - Attempt TouchGIS tile substitution

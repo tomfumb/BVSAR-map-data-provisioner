@@ -82,7 +82,7 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     logging.info("Erasing intersections - rivers")
     no_lakes_layer.Erase(rivers_layer, no_rivers_layer)
     logging.info("Erasing intersections - wetlands")
-    no_lakes_layer.Erase(wetlands_layer, no_wetlands_layer)
+    no_rivers_layer.Erase(wetlands_layer, no_wetlands_layer)
 
     logging.info("Writing waterways")
     dst_path = os.path.join(run_directory, "bc_waterways.shp")
