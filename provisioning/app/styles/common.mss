@@ -10,32 +10,25 @@
 .bc-resource-roads {
   line-color:#CD5406;
   [zoom = 13] {
+    line-width: 2;
+  }
+  [zoom = 14] {
     ::case {
       line-width: 3;
-      line-color: #ffffff;
+      line-color: #e3ad8c;
     }
     ::fill {
       line-width: 1;
       line-color:#CD5406;
     }
   }
-  [zoom = 14] {
+  [zoom >= 15] {
     ::case {
       line-width: 4;
-      line-color: #ffffff;
+      line-color: #e3ad8c;
     }
     ::fill {
       line-width: 2;
-      line-color:#CD5406;
-    }
-  }
-  [zoom > 15] {
-    ::case {
-      line-width: 5;
-      line-color: #ffffff;
-    }
-    ::fill {
-      line-width: 3;
       line-color:#CD5406;
     }
   }
@@ -43,23 +36,26 @@
 
 .trails {
   line-color:#960BA4;
-  [zoom >= 13] {
+  [zoom = 13] {
+    line-width: 2;
+  }
+  [zoom = 14] {
     ::case {
-      line-width: 4;
-      line-color: #ffffff;
+      line-width: 3;
+      line-color: #cd92d2;
     }
     ::fill {
-      line-width: 2;
+      line-width: 1;
       line-color: #960BA4;
     }
   }
   [zoom >= 15] {
     ::case {
-      line-width: 5;
-      line-color: #ffffff;
+      line-width: 4;
+      line-color: #cd92d2;
     }
     ::fill {
-      line-width: 3;
+      line-width: 2;
       line-color: #960BA4;
     }
   }
@@ -78,7 +74,7 @@
   }
 }
 
-.bc-resource-roads-label,.trails {
+.bc-resource-roads-label,.trails-label {
   [zoom >= 14] {
     text-dy:5;
     text-face-name:'DejaVu Sans Book';
@@ -88,7 +84,8 @@
   }
 }
 
-.trails {
+.trails-label {
+  line-width:0;
   [zoom >= 14] {
     text-name:[name];
   }

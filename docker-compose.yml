@@ -51,6 +51,7 @@ services:
       - TILEMILL_URL
       - AREAS_LOCATION
       - LOCAL_FEATURES_LOCATION
+      - BVSAR_BATCH_SIZE
     depends_on: 
       - tilemill
 

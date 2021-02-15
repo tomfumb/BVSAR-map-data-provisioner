@@ -1,7 +1,21 @@
-from math import log, tan, radians, cos, pi, floor
+from math import log, tan, radians, cos, pi, floor, pow
 
 
-"""Adapted from https://github.com/jimutt/tiles-to-tiff"""
+"""Some parts adapted from https://github.com/jimutt/tiles-to-tiff"""
+
+
+AXIS_EXTENT = 20037508.3427892 * 2
+TILES_PER_ZOOM = [1 * pow(2, zoom) for zoom in range(23)]
+TILE_SIZE = 256
+
+
+def bbox_to_pixels(lon_min, lon_max, lat_min, lat_max, z):
+    x_degrees_per_pixel = (360 / TILES_PER_ZOOM[z]) / TILE_SIZE
+    y_degrees_per_pixel = (180 / TILES_PER_ZOOM[z]) / TILE_SIZE
+    return (
+        round((lon_max - lon_min) / x_degrees_per_pixel),
+        round((lat_max - lat_min) / y_degrees_per_pixel),
+    )
 
 
 def sec(x):

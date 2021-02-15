@@ -127,13 +127,15 @@ def bc_resource_roads(bbox: BBOX, run_id: str) -> List[ProjectLayer]:
 
 
 def trails(bbox: BBOX, run_id: str) -> List[ProjectLayer]:
+    trails_files = trails_provisioner(bbox, run_id)
     return [
         ProjectLayer(
-            path=trails_provisioner(bbox, run_id)[0],
-            style_class="trails",
+            path=trails_files[0],
+            style_class=class_name,
             crs_code=trails_crs_code,
             type=trails_output_type,
         )
+        for class_name in ("trails", "trails-label")
     ]
 
 

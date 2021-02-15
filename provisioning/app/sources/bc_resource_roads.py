@@ -25,12 +25,13 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
             )
         )
     )
-    result = ogr_to_shp(
+    path = os.path.join(run_directory, "bc_resource_roads.shp")
+    ogr_to_shp(
         bbox,
         [datasource.GetLayerByIndex(0)],
-        os.path.join(run_directory, "bc_resource_roads.shp"),
+        path,
         "bc_resource_roads",
         OUTPUT_CRS_CODE,
     )
     datasource = None
-    return result
+    return [path]

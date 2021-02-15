@@ -13,8 +13,8 @@ interface ExportInfoCommon {
 
 interface ExportInfo extends ExportInfoCommon {
   z: number;
-  x_tiles: number;
-  y_tiles: number;
+  x_px: number;
+  y_px: number;
   sample: string;
   permitted: boolean;
 }

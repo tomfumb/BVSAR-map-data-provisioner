@@ -26,13 +26,10 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     parcels_layer.SetAttributeFilter(
         "OWNER_TYPE IN ('First Nation','Mixed Ownership','Municipal','Private','Unknown')"
     )
-    result = ogr_to_shp(
-        bbox,
-        [parcels_layer],
-        os.path.join(run_directory, "bc_parcels.shp"),
-        "bc_parcels",
-        OUTPUT_CRS_CODE,
+    path = os.path.join(run_directory, "bc_parcels.shp")
+    ogr_to_shp(
+        bbox, [parcels_layer], path, "bc_parcels", OUTPUT_CRS_CODE,
     )
     parcels_layer = None
     datasource = None
-    return result
+    return [path]

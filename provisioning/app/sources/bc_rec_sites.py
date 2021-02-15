@@ -26,13 +26,10 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
         "WHSE_FOREST_TENURE_FTEN_RECREATION_POLY_SVW"
     )
     rec_sites_layer.SetAttributeFilter("LIFE_CYCLE_STATUS_CODE IN ('ACTIVE','PENDING')")
-    result = ogr_to_shp(
-        bbox,
-        [rec_sites_layer],
-        os.path.join(run_directory, "bc_rec_sites.shp"),
-        "bc_rec_sites",
-        OUTPUT_CRS_CODE,
+    path = os.path.join(run_directory, "bc_rec_sites.shp")
+    ogr_to_shp(
+        bbox, [rec_sites_layer], path, "bc_rec_sites", OUTPUT_CRS_CODE,
     )
     rec_sites_layer = None
     datasource = None
-    return result
+    return [path]

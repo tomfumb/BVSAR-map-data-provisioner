@@ -1,26 +1,42 @@
+<div class="section-label">Uploads</div>
 <div id="uploads-warning" class="info-container">
     ** All uploads are lost when the device restarts. Use this feature for sharing, not storage **
 </div>
 <div id="upload-container">
     <div class="action-label">Upload a File</div>
     <div id="upload-controls-container">
-        <input #fileSelector type="file" (change)="fileChange($event)" placeholder="Upload file">
-        <button class="primary-button" type="button" (click)="uploadFile()" [disabled]="!pendingUploadExists">{{ pendingUploadButtonText }}</button>
+        <input #fileSelector type="file" (change)="fileChange($event)" [disabled]="!uploadControlStatus.pickerEnabled" placeholder="Upload file">
+        <div>
+            {{ uploadControlStatus.message }}
+            <ng-container [ngSwitch]="uploadControlStatus.executeEnabled">
+                <ng-container *ngSwitchCase="true">
+                    <button class="primary-button" type="button" (click)="uploadFile()">Upload</button>
+                </ng-container>
+                <ng-container *ngSwitchCase="false">
+                    <button class="disabled-button" type="button" [disabled]="true">Upload</button>
+                </ng-container>
+            </ng-container>
+        </div>
+    </div>
+    <div id="upload-progress-container">
+        <div id="upload-progress-bar" [ngStyle]="{ 'width': uploadProgressPct }"></div>
     </div>
 </div>
 
 <div id="uploads-container">
-    <div class="action-label">Uploads</div>
     <ng-container *ngIf="uploads.length > 0">
+        <div class="action-label">Files</div>
         <table id="uploads-table">
             <colgroup>
                 <col width="100%" />
+                <col width="0%" />
                 <col width="0%" />
             </colgroup>
             <tr *ngFor="let upload of uploads">
                 <td class="ellips-overflow">
                     <a [download]="upload.filename" [href]="uploadDomain + upload.path" target="_blank">{{ upload.filename }}</a>
                 </td>
+                <td>{{ upload.uploaded | datetime }}</td>
                 <td>{{ formatSize(upload.bytes) }}</td>
             </tr>
         </table>

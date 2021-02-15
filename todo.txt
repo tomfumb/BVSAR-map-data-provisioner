@@ -1,12 +1,17 @@
-- transparency on black in Warped images can be fixed by using translate instead. Just have to give projwin and projwinsrs where projwin is the min of the bbox or the raster extent
-- merge bc-hillshade files in run directory to avoid edge overlap effect
-- provide count and current bbox being provisioned
-- disable controls on upload, sho w some visual feedback
-- can bbox provisioning be multiprocess forked, with optional disable for dev/debug? Could eliminate some downtime from the provisioning process
-- lighter colours / casing for trails and waterways on dark xyz imagery
+- different strategy for unique file names - maybe a display name and file name with well-known separator
+- websocket upload monitoring
+    - sse : https://stackoverflow.com/questions/58895486/how-to-send-server-side-events-from-python-fastapi-upon-calls-to-a-function-th
+    - have client pass when last file update was that it knows of 
+
+    - web socket : easier for client to communicate last known file?
+
+- show all export zoom levels but disable and provide an explanation
+- make usb stick files available via Files tab
+- tilemill -> mapnik, converter for cartocss -> mapnik XML
+- cache-bust headers for empty tiles
+- Attempt TouchGIS tile substitution
 - namespace env vars with BVSAR_ for cleaner use on other systems
 - xyz attribution required
-- versioning in UI
 - Additional cabins from Ben
 - pyproj suppress warnings when exporting proj4
 - move from common to profiles/common where appropriate
@@ -15,3 +20,4 @@
 - refuse to run if annual data is not updated
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
 - need some consistency in class file names, classes having their own files
+- add logs to files tab
