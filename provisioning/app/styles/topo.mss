@@ -1,4 +1,4 @@
-.bc-hillshade {
+.bc-hillshade [zoom > 10] {
   raster-opacity:0.3;
 }
 

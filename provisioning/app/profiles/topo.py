@@ -1,3 +1,4 @@
+import os
 import logging
 
 from typing import Dict, Final
@@ -14,6 +15,7 @@ from app.profiles.common.sources import (
     shelters,
 )
 from app.profiles.common.tilemill import generate_tiles
+from app.common.xyz import transparent_clip_to_bbox, get_edge_tiles
 
 
 NAME: Final = "topo"
@@ -36,8 +38,15 @@ def execute(bbox: BBOX, run_id: str, args: Dict[str, object] = dict()) -> None:
         + trails(bbox, run_id)
         + shelters(bbox, run_id)
     )
-    tile_output_dir = generate_tiles(
+    generate_result = generate_tiles(
         layers, ["common", "topo"], bbox, NAME, ZOOM_MIN, ZOOM_MAX, run_id
-    ).tile_dir
+    )
+    transparent_clip_to_bbox(
+        [
+            os.path.join(generate_result.tile_dir, tile_path)
+            for tile_path in get_edge_tiles(generate_result.tile_dir)
+        ],
+        bbox,
+    )
     logging.info("Transferring generated tile set to result directory")
-    add_or_update(tile_output_dir, get_result_path((NAME,)))
+    add_or_update(generate_result.tile_dir, get_result_path((NAME,)))
