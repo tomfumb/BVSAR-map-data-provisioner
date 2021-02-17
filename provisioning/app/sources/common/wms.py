@@ -217,20 +217,51 @@ def _create_run_output(
     bbox: BBOX, grid: List[PartialCoverageTile], wms_crs_code: str
 ) -> Dict[int, List[str]]:
     file_list = defaultdict(list)
+    wms_crs = CRS(wms_crs_code)
     for tile in grid:
         try:
+            adjusted_envelope = gdal_window_intersection(
+                bbox.as_gdal_win(wms_crs_code),
+                (tile.x_min, tile.y_max, tile.x_max, tile.y_min),
+            )
+            (
+                int_win_x_min,
+                int_win_y_max,
+                int_win_x_max,
+                int_win_y_min,
+            ) = adjusted_envelope
+            if int_win_x_min > tile.x_min:
+                pixels_changed = _map_units_to_pixels(
+                    int_win_x_min - tile.x_min, tile.scale, wms_crs
+                )
+                int_win_x_min -= _pixels_to_map_units(
+                    pixels_changed % 1, tile.scale, wms_crs
+                )
+            if int_win_y_max < tile.y_max:
+                pixels_changed = _map_units_to_pixels(
+                    tile.y_max - int_win_y_max, tile.scale, wms_crs
+                )
+                int_win_y_max += _pixels_to_map_units(
+                    pixels_changed % 1, tile.scale, wms_crs
+                )
+            if int_win_x_max < tile.x_max:
+                pixels_changed = _map_units_to_pixels(
+                    tile.x_max - int_win_x_max, tile.scale, wms_crs
+                )
+                int_win_x_max += _pixels_to_map_units(
+                    pixels_changed % 1, tile.scale, wms_crs
+                )
+            if int_win_y_min > tile.x_min:
+                pixels_changed = _map_units_to_pixels(
+                    int_win_y_min - tile.y_min, tile.scale, wms_crs
+                )
+                int_win_y_min -= _pixels_to_map_units(
+                    pixels_changed % 1, tile.scale, wms_crs
+                )
             Translate(
                 tile.final_path,
                 tile.tif_path,
-                projWin=[
-                    math.floor(value) if i in [0, 3] else math.ceil(value)
-                    for i, value in enumerate(
-                        gdal_window_intersection(
-                            bbox.as_gdal_win(wms_crs_code),
-                            (tile.x_min, tile.y_max, tile.x_max, tile.y_min),
-                        )
-                    )
-                ],
+                projWin=[int_win_x_min, int_win_y_max, int_win_x_max, int_win_y_min,],
             )
             file_list[tile.scale].append(tile.final_path)
         except Exception as ex:
@@ -262,6 +293,10 @@ def _convert_to_tif(
 
 def _pixels_to_map_units(pixels: float, scale: int, map_crs: CRS) -> float:
     return ((pixels * scale) / DEFAULT_DPI) * _get_map_units_in_one_inch(map_crs)
+
+
+def _map_units_to_pixels(map_units: float, scale: int, map_crs: CRS) -> float:
+    return (map_units / scale) / _get_map_units_in_one_inch(map_crs) * DEFAULT_DPI
 
 
 def _get_map_units_in_one_inch(map_crs) -> float:

@@ -139,7 +139,6 @@ if __name__ == "__main__":
         provision_result = provision(provision_arg)
         if provision_result != ProvisionResult.SKIPPED:
             batch_count += 1
-        logging.info(f"Batch {batch_count} of {BATCH_SIZE}")
         if BATCH_SIZE > 0 and batch_count >= BATCH_SIZE:
             logging.info(f"Batch complete at {batch_count}")
             exit(0)
