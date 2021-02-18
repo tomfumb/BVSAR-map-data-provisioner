@@ -47,6 +47,7 @@ def execute(bbox: BBOX, run_id: str, args: Dict[str, object] = dict()) -> None:
             for tile_path in get_edge_tiles(generate_result.tile_dir)
         ],
         bbox,
+        False,
     )
     logging.info("Transferring generated tile set to result directory")
-    add_or_update(generate_result.tile_dir, get_result_path((NAME,)))
+    add_or_update(generate_result.tile_dir, get_result_path((NAME,)), False)

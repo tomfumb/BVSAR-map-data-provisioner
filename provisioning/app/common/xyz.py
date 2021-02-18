@@ -79,12 +79,14 @@ def get_edge_tiles(tile_dir: str) -> List[str]:
     return edge_tiles
 
 
-def transparent_clip_to_bbox(tile_paths: List[str], bbox: BBOX) -> None:
+def transparent_clip_to_bbox(
+    tile_paths: List[str], bbox: BBOX, quantize: bool = True
+) -> None:
     logging.info("Clipping edge tiles to bbox")
     min_x, max_x, min_y, max_y = bbox.transform_as_geom("EPSG:3857").GetEnvelope()
-    _transparent_clip_to_bbox_executor(min_x, min_y, max_x, max_y, tile_paths).parallel(
-        get_process_pool_count()
-    )
+    _transparent_clip_to_bbox_executor(
+        min_x, min_y, max_x, max_y, tile_paths, quantize
+    ).parallel(get_process_pool_count())
 
 
 class _transparent_clip_to_bbox_executor:
@@ -95,12 +97,14 @@ class _transparent_clip_to_bbox_executor:
         max_x: float,
         max_y: float,
         tile_paths: List[str],
+        quantize: bool,
     ):
         self.min_x = min_x
         self.min_y = min_y
         self.max_x = max_x
         self.max_y = max_y
         self.tile_paths = tile_paths
+        self.quantize = quantize
 
     def __call__(self, tile_path: str):
         match_groups = re.match(r".+/(\d+)/(\d+)/(\d+)\.png$", tile_path)
@@ -143,7 +147,7 @@ class _transparent_clip_to_bbox_executor:
                 f"{tile_path} needs clipping by {left_pixels},{bottom_pixels} {right_pixels},{top_pixels}"
             )
             tile_src = Image.open(tile_path)
-            tile_has_palette = tile_src.getpalette is not None
+            tile_has_palette = tile_src.palette is not None
             tile = tile_src.convert("RGBA") if tile_has_palette else tile_src
             for i in range(TILE_SIZE):
                 for j in range(TILE_SIZE):
@@ -156,7 +160,10 @@ class _transparent_clip_to_bbox_executor:
                     ):
                         new_values = (0, 0, 0, 0)
                         tile.putpixel(coord, new_values)
-            tile.quantize(method=2).save(tile_path)
+            if self.quantize:
+                tile.quantize(method=2).save(tile_path)
+            else:
+                tile.save(tile_path)
 
     def parallel(self, pool_size: int):
         pool = multiprocessing.Pool(processes=pool_size)
@@ -164,20 +171,21 @@ class _transparent_clip_to_bbox_executor:
         pool.close()
 
 
-def merge_tiles(paths: List[Tuple[str]]) -> None:
-    _merge_tiles_executor(paths).parallel(get_process_pool_count())
+def merge_tiles(paths: List[Tuple[str]], quantize: bool = True) -> None:
+    _merge_tiles_executor(paths, quantize).parallel(get_process_pool_count())
 
 
 class _merge_tiles_executor:
-    def __init__(self, paths: List[Tuple[str]]):
+    def __init__(self, paths: List[Tuple[str]], quantize: bool):
         self.paths = paths
+        self.quantize = quantize
 
     def __call__(self, paths: Tuple[str]):
         base_path, overlay_path, output_path = paths
         overlay_image_src = overlay_image = Image.open(overlay_path)
-        overlay_has_palette = overlay_image_src.getpalette() is not None
+        overlay_has_palette = overlay_image_src.palette is not None
         base_image_src = Image.open(base_path)
-        base_has_palette = base_image_src.getpalette is not None
+        base_has_palette = base_image_src.palette is not None
         overlay_image = (
             overlay_image_src.convert("RGBA")
             if overlay_has_palette
@@ -199,7 +207,10 @@ class _merge_tiles_executor:
                             base_image.getpixel(coord) + (255,), overlay_values
                         ),
                     )
-        base_image.quantize(method=2).save(output_path)
+        if self.quantize:
+            base_image.quantize(method=2).save(output_path)
+        else:
+            base_image.save(output_path)
 
     def parallel(self, pool_size: int):
         pool = multiprocessing.Pool(processes=pool_size)

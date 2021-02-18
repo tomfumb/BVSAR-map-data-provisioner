@@ -5,7 +5,7 @@ from app.common.util import merge_dirs
 from app.common.xyz import get_edge_tiles, merge_tiles
 
 
-def add_or_update(source_dir: str, dest_dir: str):
+def add_or_update(source_dir: str, dest_dir: str, quantize: bool = True):
     logging.info(
         "Searching existing tiles for edge overlaps and stitching if necessary"
     )
@@ -25,7 +25,7 @@ def add_or_update(source_dir: str, dest_dir: str):
             )
             for edge_tile in existing_edge_tiles
         ]
-        merge_tiles(path_tuples)
+        merge_tiles(path_tuples, quantize)
 
     logging.info("Updating result directories with latest export")
     merge_dirs(source_dir, dest_dir)
