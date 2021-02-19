@@ -52,6 +52,7 @@ services:
       - AREAS_LOCATION
       - LOCAL_FEATURES_LOCATION
       - BVSAR_BATCH_SIZE
+      - GRIDDED_REPEAT_IF_EXISTS
     depends_on: 
       - tilemill
 

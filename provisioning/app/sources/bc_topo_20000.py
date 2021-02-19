@@ -87,7 +87,6 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
                 cropToCutline=False,
                 cutlineBlend=1,
                 dstNodata=-1,
-                srcSRS="EPSG:26909",
                 dstSRS=OUTPUT_CRS_CODE,
                 resampleAlg="lanczos",
             )
