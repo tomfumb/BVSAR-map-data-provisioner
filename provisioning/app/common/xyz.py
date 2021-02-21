@@ -147,8 +147,7 @@ class _transparent_clip_to_bbox_executor:
                 f"{tile_path} needs clipping by {left_pixels},{bottom_pixels} {right_pixels},{top_pixels}"
             )
             tile_src = Image.open(tile_path)
-            tile_has_palette = tile_src.palette is not None
-            tile = tile_src.convert("RGBA") if tile_has_palette else tile_src
+            tile = tile_src.convert("RGBA")
             for i in range(TILE_SIZE):
                 for j in range(TILE_SIZE):
                     coord = (i, j)
@@ -183,17 +182,9 @@ class _merge_tiles_executor:
     def __call__(self, paths: Tuple[str]):
         base_path, overlay_path, output_path = paths
         overlay_image_src = overlay_image = Image.open(overlay_path)
-        overlay_has_palette = overlay_image_src.palette is not None
         base_image_src = Image.open(base_path)
-        base_has_palette = base_image_src.palette is not None
-        overlay_image = (
-            overlay_image_src.convert("RGBA")
-            if overlay_has_palette
-            else overlay_image_src
-        )
-        base_image = (
-            base_image_src.convert("RGBA") if base_has_palette else base_image_src
-        )
+        overlay_image = overlay_image_src.convert("RGBA")
+        base_image = base_image_src.convert("RGBA")
         for i in range(TILE_SIZE):
             for j in range(TILE_SIZE):
                 coord = (i, j)
