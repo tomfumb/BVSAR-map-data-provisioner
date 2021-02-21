@@ -3,4 +3,5 @@ export interface Tileset {
   zoom_min: number;
   zoom_max: number;
   last_modified: number;
+  geojson: string;
 }

@@ -79,7 +79,7 @@ export class MapComponent implements OnInit, OnDestroy {
   private initMap(): void {
     window.setTimeout(() => {
       const tileLayers = this.tilesets.reduce((accumulator, currentValue) => {
-        accumulator[currentValue.name] = l.tileLayer(`${environment.tile_domain}/tiles/files/${currentValue.name}/{z}/{x}/{y}.png`, {
+        accumulator[currentValue.name] = l.tileLayer(`${environment.tile_domain}/tile/file/${currentValue.name}/{z}/{x}/{y}.png`, {
           minZoom: currentValue.zoom_min,
           maxZoom: currentValue.zoom_max
         })
@@ -176,18 +176,15 @@ export class MapComponent implements OnInit, OnDestroy {
     if (this.dataModifiedLabel) {
       this.dataModifiedLabel.getContainer().innerHTML = this.getModifiedText();
     }
-    this.http.get(`${environment.tile_domain}/tiles/files/${this.tilesetSelected.name}/coverage.geojson`).pipe(map((response: HttpResponse<object>) => {
-      return response;
-    })).subscribe(geojson => {
-      let newBounds = l.geoJson(geojson).getBounds();
-      if (respectCurrentBounds) {
-        const currentBounds = this.leafletMap.getBounds();
-        if (respectCurrentBounds && newBounds.intersects(currentBounds)) {
-          newBounds = currentBounds
-        }
+    const geojson = JSON.parse(this.tilesetSelected.geojson);
+    let newBounds = l.geoJson(geojson).getBounds();
+    if (respectCurrentBounds) {
+      const currentBounds = this.leafletMap.getBounds();
+      if (respectCurrentBounds && newBounds.intersects(currentBounds)) {
+        newBounds = currentBounds
       }
-      this.leafletMap.fitBounds(newBounds);
-    });
+    }
+    this.leafletMap.fitBounds(newBounds);
   }
 
   private getModifiedText(): string {
