@@ -64,7 +64,7 @@ def provision(arg: ProvisionArg) -> ProvisionResult:
             xyz_check_builder(
                 bbox,
                 "{0}/{1}/{{z}}/{{x}}/{{y}}.png".format(
-                    os.environ.get("HTTP_URL", "http://rpi/tiles/files"), profile_name,
+                    os.environ.get("HTTP_URL", "http://rpi/tile/file"), profile_name,
                 ),
                 profiles[profile_name]["zoom_min"],
                 profiles[profile_name]["zoom_max"],

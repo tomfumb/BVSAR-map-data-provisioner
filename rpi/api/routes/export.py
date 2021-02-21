@@ -62,7 +62,7 @@ async def export_pdf(
         xml_file.write(
             f"""<GDAL_WMS>
     <Service name="TMS">
-        <ServerUrl>{base_url}/tiles/files/{profile}/${{z}}/${{x}}/${{y}}.png</ServerUrl>
+        <ServerUrl>{base_url}/tile/file/{profile}/${{z}}/${{x}}/${{y}}.png</ServerUrl>
     </Service>
     <DataWindow>
         <UpperLeftX>-20037508.34</UpperLeftX>

@@ -52,7 +52,7 @@ export class TileUrlsComponent {
   }
 
   private buildTileUrls(parameters: Parameters): {[index: string]: string} {
-    const baseUrl = `${window.location.protocol}//${window.location.host}/tiles/files/${parameters.tileset.name}/`
+    const baseUrl = `${window.location.protocol}//${window.location.host}/tile/file/${parameters.tileset.name}/`
     return {
       "GIS Kit": `${baseUrl}#Z#/#X#/#Y#.png`,
       "Touch GIS": `${baseUrl}{z}/{x}/{y}.png`,

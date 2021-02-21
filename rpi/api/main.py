@@ -8,7 +8,6 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from gdal import UseExceptions, ConfigurePythonLogging
 
-from api.extensions.static_files_404_behaviour import StaticFiles404Behaviour
 from api.routes.export import router as router_export
 from api.routes.files import router as router_files
 from api.routes.tile import router as router_tile
@@ -18,13 +17,10 @@ from api.settings import (
     FILES_DIR,
     UPLOADS_PATH,
     UPLOADS_DIR,
-    TILES_PATH,
-    TILES_DIR,
     UI_DIR,
     UI_PATH,
     API_LOG_DIR,
 )
-from api.tile_404.tile_404_handler import tile_404_handler
 
 app = FastAPI()
 
@@ -42,11 +38,6 @@ app.include_router(router_upload, prefix="/upload")
 app.include_router(router_files, prefix="/files")
 
 app.mount(UPLOADS_PATH, StaticFiles(directory=UPLOADS_DIR), name="upload")
-app.mount(
-    TILES_PATH,
-    StaticFiles404Behaviour(directory=TILES_DIR, handler_404=tile_404_handler),
-    name="tile",
-)
 app.mount(UI_PATH, StaticFiles(directory=UI_DIR, html=True), name="viewer")
 app.mount(FILES_PATH, StaticFiles(directory=FILES_DIR), name="file")
 
