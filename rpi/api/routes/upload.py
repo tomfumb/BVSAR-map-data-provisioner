@@ -1,6 +1,4 @@
-import datetime
 import os
-import re
 
 from uuid import uuid4
 from fastapi import UploadFile, File
@@ -10,6 +8,7 @@ from api.settings import UPLOADS_DIR, UPLOADS_PATH
 
 
 router = APIRouter()
+PREFIX_SEPARATOR = "__;__"
 
 
 @router.get("/list")
@@ -27,25 +26,17 @@ async def list_uploads():
                     "uploaded": int(fileinfo.st_ctime * 1000),
                 }
             )
-    return uploads
+    return {
+        "prefix_separator": PREFIX_SEPARATOR,
+        "files": uploads,
+    }
 
 
 @router.post("")
 async def create_file(file: UploadFile = File(...)):
-    filename_parts = file.filename.split(".")
-    filename_name = (
-        ".".join(filename_parts[0:-1]) if len(filename_parts) > 1 else filename_parts[0]
-    )
-    filename_suffix = filename_parts[-1] if len(filename_parts) > 1 else "unknown"
-    file_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     unique_filename = os.path.join(
         UPLOADS_DIR,
-        "{0}_{1}_{2}.{3}".format(
-            filename_name,
-            file_time,
-            re.sub(r"\-", "", str(uuid4()))[0:8],
-            filename_suffix,
-        ),
+        f"{str(uuid4()).replace('-', '')}{PREFIX_SEPARATOR}{file.filename}",
     )
     with open(unique_filename, "wb") as file_write:
         for chunk in iter(lambda: file.file.read(10000), b""):

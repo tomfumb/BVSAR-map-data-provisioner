@@ -5,6 +5,11 @@ import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { SpaceService } from '../space.service';
 
+interface UploadList {
+  files: Upload[];
+  prefix_separator: string;
+}
+
 interface Upload {
   filename: string;
   path: string;
@@ -120,9 +125,18 @@ export class ShareComponent {
   }
 
   private updateFileList(): void {
-    this.http.get<Upload[]>(`${environment.tile_domain}/upload/list`).subscribe(response => {
-      this.uploads = response.sort((a, b) => {
+    this.http.get<UploadList>(`${environment.tile_domain}/upload/list`).subscribe(response => {
+      this.uploads = response.files.sort((a, b) => {
         return b.uploaded - a.uploaded;
+      }).map(upload => {
+        const separator_idx = upload.filename.indexOf(response.prefix_separator);
+        if (separator_idx > -1) {
+          return Object.assign({}, upload, {
+            filename: upload.filename.substring(separator_idx + response.prefix_separator.length)
+          });
+        } else {
+          return upload
+        }
       });
     });
   }

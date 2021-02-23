@@ -25,9 +25,10 @@ async def tile_info():
         if os.path.isdir(profile_path) and os.path.exists(geojson_path):
             try:
                 mbtiles_connection = get_mbtiles_connection(dirname)
-                zoom_min, zoom_max = mbtiles_connection.execute(
-                    "select min(zoom_level) as min_zoom, max(zoom_level) as max_zoom from tiles"
-                ).fetchone()
+                zoom_min = 0
+                zoom_max = mbtiles_connection.execute(
+                    "select max(zoom_level) from tiles"
+                ).fetchone()[0]
             except FileNotFoundError:
                 zooms = sorted(
                     [
@@ -36,7 +37,7 @@ async def tile_info():
                         if os.path.isdir(os.path.join(profile_path, zoomdir))
                     ]
                 )
-                zoom_min = zooms[0]
+                zoom_min = 0
                 zoom_max = zooms[-1]
             with open(geojson_path) as geojson_file:
                 tilesets.append(
