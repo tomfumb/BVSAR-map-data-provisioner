@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpEventType } from '@angular/common/http';
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { throwError } from 'rxjs';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Observable, throwError, Observer } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { SpaceService } from '../space.service';
@@ -28,18 +28,20 @@ interface UploadControlStatus {
   templateUrl: './share.component.html',
   styleUrls: ['./share.component.less']
 })
-export class ShareComponent {
+export class ShareComponent implements OnInit, OnDestroy {
 
   public uploads: Upload[] = [];
   public uploadDomain: string = environment.tile_domain;
   
   private readonly FILE_BYTE_LIMIT = 100000000;
 
+  private initObserver: Observer<void>;
   private pendingUpload: File;
   private uploadPermitted: boolean = true;
   private uploadInProgress: boolean = false;
   private uploadProgress = 0;
   private uploadError: string = "";
+  private websocket: WebSocket;
 
   @ViewChild("fileSelector")
   private fileSelector: ElementRef;
@@ -48,7 +50,26 @@ export class ShareComponent {
     private http: HttpClient,
     private spaceService: SpaceService
   ) {
-    this.updateFileList();
+    new Observable((observer) => {
+      this.initObserver = observer;
+    }).subscribe(() => {
+      this.updateFileList();
+    })
+  }
+
+  public ngOnInit(): void {
+    this.websocket = new WebSocket(`${window.location.protocol.replace("http", "ws")}//${window.location.host}/upload/ws`);
+    this.websocket.onopen = () => {
+      this.websocket.onmessage = () => {
+        this.updateFileList();
+      };
+      this.initObserver.next();
+      this.initObserver.complete();
+    };
+  }
+
+  public ngOnDestroy(): void {
+    this.websocket.close();
   }
 
   public fileChange(event): void {
@@ -83,7 +104,7 @@ export class ShareComponent {
           this.uploadInProgress = false;
           this.pendingUpload = null;
           this.fileSelector.nativeElement.value = null;
-          this.updateFileList();
+          this.websocket.send(null);
           break;
         case HttpEventType.UploadProgress:
           if (response.total > 0) {

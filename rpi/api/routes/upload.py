@@ -1,14 +1,31 @@
 import os
-
+from time import time
 from uuid import uuid4
-from fastapi import UploadFile, File
+from fastapi import UploadFile, File, WebSocket
 from fastapi.routing import APIRouter
+from starlette.websockets import WebSocketDisconnect
 
 from api.settings import UPLOADS_DIR, UPLOADS_PATH
 
 
 router = APIRouter()
 PREFIX_SEPARATOR = "__;__"
+
+
+ws_connections = list()
+
+
+@router.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    ws_connections.append(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+            for connection in ws_connections:
+                await connection.send_json({"added_at": round(time() * 1000)})
+    except WebSocketDisconnect:
+        ws_connections.remove(websocket)
 
 
 @router.get("/list")
