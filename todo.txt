@@ -1,7 +1,4 @@
-- cache sqlite connections in main.py before making web available
-    - log connection times to main.log
-- cache layer properties (max zoom etc) and reuse on next request
-- make file listing recursie and sections collapsible
+- make file listing recursive and sections collapsible
 - remove data from repo but still include in Docker images
 - show all export zoom levels but disable and provide an explanation
 - make usb stick files available via Files tab

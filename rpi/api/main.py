@@ -8,6 +8,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from gdal import UseExceptions, ConfigurePythonLogging
 
+from api.data.mbtiles import cache_connections
 from api.routes.export import router as router_export
 from api.routes.files import router as router_files
 from api.routes.tile import router as router_tile
@@ -21,6 +22,8 @@ from api.settings import (
     UI_PATH,
     API_LOG_DIR,
 )
+
+cache_connections()
 
 app = FastAPI()
 
