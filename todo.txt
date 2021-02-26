@@ -1,7 +1,5 @@
-- make file listing recursive and sections collapsible
 - remove data from repo but still include in Docker images
 - show all export zoom levels but disable and provide an explanation
-- make usb stick files available via Files tab
 - tilemill -> mapnik, converter for cartocss -> mapnik XML
 - cache-bust headers for empty tiles
 - Attempt TouchGIS tile substitution

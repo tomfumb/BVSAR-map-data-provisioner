@@ -4,6 +4,7 @@ import { environment } from 'src/environments/environment';
 import { SpaceService } from '../space.service';
 
 interface DirListing {
+  id: string;
   dirs: {
     [index: string]: DirListing;
   };
@@ -21,7 +22,8 @@ interface DirListing {
 })
 export class FilesComponent implements OnInit {
 
-  public listing: DirListing = {dirs: {}, files: []};
+  public listing: DirListing = {id: "", dirs: {}, files: []};
+  private expanded: string[] = []
 
   constructor(
     private http: HttpClient,
@@ -31,10 +33,27 @@ export class FilesComponent implements OnInit {
   public ngOnInit(): void {
     this.http.get<DirListing>(`${environment.tile_domain}/files/list`).subscribe(response => {
       this.listing = response;
+      this.expanded = Object.values(this.listing.dirs).map(entry => entry.id);
     });
   }
 
   public formatSize(bytes: number): string {
     return this.spaceService.fromBytes(bytes);
+  }
+
+  public isExpanded(id: string): boolean {
+    return this.expanded.indexOf(id) > -1;
+  }
+
+  public collapse(id: string): void {
+    if (this.isExpanded(id)) {
+      this.expanded = this.expanded.filter(entry => entry !== id);
+    }
+  }
+
+  public expand(id: string): void {
+    if (!this.isExpanded(id)) {
+      this.expanded = this.expanded.concat([id]);
+    }
   }
 }
