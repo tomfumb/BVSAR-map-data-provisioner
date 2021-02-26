@@ -1,26 +1,34 @@
 import os
+from typing import Dict
 
 from fastapi.routing import APIRouter
 
 from api.settings import FILES_DIR, FILES_PATH
 
 router = APIRouter()
+DIRS_KEY = "dirs"
+FILES_KEY = "files"
 
 
 @router.get("/list")
 async def get_file_list():
-    filesets = dict()
-    for dirname in os.listdir(FILES_DIR):
-        parent_dir = os.path.join(FILES_DIR, dirname)
-        if os.path.isdir(parent_dir):
-            files = [
-                {
-                    "path": "/".join([FILES_PATH, dirname, filename]),
-                    "size": os.stat(os.path.join(parent_dir, filename)).st_size,
-                }
-                for filename in os.listdir(parent_dir)
-                if os.path.isfile(os.path.join(parent_dir, filename))
-            ]
-            if len(files) > 0:
-                filesets[parent_dir] = files
-    return filesets
+    return path_to_dict(FILES_DIR, {DIRS_KEY: {}, FILES_KEY: []})
+
+
+# adapted from https://stackoverflow.com/a/46415935/519575
+def path_to_dict(path: os.PathLike, builder: Dict[str, object]):
+    name = os.path.basename(path)
+    if os.path.isdir(path):
+        if name not in builder[DIRS_KEY]:
+            builder[DIRS_KEY][name] = {DIRS_KEY: {}, FILES_KEY: []}
+        for nested in os.listdir(path):
+            path_to_dict(os.path.join(path, nested), builder[DIRS_KEY][name])
+    else:
+        builder[FILES_KEY].append(
+            {
+                "name": name,
+                "path": f"{FILES_PATH}/{path.replace(f'{FILES_DIR}/', '')}",
+                "size": os.stat(path).st_size,
+            }
+        )
+    return builder

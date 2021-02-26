@@ -3,10 +3,16 @@ import { Component, OnInit } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { SpaceService } from '../space.service';
 
-interface DirFiles {[index: string]: {
-  path: string,
-  size: number
-}};
+interface DirListing {
+  dirs: {
+    [index: string]: DirListing;
+  };
+  files: {
+    name: string;
+    path: string;
+    size: number;
+  }[];
+}
 
 @Component({
   selector: 'app-files',
@@ -15,7 +21,7 @@ interface DirFiles {[index: string]: {
 })
 export class FilesComponent implements OnInit {
 
-  public dirFiles: DirFiles = {};
+  public listing: DirListing = {dirs: {}, files: []};
 
   constructor(
     private http: HttpClient,
@@ -23,14 +29,9 @@ export class FilesComponent implements OnInit {
   ) { }
 
   public ngOnInit(): void {
-    this.http.get<DirFiles>(`${environment.tile_domain}/files/list`).subscribe(response => {
-      this.dirFiles = response;
+    this.http.get<DirListing>(`${environment.tile_domain}/files/list`).subscribe(response => {
+      this.listing = response;
     });
-  }
-
-  public stripParentDirs(path: string): string {
-    const pathParts = path.split("/");
-    return pathParts.length > 1 ? pathParts.slice(-1)[0] : path;
   }
 
   public formatSize(bytes: number): string {

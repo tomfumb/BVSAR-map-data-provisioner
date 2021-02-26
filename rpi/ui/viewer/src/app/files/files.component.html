@@ -1,23 +1,29 @@
 <div id="dirs-container">
-
     <div id="share-container">
         <app-share></app-share>
     </div>
+    <div id="files-container">
+        <ng-container *ngTemplateOutlet="dirlisting;context:{entry: listing, nestingLevel: 0}"></ng-container>
+    </div>
+</div>
 
-    <div *ngFor="let entry of dirFiles | keyvalue" class="dir-container">
-        <a [id]="stripParentDirs(entry.key)"></a>
-        <div class="dir-label action-label">{{ stripParentDirs(entry.key) }}</div>
-        <table class="files-table">
+<ng-template #dirlisting let-entry="entry" let-nestingLevel="nestingLevel">
+    <div class="indent-container">
+        <div class="nested" *ngFor="let dir of entry.dirs | keyvalue">
+            <div>{{ dir.key }}</div>
+            <ng-container *ngTemplateOutlet="dirlisting;context:{entry: dir.value, nestingLevel: nestingLevel+1}"></ng-container>
+        </div>
+        <table *ngIf="entry.files.length" class="files-table">
             <colgroup>
                 <col width="100%" />
                 <col width="0%" />
             </colgroup>
-            <tr *ngFor="let file of entry.value">
+            <tr *ngFor="let file of entry.files">
                 <td class="ellips-overflow">
-                    <a [download]="stripParentDirs(file.path)" [href]="file.path" target="_blank">{{ stripParentDirs(file.path) }}</a>
+                    <a [download]="file.name" [href]="file.path" target="_blank">{{ file.name }}</a>
                 </td>
                 <td>{{ formatSize(file.size) }}</td>
             </tr>
         </table>
     </div>
-</div>
+</ng-template>
