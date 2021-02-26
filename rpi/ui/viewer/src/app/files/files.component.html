@@ -14,7 +14,10 @@
                 <span class="show-hide-control" *ngSwitchCase="true" (click)="collapse(dir.value.id)">hide</span>
                 <span class="show-hide-control" *ngSwitchCase="false" (click)="expand(dir.value.id)">show</span>
             </ng-container>
-            {{ dir.key }}
+            <ng-container [ngSwitch]="nestingLevel">
+                <ng-container *ngSwitchCase="0">Files</ng-container>
+                <ng-container *ngSwitchDefault>{{ dir.key }}</ng-container>
+            </ng-container>
         </div>
         <ng-container *ngIf="isExpanded(dir.value.id)">
             <ng-container *ngTemplateOutlet="dirlisting;context:{entry: dir.value, nestingLevel: nestingLevel+1}"></ng-container>
