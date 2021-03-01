@@ -1,6 +1,5 @@
 import logging
 import os
-
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import Response
 from gdal import Translate, osr

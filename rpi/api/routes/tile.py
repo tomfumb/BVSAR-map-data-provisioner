@@ -1,9 +1,11 @@
+from PIL import Image
 import logging
 from time import time
 import io
 import math
 import os
 from threading import Lock
+from typing import Optional
 from fastapi.routing import APIRouter
 from starlette.responses import StreamingResponse, FileResponse
 from api.data.mbtiles import get_connection
@@ -28,8 +30,8 @@ async def tile_info():
                 profile_path = os.path.join(TILES_DIR, dirname)
                 geojson_path = os.path.join(profile_path, "coverage.geojson")
                 if os.path.isdir(profile_path) and os.path.exists(geojson_path):
-                    try:
-                        mbtiles_connection = get_connection(dirname)
+                    mbtiles_connection = get_connection(dirname)
+                    if mbtiles_connection:
                         zoom_min = 0
                         zoom_max_start = time()
                         zoom_max = mbtiles_connection.execute(
@@ -38,7 +40,7 @@ async def tile_info():
                         logging.info(
                             f"{dirname} zoom limits from mbtiles in {time() - zoom_max_start}s"
                         )
-                    except FileNotFoundError:
+                    else:
                         logging.info(
                             f"{dirname} mbtiles not available, falling-back to directory analysis"
                         )
@@ -67,27 +69,71 @@ async def tile_info():
 
 
 @router.get("/file/{profile_name}/{z}/{x}/{y}.png")
-async def tile(profile_name: str, z: int, x: int, y: int) -> StreamingResponse:
+async def tile(
+    profile_name: str, z: int, x: int, y: int, supertile: Optional[int] = 0
+) -> StreamingResponse:
+    tile_bytes = None
+    if supertile == 1:
+        tile_bytes = get_super_tile(profile_name, z, x, y)
+    else:
+        tile_bytes = get_tile_bytes(profile_name, z, x, y)
+    return (
+        StreamingResponse(io.BytesIO(tile_bytes), media_type="image/png")
+        if tile_bytes
+        else response_404
+    )
+
+
+def get_tile_bytes(profile_name: str, z: int, x: int, y: int) -> bytes:
+    mbtiles_connection = get_connection(profile_name)
     try:
-        tile_row = (
-            get_connection(profile_name)
-            .execute(
+        if mbtiles_connection:
+            tile_row = mbtiles_connection.execute(
                 "select tile_data from tiles where zoom_level = ? and tile_column = ? and tile_row = ?",
                 (z, x, y),
+            ).fetchone()
+            if tile_row is None:
+                return None
+            return tile_row[0]
+        else:
+            tile_path = (
+                f"{os.path.join(TILES_DIR, profile_name, str(z), str(x), str(y))}.png"
             )
-            .fetchone()
-        )
-        if tile_row is None:
-            return response_404
-        img_bytes = io.BytesIO(tile_row[0])
-        img_bytes.seek(0)
-        return StreamingResponse(img_bytes, media_type="image/png")
-    except FileNotFoundError:
-        tile_path = (
-            f"{os.path.join(TILES_DIR, profile_name, str(z), str(x), str(y))}.png"
-        )
-        if os.path.exists(tile_path):
-            return FileResponse(tile_path)
-        return response_404
+            if os.path.exists(tile_path):
+                with open(tile_path, "rb") as f:
+                    return f.read()
+            return None
     except Exception as e:
         logging.warning(f"Error retrieving tile {profile_name}/{z}/{x}/{y}: {e}")
+
+
+def get_super_tile(profile_name: str, z: int, x: int, y: int) -> bytes:
+    def image_from_bytes(bytes: bytes) -> Image:
+        return Image.open(io.BytesIO(bytes)) if bytes else None
+
+    super_zoom = z + 1
+    top_left = image_from_bytes(get_tile_bytes(profile_name, super_zoom, x * 2, y * 2))
+    top_right = image_from_bytes(
+        get_tile_bytes(profile_name, super_zoom, x * 2 + 1, y * 2)
+    )
+    bottom_left = image_from_bytes(
+        get_tile_bytes(profile_name, super_zoom, x * 2, y * 2 + 1)
+    )
+    bottom_right = image_from_bytes(
+        get_tile_bytes(profile_name, super_zoom, x * 2 + 1, y * 2 + 1)
+    )
+    if top_left or top_right or bottom_left or bottom_right:
+        super_tile = Image.new("RGBA", (512, 512))
+        if top_left:
+            super_tile.paste(top_left, (0, 0))
+        if top_right:
+            super_tile.paste(top_right, (256, 0))
+        if bottom_left:
+            super_tile.paste(bottom_left, (0, 256))
+        if bottom_right:
+            super_tile.paste(bottom_right, (256, 256))
+        byte_content = io.BytesIO()
+        super_tile.save(byte_content, format="PNG")
+        return byte_content.getvalue()
+    else:
+        return None
