@@ -16,6 +16,7 @@ import { PdfExportComponent } from './map/pdf-export/pdf-export.component';
 import { FilesComponent } from './files/files.component';
 import { ReCentreComponent } from './map/re-centre/re-centre.component';
 import { DatetimePipe } from './datetime.pipe';
+import { BenchComponent } from './map/mode-providers/bench/bench.component';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { DatetimePipe } from './datetime.pipe';
     FilesComponent,
     ReCentreComponent,
     DatetimePipe,
+    BenchComponent,
   ],
   imports: [
     BrowserModule,

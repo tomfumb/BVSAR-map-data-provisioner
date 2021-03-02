@@ -10,6 +10,12 @@ import { PdfExportComponent } from './pdf-export/pdf-export.component';
 import { Tileset } from './tileset';
 import { ReCentreComponent } from './re-centre/re-centre.component';
 import { CoordinateService } from '../coordinate.service';
+import { ActivatedRoute } from '@angular/router';
+import { BenchComponent } from './mode-providers/bench/bench.component';
+
+enum Modes {
+  bench = "bench"
+}
 
 @Component({
   selector: 'app-map',
@@ -20,7 +26,7 @@ export class MapComponent implements OnInit, OnDestroy {
 
   private tilesets: Tileset[] = [];
   private tilesetSelected: Tileset;
-  private leafletMap: any;
+  private leafletMap: l.map;
   private initObserver: Observer<void>;
   private dataModifiedLabel: l.Control;
   private mapCentreLabel: l.Control;
@@ -28,7 +34,8 @@ export class MapComponent implements OnInit, OnDestroy {
   constructor(
     private http: HttpClient,
     private dialog: MatDialog,
-    private coordinateService: CoordinateService
+    private coordinateService: CoordinateService,
+    private route: ActivatedRoute,
   ) {
     forkJoin([
       this.http.get<Tileset[]>(`${environment.tile_domain}/tile/list`),
@@ -38,7 +45,15 @@ export class MapComponent implements OnInit, OnDestroy {
     ]).subscribe(results => {
       this.tilesets = results[0];
       if (this.tilesets.length) {
-        try {
+        let initialTileset: Tileset = null;
+        if (this.route.snapshot.params.hasOwnProperty("layer")) {
+          const matchingTilesets = this.tilesets.filter(tileset => {
+            return tileset.name === this.route.snapshot.params.layer;
+          });
+          if (matchingTilesets.length === 1) {
+            initialTileset = matchingTilesets[0];
+          }
+        } else {
           // if there is a dataset that appears suitable for the time of year, select it by default
           const season = [3,4,5,6,7,8,9].indexOf((new Date().getMonth())) > -1 ? "summer" : "winter";
           const seasonRegex = new RegExp(`${season}`, "i");
@@ -46,14 +61,14 @@ export class MapComponent implements OnInit, OnDestroy {
             return !!tileset.name.match(seasonRegex);
           });
           if (seasonTilesets.length > 0) {
-            this.tilesetSelected = seasonTilesets[0];
+            initialTileset = seasonTilesets[0];
           }
-        } catch (ex) {
-          console.log(`Failed to select a seasonal tileset: ${ex}`);
-        } finally {
-          if (!this.tilesetSelected) {
-            this.tilesetSelected = this.tilesets[0];
-          }
+        }
+        if (initialTileset) {
+          this.tilesetSelected = initialTileset;
+        } else {
+          console.log(`Failed to select preferred tileset`);
+          this.tilesetSelected = this.tilesets[0];
         }
         this.initMap();
       }
@@ -77,15 +92,22 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   private initMap(): void {
+    const generateRandInt = function() {
+      return Math.floor( Math.random() * 200000 ) + 1;
+    };
     window.setTimeout(() => {
       const tileLayers = this.tilesets.reduce((accumulator, currentValue) => {
-        accumulator[currentValue.name] = l.tileLayer(`${environment.tile_domain}/tile/file/${currentValue.name}/{z}/{x}/{y}.png`, {
+        accumulator[currentValue.name] = l.tileLayer(`${environment.tile_domain}/tile/file/${currentValue.name}/{z}/{x}/{y}.png?{randInt}`, {
+          randInt: generateRandInt,
           minZoom: currentValue.zoom_min,
           maxZoom: currentValue.zoom_max
         })
         return accumulator;
       }, {});
       this.leafletMap = l.map("map");
+      this.leafletMap.on("load", event => {
+        this.mapLoaded();
+      });
       this.leafletMap.on("baselayerchange", event => {
         this.tilesetSelected = this.tilesets.find(tileset => {
           return tileset.name === event.name;
@@ -137,6 +159,7 @@ export class MapComponent implements OnInit, OnDestroy {
         }
       }))({ position: "bottomleft" });
       this.mapCentreLabel.addTo(this.leafletMap)
+
       // locate will work on localhost but not via IP address / domain without HTTPS
       // HTTPS unavailable / impractical with pi device over the long term
       // new (l.Control.extend({
@@ -195,5 +218,27 @@ export class MapComponent implements OnInit, OnDestroy {
   private getCentreText(): string {
     const latLng = this.leafletMap.getCenter();
     return `Centre: ${this.coordinateService.roundTo(latLng.lat, CoordinateService.MAX_PRECISION_DD)}, ${this.coordinateService.roundTo(latLng.lng, CoordinateService.MAX_PRECISION_DD)}`
+  }
+
+  private mapLoaded(): void {
+    if (this.route.snapshot.params.mode == undefined) {
+      return;
+    }
+    const mode = this.route.snapshot.params.mode as Modes;
+    switch (mode) {
+      case Modes.bench:
+        this.dialog.open(BenchComponent, {
+          data: {
+            map: this.leafletMap,
+            tileset: this.tilesetSelected
+          },
+          width: BenchComponent.WIDTH,
+          panelClass: BenchComponent.PANEL_CLASS,
+          disableClose: true
+        });
+        break;
+      default:
+        console.error(`Unknown mode requested: ${mode}`)
+    }
   }
 }

@@ -6,6 +6,7 @@ import { ShareComponent } from './share/share.component';
 
 const routes: Routes = [
   { path: "share", component: ShareComponent },
+  { path: "map/:mode/:layer", component: MapComponent },
   { path: "map", component: MapComponent },
   { path: "files", component: FilesComponent },
   { path: "", redirectTo: "map", pathMatch: "full"}
