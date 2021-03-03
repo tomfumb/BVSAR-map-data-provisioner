@@ -17,6 +17,7 @@ import { FilesComponent } from './files/files.component';
 import { ReCentreComponent } from './map/re-centre/re-centre.component';
 import { DatetimePipe } from './datetime.pipe';
 import { BenchComponent } from './map/mode-providers/bench/bench.component';
+import { AttributionComponent } from './map/attribution/attribution.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import { BenchComponent } from './map/mode-providers/bench/bench.component';
     ReCentreComponent,
     DatetimePipe,
     BenchComponent,
+    AttributionComponent,
   ],
   imports: [
     BrowserModule,

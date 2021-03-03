@@ -12,6 +12,7 @@ import { ReCentreComponent } from './re-centre/re-centre.component';
 import { CoordinateService } from '../coordinate.service';
 import { ActivatedRoute } from '@angular/router';
 import { BenchComponent } from './mode-providers/bench/bench.component';
+import { AttributionComponent } from './attribution/attribution.component';
 
 enum Modes {
   bench = "bench"
@@ -145,6 +146,11 @@ export class MapComponent implements OnInit, OnDestroy {
         };
       }))({ position: "bottomright" }).addTo(this.leafletMap);
       new (this.leafletModalOpener("Get URLs", TileUrlsComponent, () => {
+        return {
+          tileset: this.tilesetSelected
+        };
+      }))({ position: "bottomright" }).addTo(this.leafletMap);
+      new (this.leafletModalOpener("Attribution", AttributionComponent, () => {
         return {
           tileset: this.tilesetSelected
         };

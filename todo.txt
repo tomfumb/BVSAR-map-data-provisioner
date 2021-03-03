@@ -1,8 +1,6 @@
 - remove data from repo but still include in Docker images
-- show all export zoom levels but disable and provide an explanation
 - tilemill -> mapnik, converter for cartocss -> mapnik XML
 - cache-bust headers for empty tiles
-- Attempt TouchGIS tile substitution
 - namespace env vars with BVSAR_ for cleaner use on other systems
 - xyz attribution required
 - Additional cabins from Ben
@@ -13,4 +11,3 @@
 - refuse to run if annual data is not updated
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
 - need some consistency in class file names, classes having their own files
-- add logs to files tab

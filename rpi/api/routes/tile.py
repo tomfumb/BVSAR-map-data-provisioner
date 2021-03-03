@@ -2,6 +2,7 @@ from PIL import Image
 import logging
 from time import time
 import io
+import json
 import math
 import os
 from threading import Lock
@@ -29,6 +30,7 @@ async def tile_info():
             for dirname in os.listdir(TILES_DIR):
                 profile_path = os.path.join(TILES_DIR, dirname)
                 geojson_path = os.path.join(profile_path, "coverage.geojson")
+                attribution_path = os.path.join(profile_path, "attribution.json")
                 if os.path.isdir(profile_path) and os.path.exists(geojson_path):
                     mbtiles_connection = get_connection(dirname)
                     if mbtiles_connection:
@@ -54,17 +56,25 @@ async def tile_info():
                         zoom_min = 0
                         zoom_max = zooms[-1]
                     with open(geojson_path) as geojson_file:
-                        tilesets.append(
-                            {
-                                "name": dirname,
-                                "zoom_min": zoom_min,
-                                "zoom_max": zoom_max,
-                                "last_modified": math.floor(
-                                    os.stat(geojson_path).st_mtime * 1000
-                                ),
-                                "geojson": "".join(geojson_file.readlines()),
-                            }
-                        )
+                        geojson = "".join(geojson_file.readlines())
+                    attribution = None
+                    if os.path.exists(attribution_path):
+                        with open(attribution_path) as attribution_file:
+                            attribution = "".join(attribution_file.readlines())
+                    tilesets.append(
+                        {
+                            "name": dirname,
+                            "zoom_min": zoom_min,
+                            "zoom_max": zoom_max,
+                            "last_modified": math.floor(
+                                os.stat(geojson_path).st_mtime * 1000
+                            ),
+                            "geojson": geojson,
+                            "attribution": json.loads(attribution)
+                            if attribution is not None
+                            else [],
+                        }
+                    )
     return tilesets
 
 
