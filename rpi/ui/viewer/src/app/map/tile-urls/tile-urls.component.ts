@@ -56,6 +56,7 @@ export class TileUrlsComponent {
     return {
       "GIS Kit": `${baseUrl}#Z#/#X#/#Y#.png`,
       "Touch GIS": `${baseUrl}{z}/{x}/{y}.png`,
+      "Touch GIS (bug fix, slower)": `${baseUrl}{z}/{x}/{y}.png?supertile=1`,
       "SAR Topo": `${baseUrl}{Z}/{X}/{Y}.png`
     };
   }
