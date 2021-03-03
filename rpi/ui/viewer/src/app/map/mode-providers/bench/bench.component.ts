@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { ActivatedRoute } from '@angular/router';
 import * as l from 'leaflet';
 import { Tileset } from '../../tileset';
 
@@ -15,7 +16,7 @@ interface Parameters {
 })
 export class BenchComponent implements OnInit {
 
-  public static readonly WIDTH = "80%";
+  public static readonly WIDTH = "60%";
   public static readonly PANEL_CLASS = "common-modal-panel";
   
   public pendingRequests: number = 0;
@@ -35,7 +36,8 @@ export class BenchComponent implements OnInit {
 
   constructor(
     private dialogRef: MatDialogRef<BenchComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: Parameters
+    private activatedRoute: ActivatedRoute,
+    @Inject(MAT_DIALOG_DATA) private data: Parameters
   ) {
     this.map = data.map;
     this.baseLayer = data.map._layers[Object.keys(data.map._layers)[0]];
@@ -127,7 +129,7 @@ export class BenchComponent implements OnInit {
     }).reduce((total, each) => {
       return total + each;
     });
-    this.runningAverage = totalTime / this.totalRequests;
+    this.runningAverage = Math.round(totalTime / this.totalRequests * 100) / 100;
   }
 
   /* 

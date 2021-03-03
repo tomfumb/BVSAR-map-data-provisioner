@@ -70,7 +70,13 @@ export class MapComponent implements OnInit, OnDestroy {
           console.log(`Failed to select preferred tileset`);
           this.tilesetSelected = this.tilesets[0];
         }
-        this.initMap();
+        this.route.queryParams.subscribe(() => {
+          if (this.leafletMap) {
+            this.leafletMap.off();
+            this.leafletMap.remove();
+          }
+          this.initMap();
+        });
       }
     });
   }
@@ -91,16 +97,21 @@ export class MapComponent implements OnInit, OnDestroy {
     return this.tilesets.length > 0;
   }
 
+  private get useSupertile() {
+    return this.route.snapshot.queryParams.hasOwnProperty("super") ? 1 : 0;
+  }
+
   private initMap(): void {
     const generateRandInt = function() {
       return Math.floor( Math.random() * 200000 ) + 1;
     };
     window.setTimeout(() => {
       const tileLayers = this.tilesets.reduce((accumulator, currentValue) => {
-        accumulator[currentValue.name] = l.tileLayer(`${environment.tile_domain}/tile/file/${currentValue.name}/{z}/{x}/{y}.png?{randInt}`, {
+        accumulator[currentValue.name] = l.tileLayer(`${environment.tile_domain}/tile/file/${currentValue.name}/{z}/{x}/{y}.png?supertile={supertile}&cachebust={randInt}`, {
+          supertile: this.useSupertile,
           randInt: generateRandInt,
           minZoom: currentValue.zoom_min,
-          maxZoom: currentValue.zoom_max
+          maxZoom: currentValue.zoom_max - (this.useSupertile === 1 ? 1 : 0)
         })
         return accumulator;
       }, {});
@@ -230,7 +241,9 @@ export class MapComponent implements OnInit, OnDestroy {
         this.dialog.open(BenchComponent, {
           data: {
             map: this.leafletMap,
-            tileset: this.tilesetSelected
+            tileset: Object.assign({}, this.tilesetSelected, {
+              zoom_max: this.tilesetSelected.zoom_max - (this.useSupertile === 1 ? 1 : 0)
+            })
           },
           width: BenchComponent.WIDTH,
           panelClass: BenchComponent.PANEL_CLASS,

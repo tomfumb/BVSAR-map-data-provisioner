@@ -1,4 +1,23 @@
-Loading {{ pendingRequests }} tiles
-
-Running average: {{ runningAverage }}
-Remaining points: {{ points.length }}
+<div class="row">
+    <div class="column">
+        Loading:
+    </div>
+    <div class="column">
+        <ng-container [ngSwitch]="pendingRequests >= 0">
+            <ng-container *ngSwitchCase="true">{{ pendingRequests }}</ng-container>
+            <ng-container *ngSwitchCase="false">0</ng-container>
+        </ng-container>
+    </div>
+</div>
+<div class="row">
+    <div class="column">
+        Running average (ms/tile):
+    </div>
+    <div class="column">{{ runningAverage }}</div>
+</div>
+<div class="row">
+    <div class="column">
+        Remaining views:
+    </div>
+    <div class="column">{{ points.length }}</div>
+</div>
