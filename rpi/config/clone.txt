@@ -1,10 +1,10 @@
 # enable Overlay File System on device to be cloned
 
 # copy from MicroSD (assumes MicroSD is /dev/sdc, check with `sudo fdisk -l`)
-sudo dd bs=4 if=/dev/sdc of=~/data/out.img
+sudo dd bs=4M if=/dev/sdc of=~/data/out.img
 
 # copy from img to MicroSD
-sudo dd bs=4 of=/dev/sdc if=~/data/out.img
+sudo dd bs=4M of=/dev/sdc if=~/data/out.img
 
 # boot (with Overlay File System enabled from clone)
 
@@ -15,7 +15,7 @@ ifconfig
 
 # reboot
 
-# update /etc/rc.local with device's eth0 name
+# update /etc/rc.local with device's eth0 name to support ethernet routing in Overlay File System
 sudo nano /etc/rc.local
 
 # update WiFi SSID with device's identifier
