@@ -8,7 +8,7 @@ sudo dd bs=4M of=/dev/sdc if=~/data/out.img
 
 # boot (with Overlay File System enabled from clone)
 
-# check ech0 name
+# check ech0 name and save locally
 ifconfig
 
 # disable Overlay File System

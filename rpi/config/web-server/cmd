@@ -1,2 +1,2 @@
-apt install gdal-bin libgdal-dev
+apt install gdal-bin libgdal-dev gunicorn3
 pip3 install -r requirements.txt
