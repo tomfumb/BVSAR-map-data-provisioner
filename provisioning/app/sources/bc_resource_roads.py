@@ -16,19 +16,12 @@ OUTPUT_TYPE: Final = ProjectLayerType.LINESTRING
 def provision(bbox: BBOX, run_id: str) -> List[str]:
     run_directory = get_run_data_path(run_id, (CACHE_DIR_NAME,))
     os.makedirs(run_directory)
-    driver = ogr.GetDriverByName("ESRI Shapefile")
-    datasource = driver.Open(
-        get_data_path(
-            (
-                "WHSE_FOREST_TENURE_FTEN_ROAD_SECTION_LINES_SVW",
-                "WHSE_FOREST_TENURE_FTEN_ROAD_SECTION_LINES_SVW.shp",
-            )
-        )
-    )
+    driver = ogr.GetDriverByName("OpenFileGDB")
+    datasource = driver.Open(get_data_path(("FTEN_ROAD_SECTION_LINES_SVW.gdb",)))
     path = os.path.join(run_directory, "bc_resource_roads.shp")
     ogr_to_shp(
         bbox,
-        [datasource.GetLayerByIndex(0)],
+        [datasource.GetLayerByName("WHSE_FOREST_TENURE_FTEN_ROAD_SECTION_LINES_SVW")],
         path,
         "bc_resource_roads",
         OUTPUT_CRS_CODE,

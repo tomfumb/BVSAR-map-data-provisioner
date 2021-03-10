@@ -13,5 +13,8 @@ rpi/ui/viewer/dist/**
 rpi/api/export/temp/**
 rpi/api/uploads/**
 rpi/api/log/**
+provisioning/data/FTEN_RECREATION_POLY_SVW.gdb
+provisioning/data/FTEN_ROAD_SECTION_LINES_SVW.gdb
+provisioning/data/pmbc_parcel_fabric_poly_svw.gdb
 
 !.gitkeep

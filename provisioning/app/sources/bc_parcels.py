@@ -20,8 +20,8 @@ OUTPUT_TYPE: Final = ProjectLayerType.POLYGON
 def provision(bbox: BBOX, run_id: str) -> List[str]:
     run_directory = get_run_data_path(run_id, (CACHE_DIR_NAME,))
     os.makedirs(run_directory)
-    driver = ogr.GetDriverByName("GPKG")
-    datasource = driver.Open(get_data_path(("pmbc_parcel_fabric_poly_svw.gpkg",)))
+    driver = ogr.GetDriverByName("OpenFileGDB")
+    datasource = driver.Open(get_data_path(("pmbc_parcel_fabric_poly_svw.gdb",)))
     parcels_layer = datasource.GetLayerByName("pmbc_parcel_fabric_poly_svw")
     parcels_layer.SetAttributeFilter(
         "OWNER_TYPE IN ('First Nation','Mixed Ownership','Municipal','Private','Unknown')"
