@@ -64,11 +64,11 @@
 .bc-resource-roads-label {
   line-width:0;
   [zoom >= 14] {
-    text-name:[ROAD_SECTI];
-    [LIFE_CYCLE = "ACTIVE"] {
+    text-name:[ROAD_SECTION_NAME];
+    [LIFE_CYCLE_STATUS_CODE = "ACTIVE"] {
       text-fill:"#000";  
     }
-    [LIFE_CYCLE = "RETIRED"] {
+    [LIFE_CYCLE_STATUS_CODE = "RETIRED"] {
       text-fill:"#626161";
     }
   }

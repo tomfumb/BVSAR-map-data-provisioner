@@ -3,7 +3,6 @@ from typing import Dict, Final
 from app.common.bbox import BBOX
 from app.profiles.common.xyzplus import (
     execute as xyzplus_execute,
-    ZOOM_MAX as xyz_zoom_max,
     ZOOM_MIN as xyz_zoom_min,
     OUTPUT_FORMAT as xyz_output_format,
 )
@@ -19,7 +18,7 @@ from app.profiles.common.sources import (
 
 
 NAME: Final = "xyzhunting"
-ZOOM_MAX: Final = xyz_zoom_max
+ZOOM_MAX: Final = 16
 ZOOM_MIN: Final = xyz_zoom_min
 OUTPUT_FORMAT: Final = xyz_output_format
 
