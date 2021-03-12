@@ -72,6 +72,11 @@ from app.sources.bc_rec_sites import (
     OUTPUT_CRS_CODE as bc_rec_sites_crs_code,
     OUTPUT_TYPE as bc_rec_sites_output_type,
 )
+from app.sources.bc_parks import (
+    provision as bc_parks_provisioner,
+    OUTPUT_CRS_CODE as bc_parks_crs_code,
+    OUTPUT_TYPE as bc_parks_output_type,
+)
 
 
 def canvec(bbox: BBOX, run_id: str, scales: List[int]) -> List[ProjectLayer]:
@@ -234,5 +239,16 @@ def bc_rec_sites(bbox: BBOX, run_id: str) -> List[ProjectLayer]:
             style_class="rec-sites",
             crs_code=bc_rec_sites_crs_code,
             type=bc_rec_sites_output_type,
+        )
+    ]
+
+
+def bc_parks(bbox: BBOX, run_id: str) -> List[ProjectLayer]:
+    return [
+        ProjectLayer(
+            path=bc_parks_provisioner(bbox, run_id)[0],
+            style_class="parks",
+            crs_code=bc_parks_crs_code,
+            type=bc_parks_output_type,
         )
     ]

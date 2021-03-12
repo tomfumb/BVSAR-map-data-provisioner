@@ -11,3 +11,10 @@
     polygon-opacity: 0.7;
   }
 }
+
+.parks {
+  [zoom >= 12] {
+    polygon-fill: #FFFFFF;
+    polygon-opacity: 0.3;
+  }
+}
