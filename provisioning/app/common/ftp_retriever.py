@@ -15,9 +15,7 @@ MAX_ITERATIONS: Final = 3
 
 
 def retrieve_directory(domain: str, path: str) -> str:
-    cache_directory = get_cache_path(
-        (re.sub(r"[^a-z0-9\.]", "", f"{domain}{path}", flags=re.IGNORECASE),)
-    )
+    cache_directory = _cache_path(domain, path)
     if not os.path.exists(cache_directory):
         os.mkdir(cache_directory)
     file_list = []
@@ -45,7 +43,7 @@ def retrieve_directory(domain: str, path: str) -> str:
                     if os.path.exists(destination_path):
                         logging.debug(f"Already have {name}, ignoring")
                     else:
-                        _fetch(name, destination_path, domain, path)
+                        fetch(name, domain, path, destination_path)
             print("")
             return cache_directory
         except Exception as e:
@@ -61,7 +59,14 @@ def retrieve_directory(domain: str, path: str) -> str:
         exit(1)
 
 
-def _fetch(file_name: str, destination_path: str, domain: str, path: str):
+def fetch(file_name: str, domain: str, path: str, destination_path: str = None):
+    if destination_path is None:
+        destination_path = _cache_path(domain, path)
     wget.download(
         f"ftp://{domain}{path}/{file_name}", out=destination_path,
+    )
+
+def _cache_path(domain: str, path: str) -> str:
+    return get_cache_path(
+        (re.sub(r"[^a-z0-9\.]", "", f"{domain}{path}", flags=re.IGNORECASE),)
     )

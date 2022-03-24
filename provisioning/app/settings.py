@@ -1,6 +1,4 @@
-import os
+from os import environ, path
 
-AREAS_PATH = os.environ.get("AREAS_LOCATION", "/tiledata/areas/areas.gpkg")
-LOCAL_FEATURES_PATH = os.environ.get(
-    "LOCAL_FEATURES_LOCATION", "/tiledata/local-features/local-features.gpkg"
-)
+AREAS_PATH = path.join(environ["AREAS_LOCATION"], "areas.gpkg")
+LOCAL_FEATURES_PATH = path.join(environ["LOCAL_FEATURES_LOCATION"], "local-features.gpkg")

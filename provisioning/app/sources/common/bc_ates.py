@@ -1,7 +1,7 @@
 import glob
 import os
 
-from gdal import ogr
+from osgeo import ogr
 from typing import Final, List
 
 from app.common.bbox import BBOX

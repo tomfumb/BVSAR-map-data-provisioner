@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from gdal import UseExceptions, ConfigurePythonLogging
+from osgeo.gdal import UseExceptions, ConfigurePythonLogging
 
 from api.data.mbtiles import cache_connections
 from api.routes.export import router as router_export

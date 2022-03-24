@@ -2,7 +2,8 @@ import logging
 import os
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import Response
-from gdal import Translate, osr
+from osgeo import osr
+from osgeo.gdal import Translate
 from math import floor
 from shutil import rmtree
 from typing import Tuple

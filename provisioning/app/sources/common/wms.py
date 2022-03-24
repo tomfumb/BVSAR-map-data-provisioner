@@ -4,7 +4,7 @@ import os
 import re
 
 from collections import defaultdict
-from gdal import Open, Translate, GA_ReadOnly
+from osgeo.gdal import Open, Translate, GA_ReadOnly
 from pydantic import BaseModel
 from pyproj import Transformer, CRS
 from typing import Dict, Final, List, Tuple

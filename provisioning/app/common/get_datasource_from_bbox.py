@@ -1,6 +1,6 @@
 import os
 
-from gdal import ogr, osr
+from osgeo import ogr, osr
 from typing import Final
 
 from app.common.bbox import BBOX
