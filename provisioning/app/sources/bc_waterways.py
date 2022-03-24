@@ -26,8 +26,9 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     zip_path = fetch("FWA_BC.zip", "ftp.geobc.gov.bc.ca", "/sections/outgoing/bmgs/FWA_Public")
     fgdb_dir = os.path.dirname(zip_path)
     fgdb = os.path.join(fgdb_dir, "FWA_BC.gdb")
-    with zipfile.ZipFile(zip_path, "r") as zip_ref:
-        zip_ref.extractall(get_cache_path((fgdb,)))
+    if not os.path.exists(fgdb):
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            zip_ref.extractall(get_cache_path((fgdb,)))
     logging.info("Retrieved BC Freshwater Atlas")
     run_directory = get_run_data_path(run_id, (CACHE_DIR_NAME,))
     os.makedirs(run_directory)
