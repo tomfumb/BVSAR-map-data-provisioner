@@ -11,3 +11,10 @@
 - refuse to run if annual data is not updated
 - WMS retriever should use separate types for ImageRequirement and PartialCoverageTile as they are different things
 - need some consistency in class file names, classes having their own files
+
+
+new issues
+- FWA gdb download not working correctly
+- cannot build tilemill image due to some node issue
+- remove .old docker files and do rpi as two separate services in docker-compose
+- update Makefile to remove start / stop pattern

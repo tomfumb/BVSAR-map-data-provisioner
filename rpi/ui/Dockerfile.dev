@@ -1,0 +1,7 @@
+FROM node:14
+
+COPY viewer /workdir
+WORKDIR /workdir
+RUN npm install
+
+CMD [ "./node_modules/@angular/cli/bin/ng", "build", "--watch", "--baseHref", "/web/" ]

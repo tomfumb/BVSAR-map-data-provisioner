@@ -13,6 +13,7 @@ from api.routes.export import router as router_export
 from api.routes.files import router as router_files
 from api.routes.tile import router as router_tile
 from api.routes.upload import router as router_upload
+from api.routes.data import router as router_data
 from api.settings import (
     FILES_PATH,
     FILES_DIR,
@@ -39,6 +40,7 @@ app.include_router(router_export, prefix="/export")
 app.include_router(router_tile, prefix="/tile")
 app.include_router(router_upload, prefix="/upload")
 app.include_router(router_files, prefix="/files")
+app.include_router(router_data, prefix="/data")
 
 app.mount(UPLOADS_PATH, StaticFiles(directory=UPLOADS_DIR), name="upload")
 app.mount(UI_PATH, StaticFiles(directory=UI_DIR, html=True), name="viewer")

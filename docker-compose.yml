@@ -19,6 +19,13 @@ services:
         target: /tiledata/run
     networks:
       - bvsar
+    profiles:
+      - provisioning
+    healthcheck:
+      test: ["curl", "--fail", "http://localhost:20009"]
+      interval: 3s
+      timeout: 1s
+      retries: 5
 
   provisioner:
     container_name: bvsar-provisioner
@@ -60,7 +67,8 @@ services:
       - AREAS_LOCATION=/tiledata/areas
       - LOCAL_FEATURES_LOCATION=/tiledata/local-features
     depends_on: 
-      - tilemill
+      tilemill:
+        condition: service_healthy
     profiles:
       - provisioning  # prevent from running on "docker-compose up", will be invoked when needed
 
@@ -76,6 +84,9 @@ services:
       - type: bind
         source: ./rpi/api
         target: /www/api
+      - type: bind
+        source: ./provisioning/data
+        target: /www/srcdata
     environment:
       - PDF_EXPORT_MAX_TILES
     networks:

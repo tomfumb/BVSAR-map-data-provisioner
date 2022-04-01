@@ -2,8 +2,7 @@ TILEMILL_NAME=bvsar-tilemill
 TILEMILL_IMAGE_NAME=tomfumb/$(TILEMILL_NAME)
 HTTPD_NAME=bvsar-httpd
 HTTPD_IMAGE_NAME=tomfumb/$(HTTPD_NAME)
-NG_BUILD_NAME=bvsar-ng-build
-NG_BUILD_IMAGE_NAME=tomfumb/bvsar-angular-cli
+NG_DEV_IMAGE_NAME=tomfumb/bvsar-angular-cli-dev
 SSH_SERVE_NAME=bvsar-sshd
 SSH_SERVE_IMAGE_NAME=tomfumb/bvsar-sshd
 WWW_NAME=bvsar-rpi
@@ -20,13 +19,9 @@ dev-provisioning-stop:
 	docker stop ${TILEMILL_NAME}
 	docker stop $(WWW_NAME)
 
-dev-web-start:
-	docker build angular-cli -t $(NG_BUILD_IMAGE_NAME)
-	docker run --rm -d --name $(NG_BUILD_NAME) -v `pwd`/rpi/ui/viewer:/workdir -w /workdir $(NG_BUILD_IMAGE_NAME)
-	docker logs -f $(NG_BUILD_NAME)
-
-dev-web-stop:
-	docker stop $(NG_BUILD_NAME)
+dev-web:
+	docker build -t $(NG_DEV_IMAGE_NAME) -f rpi/ui/Dockerfile.dev rpi/ui
+	docker run --rm -v `pwd`/rpi/ui/viewer:/workdir $(NG_DEV_IMAGE_NAME)
 
 api-deploy-wired:
 	ssh pi@pi-wired 'rm -rf /www/api'
