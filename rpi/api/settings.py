@@ -10,6 +10,7 @@ TILES_DIR = os.environ.get("TILES_DIR", os.path.join(os.path.sep, "www", "tiles"
 TILES_PATH = "/tile/file"
 FILES_DIR = os.environ.get("FILES_DIR", os.path.join(os.path.sep, "www", "files"))
 FILES_PATH = "/files/files"
+SRCDATA_PATH = os.environ.get("SRCDATA_LOCATION", os.path.join(os.path.sep, "www", "srcdata"))
 UI_DIR = os.environ.get("UI_DIR", os.path.join(os.path.sep, "www", "web"))
 UI_PATH = "/web"
 PDF_EXPORT_MAX_TILES = int(os.environ.get("PDF_EXPORT_MAX_TILES", 1024))
