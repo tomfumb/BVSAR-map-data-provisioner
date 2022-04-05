@@ -1,0 +1,19 @@
+<div mat-dialog-title class="dialog-title-container">
+    <div class="dialog-title">Data Export</div>
+    <button mat-button class="dialog-close-icon primary-button" [mat-dialog-close]="true">X</button>
+</div>
+<hr />
+<mat-dialog-content>
+    <div id="export-header-container">
+        <div id="exports-warning" class="info-container">
+            Exports covering larger areas can return very large numbers of features. This may take a long time and impact other users.
+        </div>
+    </div>
+    <div id="export-options-container">
+        <ng-container *ngIf="contentVisible">
+            <ul>
+                <li *ngFor="let dataType of dataTypes" (click)="populateCount(dataType)">{{ dataType }}<span *ngIf="dataTypeCounts.hasOwnProperty(dataType)"> ({{ dataTypeCounts[dataType] }})</span></li>
+            </ul>
+        </ng-container>
+    </div>
+</mat-dialog-content>

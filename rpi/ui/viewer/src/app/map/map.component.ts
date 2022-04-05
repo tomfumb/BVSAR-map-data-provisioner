@@ -13,6 +13,7 @@ import { CoordinateService } from '../coordinate.service';
 import { ActivatedRoute } from '@angular/router';
 import { BenchComponent } from './mode-providers/bench/bench.component';
 import { AttributionComponent } from './attribution/attribution.component';
+import { DataExportComponent } from './data-export/data-export.component';
 
 enum Modes {
   bench = "bench"
@@ -134,7 +135,12 @@ export class MapComponent implements OnInit, OnDestroy {
       tileLayers[this.tilesetSelected.name].addTo(this.leafletMap);
       l.control.layers(tileLayers).addTo(this.leafletMap);
       this.tilesetSelectedChanged(false);
-      new (this.leafletModalOpener("Export", PdfExportComponent, () => {
+      new (this.leafletModalOpener("Data", DataExportComponent, () => {
+        return {
+          map: this.leafletMap
+        };
+      }))({ position: "bottomright" }).addTo(this.leafletMap);
+      new (this.leafletModalOpener("PDF", PdfExportComponent, () => {
         return {
           tileset: this.tilesetSelected,
           map: this.leafletMap

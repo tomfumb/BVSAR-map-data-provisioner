@@ -1,5 +1,5 @@
 from os import path, makedirs
-from typing import Callable
+from typing import Callable, List
 from fastapi import APIRouter
 from osgeo import ogr, osr
 from enum import Enum
@@ -114,7 +114,7 @@ async def export_features(
 
 # test with http://localhost:9000/data/count/resource_roads/-126.4/54.89/-126.3/54.91
 @router.get("/{dataset}/count/{x_min}/{y_min}/{x_max}/{y_max}")
-async def export_features(
+async def count_features(
     dataset: Dataset, x_min: float, y_min: float, x_max: float, y_max: float
 ) -> int:
     result_driver = ogr.GetDriverByName("Memory")
@@ -123,3 +123,8 @@ async def export_features(
     handlers[dataset].data_retriever(result_layer, x_min, y_min, x_max, y_max)
     
     return result_layer.GetFeatureCount()
+
+
+@router.get("/list")
+async def export_types() -> List[str]:
+    return [ entry.value for entry in Dataset ]
