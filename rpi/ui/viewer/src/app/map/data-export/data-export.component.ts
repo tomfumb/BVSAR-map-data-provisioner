@@ -57,6 +57,25 @@ export class DataExportComponent implements OnInit {
     })
   }
 
+  public getExportLink(dataType: string): string {
+    const [minX, minY, maxX, maxY] = this.getBoundingBox();
+    console.log(`${environment.tile_domain}/data/${dataType}/export/${minX}/${minY}/${maxX}/${maxY}`)
+    return `${environment.tile_domain}/data/${dataType}/export/${minX}/${minY}/${maxX}/${maxY}`
+  }
+
+  public exportInitiated(): void {
+    this.snackBar.open(`Exporting... Please wait`, undefined, {
+      duration: 2000
+    });
+    window.setTimeout(() => {
+      this.close();
+    }, 500)
+  }
+
+  public close(): void {
+    this.dialogRef.close();
+  }
+
   private getBoundingBox(): number[] {
     return this.map.getBounds().toBBoxString().split(",");
   }

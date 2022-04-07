@@ -7,6 +7,8 @@ from api.settings import FILES_DIR, FILES_PATH, SRCDATA_PATH
 from hashlib import md5
 from json import dumps
 from pydantic import BaseModel
+from re import IGNORECASE, sub
+from fastapi.responses import FileResponse
 
 
 bbox_crs: str = "EPSG:4326"
@@ -20,7 +22,7 @@ result_layer_name: str = "result_layer"
 
 
 class Dataset(str, Enum):
-    resource_roads = "resource_roads"
+    resource_roads = "Resource Roads"
 
 
 class Handler(BaseModel):
@@ -100,16 +102,23 @@ handlers = {
 @router.get("/{dataset}/export/{x_min}/{y_min}/{x_max}/{y_max}")
 async def export_features(
     dataset: Dataset, x_min: float, y_min: float, x_max: float, y_max: float
-) -> str:
+) -> FileResponse:
     result_driver = ogr.GetDriverByName("GeoJSON")
-    result_filename = f"{get_name_for_export(dataset.value, x_min, y_min, x_max, y_max)}.json"
+    result_filename_prefix = get_name_for_export(
+        sub(r"[^A-Z0-9\-_]+", "-", dataset.value, flags=IGNORECASE).lower(),
+        x_min,
+        y_min,
+        x_max,
+        y_max
+    )
+    result_filename = f"{result_filename_prefix}.json"
     result_path = path.join(result_dir_path, result_filename)
     if not path.exists(result_path):
         result_datasource = result_driver.CreateDataSource(result_path)
         result_layer = result_datasource.CreateLayer(result_layer_name, geom_type=handlers[dataset].feature_type)
         handlers[dataset].data_retriever(result_layer, x_min, y_min, x_max, y_max)
 
-    return f"{FILES_PATH}/{result_dir}/{result_filename}"
+    return FileResponse(result_path, media_type="application/json")
 
 
 # test with http://localhost:9000/data/count/resource_roads/-126.4/54.89/-126.3/54.91

@@ -12,7 +12,14 @@
     <div id="export-options-container">
         <ng-container *ngIf="contentVisible">
             <ul>
-                <li *ngFor="let dataType of dataTypes" (click)="populateCount(dataType)">{{ dataType }}<span *ngIf="dataTypeCounts.hasOwnProperty(dataType)"> ({{ dataTypeCounts[dataType] }})</span></li>
+                <li *ngFor="let dataType of dataTypes">
+                    {{ dataType }}
+                    <span *ngIf="dataTypeCounts.hasOwnProperty(dataType)"> ({{ dataTypeCounts[dataType] }})</span>
+                    <button type="button" (click)="populateCount(dataType)">Count</button>
+                    <a [download]="dataType" [href]="getExportLink(dataType)" (click)="exportInitiated()">
+                        <button type="button">Export</button>
+                    </a>
+                </li>
             </ul>
         </ng-container>
     </div>
