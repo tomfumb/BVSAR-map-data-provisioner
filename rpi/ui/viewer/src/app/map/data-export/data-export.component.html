@@ -11,16 +11,19 @@
     </div>
     <div id="export-options-container">
         <ng-container *ngIf="contentVisible">
-            <ul>
-                <li *ngFor="let dataType of dataTypes">
-                    {{ dataType }}
-                    <span *ngIf="dataTypeCounts.hasOwnProperty(dataType)"> ({{ dataTypeCounts[dataType] }})</span>
-                    <button type="button" (click)="populateCount(dataType)">Count</button>
+            <div *ngFor="let dataType of dataTypes" class="data-type-container">
+                <div>
+                    <span class="data-type">{{ dataType }}</span>
+                    <span *ngIf="dataTypeCountPending" class="data-type-pending">{{ dataTypeCountLoadingText | async }}</span>
+                    <span *ngIf="dataTypeCounts.hasOwnProperty(dataType)" class="data-type-count">{{ dataTypeCounts[dataType] }}</span>
+                </div>
+                <div>
+                    <button [disabled]="dataTypeCountPending" type="button" class="export-control-button" (click)="populateCount(dataType)">Count</button>
                     <a [download]="dataType" [href]="getExportLink(dataType)" (click)="exportInitiated()">
-                        <button type="button">Export</button>
+                        <button type="button" class="export-control-button">Export</button>
                     </a>
-                </li>
-            </ul>
+                </div>
+            </div>
         </ng-container>
     </div>
 </mat-dialog-content>

@@ -3,7 +3,7 @@ from typing import Callable, List
 from fastapi import APIRouter
 from osgeo import ogr, osr
 from enum import Enum
-from api.settings import FILES_DIR, FILES_PATH, SRCDATA_PATH
+from api.settings import FILES_DIR, SRCDATA_PATH
 from hashlib import md5
 from json import dumps
 from pydantic import BaseModel
@@ -98,7 +98,7 @@ handlers = {
     )
 }
 
-# test with http://localhost:9000/data/export/resource_roads/-126.4/54.89/-126.3/54.91
+
 @router.get("/{dataset}/export/{x_min}/{y_min}/{x_max}/{y_max}")
 async def export_features(
     dataset: Dataset, x_min: float, y_min: float, x_max: float, y_max: float
@@ -121,7 +121,6 @@ async def export_features(
     return FileResponse(result_path, media_type="application/json")
 
 
-# test with http://localhost:9000/data/count/resource_roads/-126.4/54.89/-126.3/54.91
 @router.get("/{dataset}/count/{x_min}/{y_min}/{x_max}/{y_max}")
 async def count_features(
     dataset: Dataset, x_min: float, y_min: float, x_max: float, y_max: float

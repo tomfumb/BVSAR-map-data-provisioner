@@ -3,8 +3,9 @@ import * as l from 'leaflet';
 import { MatDialogRef, MAT_DIALOG_DATA } from  '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable, Observer } from 'rxjs';
+import { interval, Observable, Observer } from 'rxjs';
 import { environment } from 'src/environments/environment';
+import { catchError, map } from 'rxjs/operators';
 
 interface Parameters {
   map: l.map;
@@ -20,6 +21,12 @@ export class DataExportComponent implements OnInit {
   public contentVisible: boolean = false;
   public dataTypes: string[] = [];
   public dataTypeCounts: {[index: string]: number} = {};
+  public dataTypeCountPending: boolean = false;
+  public readonly dataTypeCountLoadingText = interval(300)
+    .pipe(
+      map(i => new Array((i % 3) + 1).fill(".").join("")
+    )
+  );
 
   private map: l.map;
   private initObserver?: Observer<void> = undefined;
@@ -51,15 +58,20 @@ export class DataExportComponent implements OnInit {
   }
 
   public populateCount(dataType: string): void {
+    this.dataTypeCountPending = true;
+    delete this.dataTypeCounts[dataType];
     const [minX, minY, maxX, maxY] = this.getBoundingBox();
-    this.http.get(`${environment.tile_domain}/data/${dataType}/count/${minX}/${minY}/${maxX}/${maxY}`).subscribe((response: HttpResponse<number>) => {
+    this.http.get(`${environment.tile_domain}/data/${dataType}/count/${minX}/${minY}/${maxX}/${maxY}`).pipe(catchError((error: any, caught: Observable<Object>) => {
+      this.dataTypeCountPending = false;
+      return caught;
+    })).subscribe((response: HttpResponse<number>) => {
       this.dataTypeCounts[dataType] = <any>response;
+      this.dataTypeCountPending = false;
     })
   }
 
   public getExportLink(dataType: string): string {
     const [minX, minY, maxX, maxY] = this.getBoundingBox();
-    console.log(`${environment.tile_domain}/data/${dataType}/export/${minX}/${minY}/${maxX}/${maxY}`)
     return `${environment.tile_domain}/data/${dataType}/export/${minX}/${minY}/${maxX}/${maxY}`
   }
 

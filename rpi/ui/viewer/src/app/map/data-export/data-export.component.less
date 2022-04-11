@@ -19,11 +19,22 @@
 
 #export-options-container {
     margin-top: @common-vert-spacing;
-    display: flex;
-    flex-wrap: wrap;
+}
 
-    ul {
-        list-style-type: none;
-        padding-left: 0;
-    }
+.data-type-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.export-control-button {
+    .primary-button;
+    padding: 0.5em;
+}
+
+.data-type {
+    padding-right: 0.5em;
+}
+
+.data-type-count {
+    font-weight: bold;
 }
