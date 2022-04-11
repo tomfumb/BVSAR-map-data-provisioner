@@ -17,12 +17,10 @@ services:
       - type: volume
         source: bvsar-run
         target: /tiledata/run
-    networks:
-      - bvsar
     profiles:
       - provisioning
     healthcheck:
-      test: ["curl", "--fail", "http://localhost:20009"]
+      test: "curl -s --fail http://localhost:20009"
       interval: 3s
       timeout: 1s
       retries: 5
@@ -57,8 +55,6 @@ services:
       - type: bind
         source: ./provisioning/data
         target: /data
-    networks:
-      - bvsar
     environment:
       - HTTP_URL
       - TILEMILL_URL
@@ -89,13 +85,8 @@ services:
         target: /www/srcdata
     environment:
       - PDF_EXPORT_MAX_TILES
-    networks:
-      - bvsar
     ports:
       - "9000:80"
-        
-networks:
-  bvsar:
 
 volumes:
   bvsar-export:

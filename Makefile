@@ -57,3 +57,7 @@ ssh-serve-stop:
 # 	source .env-dev && \
 # 	docker run --rm -d --name $(PROVISIONER_NAME) -v $$DATA_LOCATION:/rundata -e DATA_LOCATION=/rundata -e AREAS_LOCATION=/rundata/areas/areas-dev.gpkg -e LOCAL_FEATURES_LOCATION=/rundata/local-features/local-features.gpkg && \
 # 	docker logs -f $(PROVISIONER_NAME)
+
+web-local-dev:
+	@cd rpi/ui/viewer
+	ng build --watch --baseHref /web/
