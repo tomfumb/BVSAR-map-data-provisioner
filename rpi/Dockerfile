@@ -1,4 +1,4 @@
-FROM node:14 as ng-builder
+FROM node:16 as ng-builder
 
 RUN npm install -g @angular/cli
 COPY ui/viewer /viewer
@@ -29,7 +29,6 @@ RUN mkdir -p /www/api/export/temp
 COPY --from=ng-builder /viewer/dist/viewer /www/web
 
 RUN chown -R pi: /www
-
 
 WORKDIR /www
 

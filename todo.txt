@@ -15,6 +15,3 @@
 
 new issues
 - FWA gdb download not working correctly
-- cannot build tilemill image due to some node issue
-- remove .old docker files and do rpi as two separate services in docker-compose
-- update Makefile to remove start / stop pattern
