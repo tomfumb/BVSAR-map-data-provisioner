@@ -7,6 +7,7 @@ import wget
 
 from ftplib import FTP
 from typing import Final
+from sys import stdout
 
 from app.common.util import get_cache_path
 
@@ -57,11 +58,23 @@ def retrieve_directory(domain: str, path: str) -> str:
 
 
 def fetch(file_name: str, domain: str, path: str, destination_path: str = None):
+
+    download_src = f"ftp://{domain}{path}/{file_name}"
+
+    def bar_progress(current, total, width):
+        pending_max_length = 3
+        pending_length = round(time.time() % pending_max_length)
+        pending_text = "".join(["." for _ in range(pending_length)]) + "".join(" " for _ in range(3 - pending_length))
+        progress_message = f"Downloading {download_src} {pending_text}"
+        stdout.write("\r" + progress_message)
+        stdout.flush()
+
     if destination_path is None:
         destination_path = _cache_path(domain, path, file_name)
     if not os.path.exists(destination_path):
+        os.makedirs(os.path.dirname(destination_path), exist_ok=True)
         wget.download(
-            f"ftp://{domain}{path}/{file_name}", out=destination_path,
+            download_src, out=destination_path, bar=bar_progress,
         )
     return destination_path
 
