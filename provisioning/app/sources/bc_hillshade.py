@@ -2,7 +2,8 @@ import re
 import os
 import zipfile
 
-from gdal import ogr, DEMProcessing, Warp
+from osgeo import ogr
+from osgeo.gdal import DEMProcessing, Warp
 from typing import Final, List
 
 from app.common.bbox import BBOX

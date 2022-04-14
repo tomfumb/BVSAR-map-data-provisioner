@@ -1,7 +1,7 @@
 import re
 import sys
 import json
-import gdal
+from osgeo import gdal
 import time
 import random
 import logging

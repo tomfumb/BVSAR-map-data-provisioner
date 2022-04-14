@@ -4,7 +4,7 @@ if __name__ == "__main__":
     import logging
     import os
 
-    from gdal import ogr, osr
+    from osgeo import ogr, osr
     from typing import List
 
     from app.common.bbox import BBOX

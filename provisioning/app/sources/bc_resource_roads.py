@@ -1,6 +1,6 @@
 import os
 
-from gdal import ogr
+from osgeo import ogr
 from typing import Final, List
 
 from app.common.bbox import BBOX
@@ -17,11 +17,11 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     run_directory = get_run_data_path(run_id, (CACHE_DIR_NAME,))
     os.makedirs(run_directory)
     driver = ogr.GetDriverByName("OpenFileGDB")
-    datasource = driver.Open(get_data_path(("FTEN_ROAD_SECTION_LINES_SVW.gdb",)))
+    datasource = driver.Open(get_data_path(("FTEN_ROAD_SEGMENT_LINES_SVW.gdb",)))
     path = os.path.join(run_directory, "bc_resource_roads.shp")
     ogr_to_shp(
         bbox,
-        [datasource.GetLayerByName("WHSE_FOREST_TENURE_FTEN_ROAD_SECTION_LINES_SVW")],
+        [datasource.GetLayerByName("WHSE_FOREST_TENURE_FTEN_ROAD_SEGMENT_LINES_SVW")],
         path,
         "bc_resource_roads",
         OUTPUT_CRS_CODE,

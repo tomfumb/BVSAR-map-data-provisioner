@@ -1,4 +1,4 @@
-version: "3.3"
+version: "3.8"
 
 services:
 
@@ -17,8 +17,13 @@ services:
       - type: volume
         source: bvsar-run
         target: /tiledata/run
-    networks:
-      - bvsar
+    profiles:
+      - provisioning
+    healthcheck:
+      test: "curl -s --fail http://localhost:20009"
+      interval: 3s
+      timeout: 1s
+      retries: 5
 
   provisioner:
     container_name: bvsar-provisioner
@@ -27,34 +32,41 @@ services:
     image: tomfumb/bvsar-provisioner
     volumes:
       - type: bind
-        source: "${BVSAR_DATA_ROOT}/cache"
+        source: "${DATA_LOCATION}/cache"
         target: /tiledata/cache
       - type: volume
         source: bvsar-export
         target: /tiledata/export
       - type: bind
-        source: "${BVSAR_DATA_ROOT}/result"
+        source: "${DATA_LOCATION}/result"
         target: /tiledata/result
       - type: volume
         source: bvsar-run
         target: /tiledata/run
       - type: bind
-        source: "${BVSAR_DATA_ROOT}/areas"
+        source: "${AREAS_LOCATION}"
         target: /tiledata/areas
       - type: bind
-        source: "${BVSAR_DATA_ROOT}/local-features"
+        source: "${LOCAL_FEATURES_LOCATION}"
         target: /tiledata/local-features
-    networks:
-      - bvsar
+      - type: bind
+        source: ./provisioning/app
+        target: /app
+      - type: bind
+        source: ./provisioning/data
+        target: /data
     environment:
       - HTTP_URL
       - TILEMILL_URL
-      - AREAS_LOCATION
-      - LOCAL_FEATURES_LOCATION
       - BVSAR_BATCH_SIZE
       - GRIDDED_REPEAT_IF_EXISTS
+      - AREAS_LOCATION=/tiledata/areas
+      - LOCAL_FEATURES_LOCATION=/tiledata/local-features
     depends_on: 
-      - tilemill
+      tilemill:
+        condition: service_healthy
+    profiles:
+      - provisioning  # prevent from running on "docker-compose up", will be invoked when needed
 
   rpi:
     container_name: bvsar-rpi
@@ -63,20 +75,18 @@ services:
     image: tomfumb/bvsar-rpi
     volumes:
       - type: bind
-        source: "${BVSAR_DATA_ROOT}/result"
+        source: "${DATA_LOCATION}/result"
         target: /www/tiles
       - type: bind
         source: ./rpi/api
         target: /www/api
+      - type: bind
+        source: ./provisioning/data
+        target: /www/srcdata
     environment:
       - PDF_EXPORT_MAX_TILES
-    networks:
-      - bvsar
     ports:
       - "9000:80"
-        
-networks:
-  bvsar:
 
 volumes:
   bvsar-export:

@@ -7,7 +7,7 @@ import re
 import shutil
 import sys
 
-from gdal import ConfigurePythonLogging, UseExceptions
+from osgeo.gdal import ConfigurePythonLogging, UseExceptions
 from typing import Final, Tuple
 
 TILEMILL_DATA_LOCATION: Final = "/tiledata"

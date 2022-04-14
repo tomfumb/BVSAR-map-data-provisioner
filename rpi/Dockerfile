@@ -1,4 +1,4 @@
-FROM node:12 as ng-builder
+FROM node:16 as ng-builder
 
 RUN npm install -g @angular/cli
 COPY ui/viewer /viewer
@@ -30,7 +30,6 @@ COPY --from=ng-builder /viewer/dist/viewer /www/web
 
 RUN chown -R pi: /www
 
-
 WORKDIR /www
 
-CMD [ "gunicorn3", "-b", "0.0.0.0:80", "--log-file", "/www/api/log/main.log", "--access-logfile", "/www/api/log/access.log", "--timeout", "3600", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "api.main:app" ]
+CMD [ "gunicorn3", "-b", "0.0.0.0:80", "--log-file", "/www/api/log/main.log", "--access-logfile", "/www/api/log/access.log", "--timeout", "3600", "-k", "uvicorn.workers.UvicornWorker", "api.main:app" ]

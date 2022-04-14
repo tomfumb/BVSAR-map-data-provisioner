@@ -1,6 +1,7 @@
-FROM osgeo/gdal:ubuntu-full-3.1.0
+FROM osgeo/gdal:ubuntu-full-3.4.2
 
-RUN apt-get -y update \
+RUN export DEBIAN_FRONTEND=noninteractive \
+ && apt-get update --fix-missing \
  && apt-get install -y --no-install-recommends python3-pip git \
  && rm -rf /var/lib/apt/lists/* \
  && apt-get clean

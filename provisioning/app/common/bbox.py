@@ -1,6 +1,6 @@
 import json
 
-from gdal import ogr, osr
+from osgeo import ogr, osr
 from pydantic import BaseModel
 
 
@@ -43,14 +43,15 @@ class BBOX(BaseModel):
         bbox_geom = ogr.CreateGeometryFromWkt(self.get_wkt(), srs_in)
         bbox_coords = json.loads(bbox_geom.ExportToJson())
         bbox_coords_transformed = list()
+        transform = osr.CoordinateTransformation(srs_in, srs_out)
         for bbox_point_pair in bbox_coords["coordinates"][0]:
             point = ogr.Geometry(ogr.wkbPoint)
             point.AssignSpatialReference(srs_in)
-            if srs_in.EPSGTreatsAsLatLong() == srs_out.EPSGTreatsAsLatLong():
-                point.AddPoint(bbox_point_pair[0], bbox_point_pair[1])
-            else:
+            if srs_in.EPSGTreatsAsLatLong == 1:
                 point.AddPoint(bbox_point_pair[1], bbox_point_pair[0])
-            point.TransformTo(srs_out)
+            else:
+                point.AddPoint(bbox_point_pair[0], bbox_point_pair[1])
+            point.Transform(transform)
             x, y, _ = point.GetPoint()
             bbox_coords_transformed.append([x, y])
         bbox_coords["coordinates"][0] = bbox_coords_transformed

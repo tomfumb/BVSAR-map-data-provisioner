@@ -3,7 +3,8 @@ import os
 import logging
 import zipfile
 
-from gdal import ogr, Warp
+from osgeo import ogr
+from osgeo.gdal import Warp
 from typing import Final, List
 
 from app.common.bbox import BBOX

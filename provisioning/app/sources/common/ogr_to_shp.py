@@ -1,5 +1,5 @@
 import logging
-from gdal import ogr
+from osgeo import ogr
 from typing import List
 
 from app.common.bbox import BBOX

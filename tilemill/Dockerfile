@@ -6,13 +6,14 @@ EXPOSE 20008
 EXPOSE 20009
 
 RUN export DEBIAN_FRONTEND=noninteractive \
- && apt-get update -y \
+ && apt-get update --fix-missing \
  && apt-get install -y --no-install-recommends apt-utils git curl locales ca-certificates \
  && locale-gen en_US.UTF-8 \
  && update-ca-certificates \
  && curl -sL https://deb.nodesource.com/setup_8.x | bash - \
  && apt-get update -y \
- && apt-get install -y --no-install-recommends nodejs
+ && apt-get install -y --no-install-recommends nodejs \
+ && apt-get clean
 
 RUN mkdir -p /opt/tilemill
 
