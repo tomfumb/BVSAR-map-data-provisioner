@@ -13,8 +13,8 @@ The data provisioning process could be applied to any area within British Columb
 A virtual environment via Conda or a Dockerized development environment is recommended as some dependencies require native binaries to be installed and you may experience dependency conflicts.
 
 - Docker must be installed
-- Python 3.8 or higher is required
-- GDAL 3+ is required (tested with 3.4)
+- Python 3.7 or higher is required
+- GDAL 2.4.0+ is required
 - `pip install -r provisioning/requirements.txt` after native binary installed
 
 ## Area Definition
