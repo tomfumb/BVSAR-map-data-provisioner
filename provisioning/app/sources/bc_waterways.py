@@ -23,12 +23,14 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     logging.info(
         "Retrieving BC Freshwater Atlas - this could take a while the first time"
     )
-    zip_path = fetch("FWA_BC.zip", "ftp.geobc.gov.bc.ca", "/sections/outgoing/bmgs/FWA_Public")
+    zip_path = fetch(
+        "FWA_BC.zip", "ftp.geobc.gov.bc.ca", "/sections/outgoing/bmgs/FWA_Public"
+    )
     fgdb_dir = os.path.dirname(zip_path)
     fgdb = os.path.join(fgdb_dir, "FWA_BC.gdb")
     if not os.path.exists(fgdb):
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
-            zip_ref.extractall(get_cache_path((fgdb,)))
+            zip_ref.extractall(get_cache_path((fgdb_dir,)))
     logging.info("Retrieved BC Freshwater Atlas")
     run_directory = get_run_data_path(run_id, (CACHE_DIR_NAME,))
     os.makedirs(run_directory)

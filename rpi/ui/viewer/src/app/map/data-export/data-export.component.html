@@ -15,7 +15,7 @@
                 <div>
                     <span class="data-type">{{ dataType }}</span>
                     <span *ngIf="dataTypeCountPending" class="data-type-pending">{{ dataTypeCountLoadingText | async }}</span>
-                    <span *ngIf="dataTypeCounts.hasOwnProperty(dataType)" class="data-type-count">{{ dataTypeCounts[dataType] }}</span>
+                    <span *ngIf="dataTypeCounts.hasOwnProperty(dataType)" class="data-type-count">{{ dataTypeCounts[dataType] | number }}</span>
                 </div>
                 <div>
                     <button [disabled]="dataTypeCountPending" type="button" class="export-control-button" (click)="populateCount(dataType)">Count</button>
