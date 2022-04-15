@@ -8,11 +8,12 @@
 *.gpkg-shm
 *.gpkg-wal
 .env-dev
-rpi/ui/viewer/node_modules/**
-rpi/ui/viewer/dist/**
-rpi/api/export/temp/**
-rpi/api/uploads/**
-rpi/api/log/**
+rpi/ui/viewer/.angular
+rpi/ui/viewer/node_modules
+rpi/ui/viewer/dist
+rpi/api/export/temp
+rpi/api/uploads
+rpi/api/log
 provisioning/data/FTEN_RECREATION_POLY_SVW.gdb
 provisioning/data/FTEN_ROAD_SEGMENT_LINES_SVW.gdb
 provisioning/data/pmbc_parcel_fabric_poly_svw.gdb

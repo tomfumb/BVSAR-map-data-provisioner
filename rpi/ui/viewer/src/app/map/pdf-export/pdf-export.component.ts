@@ -17,6 +17,7 @@ interface ExportInfo extends ExportInfoCommon {
   y_px: number;
   sample: string;
   permitted: boolean;
+  name: string;
 }
 
 interface MapState {
@@ -98,23 +99,19 @@ export class PdfExportComponent implements OnInit {
     }, 500)
   }
 
-  public getExportName(zoom: number): string {
-    return `${this.tileset.name}-${zoom}.pdf`
-  }
-
   private updateExportOptions(): void {
-      this.exportInfos = this.exportInfos.map(() => {
-        return {is_placeholder: true};
-      });
-      const mapState = this.getMapState();
-      const minZoom = Math.max(mapState.zoom, this.tileset.zoom_min);
-      const infoRequestObservables = [];
-      for(let i = minZoom; i <= this.tileset.zoom_max; i++) {
-        infoRequestObservables.push(this.http.get(`${environment.tile_domain}/export/info/${i}/${mapState.minX}/${mapState.minY}/${mapState.maxX}/${mapState.maxY}/${this.tileset.name}`));
-      }
-      forkJoin(infoRequestObservables).subscribe((results: HttpResponse<ExportInfo>[]) => {
-        this.exportInfos = (<any>results).filter((exportInfo: ExportInfo) => exportInfo.permitted).map(exportInfo => Object.assign({}, exportInfo, {is_placeholder: false}));
-      });
+    this.exportInfos = this.exportInfos.map(() => {
+      return {is_placeholder: true};
+    });
+    const mapState = this.getMapState();
+    const minZoom = Math.max(mapState.zoom, this.tileset.zoom_min);
+    const infoRequestObservables = [];
+    for(let i = minZoom; i <= this.tileset.zoom_max; i++) {
+      infoRequestObservables.push(this.http.get(`${environment.tile_domain}/export/info/${i}/${mapState.minX}/${mapState.minY}/${mapState.maxX}/${mapState.maxY}/${this.tileset.name}`));
+    }
+    forkJoin(infoRequestObservables).subscribe((results: HttpResponse<ExportInfo>[]) => {
+      this.exportInfos = (<any>results).filter((exportInfo: ExportInfo) => exportInfo.permitted).map(exportInfo => Object.assign({}, exportInfo, {is_placeholder: false}));
+    });
   }
 
   private updateExportOptionsAfter(delay: number): void {

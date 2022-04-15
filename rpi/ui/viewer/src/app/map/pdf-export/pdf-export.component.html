@@ -18,7 +18,7 @@
                 <ng-container *ngSwitchCase="false">
                     <div class="export-sample" style="background: url('{{exportInfo.sample}}')">
                         <div class="export-sample-info">{{ exportInfo.x_px }} x {{ exportInfo.y_px }}px</div>
-                        <a [download]="getExportName(exportInfo.z)" [href]="getExportLink(exportInfo.z)" (click)="exportInitiated()">
+                        <a [download]="exportInfo.name" [href]="getExportLink(exportInfo.z)" (click)="exportInitiated()">
                             <button [disabled]="exportInProgress" type="button" class="export-control-button export-requestor">Export at z{{exportInfo.z}}</button>
                         </a>
                     </div>

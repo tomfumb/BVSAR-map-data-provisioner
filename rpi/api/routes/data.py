@@ -4,15 +4,15 @@ from fastapi import APIRouter
 from osgeo import ogr, osr
 from enum import Enum
 from api.settings import FILES_DIR, SRCDATA_PATH
-from hashlib import md5
-from json import dumps
 from pydantic import BaseModel
 from re import IGNORECASE, sub
 from fastapi.responses import FileResponse
 
+from api.util import get_name_for_bounds
+
 
 bbox_crs: str = "EPSG:4326"
-result_dir: str = "src-data-export"
+result_dir: str = "Data Exports"
 result_dir_path = path.join(FILES_DIR, result_dir)
 makedirs(result_dir_path, exist_ok=True)
 id_field_name: str = "id"
@@ -37,7 +37,7 @@ def get_features_from_layer(
     x_min: float,
     y_min: float,
     x_max: float,
-    y_max: float
+    y_max: float,
 ) -> None:
     memory_driver = ogr.GetDriverByName("Memory")
     clip_datasource = memory_driver.CreateDataSource("")
@@ -54,7 +54,9 @@ def get_features_from_layer(
     clip_layer.CreateFeature(feature)
 
     result_datasource = memory_driver.CreateDataSource("")
-    result_layer = result_datasource.CreateLayer("result_layer", geom_type=ogr.wkbMultiLineString)
+    result_layer = result_datasource.CreateLayer(
+        "result_layer", geom_type=ogr.wkbMultiLineString
+    )
     ogr.Layer.Clip(source_layer, clip_layer, result_layer)
 
     id_field = ogr.FieldDefn(id_field_name, ogr.OFTInteger64)
@@ -69,27 +71,34 @@ def get_features_from_layer(
         new_feature = ogr.Feature(destination_layer.GetLayerDefn())
         new_feature.SetGeometryDirectly(new_geometry)
         new_feature.SetField(id_field_name, feature.GetFID())
-        new_feature.SetField(title_field_name, title_provider(feature)[0:title_field_width])
+        new_feature.SetField(
+            title_field_name, title_provider(feature)[0:title_field_width]
+        )
         destination_layer.CreateFeature(new_feature)
         feature = result_layer.GetNextFeature()
 
 
-def get_name_for_export(prefix: str, x_min: float, y_min: float, x_max: float, y_max: float) -> str:
-    return f"{prefix}-{md5(dumps([x_min, y_min, x_max, y_max]).encode('UTF-8')).hexdigest()}"
-
-
-def resource_roads_data(result_layer: ogr.Layer, x_min: float, y_min: float, x_max: float, y_max: float) -> None:
+def resource_roads_data(
+    result_layer: ogr.Layer, x_min: float, y_min: float, x_max: float, y_max: float
+) -> None:
     src_driver = ogr.GetDriverByName("OpenFileGDB")
-    src_datasource = src_driver.Open(path.join(SRCDATA_PATH, "FTEN_ROAD_SEGMENT_LINES_SVW.gdb"))
+    src_datasource = src_driver.Open(
+        path.join(SRCDATA_PATH, "FTEN_ROAD_SEGMENT_LINES_SVW.gdb")
+    )
     src_layer = src_datasource.GetLayerByIndex(0)
-
 
     def title_provider(feature: ogr.Feature) -> str:
         name = feature.GetFieldAsString("MAP_LABEL")
-        status = " (retired)" if feature.GetFieldAsString('LIFE_CYCLE_STATUS_CODE') == "RETIRED" else ""
+        status = (
+            " (retired)"
+            if feature.GetFieldAsString("LIFE_CYCLE_STATUS_CODE") == "RETIRED"
+            else ""
+        )
         return f"{name}{status}"
 
-    get_features_from_layer(src_layer, result_layer, title_provider, x_min, y_min, x_max, y_max)
+    get_features_from_layer(
+        src_layer, result_layer, title_provider, x_min, y_min, x_max, y_max
+    )
 
 
 router = APIRouter()
@@ -106,18 +115,20 @@ async def export_features(
     dataset: Dataset, x_min: float, y_min: float, x_max: float, y_max: float
 ) -> FileResponse:
     result_driver = ogr.GetDriverByName("GeoJSON")
-    result_filename_prefix = get_name_for_export(
+    result_filename_prefix = get_name_for_bounds(
         sub(r"[^A-Z0-9\-_]+", "-", dataset.value, flags=IGNORECASE).lower(),
         x_min,
         y_min,
         x_max,
-        y_max
+        y_max,
     )
     result_filename = f"{result_filename_prefix}.json"
     result_path = path.join(result_dir_path, result_filename)
     if not path.exists(result_path):
         result_datasource = result_driver.CreateDataSource(result_path)
-        result_layer = result_datasource.CreateLayer(result_layer_name, geom_type=handlers[dataset].feature_type)
+        result_layer = result_datasource.CreateLayer(
+            result_layer_name, geom_type=handlers[dataset].feature_type
+        )
         handlers[dataset].data_retriever(result_layer, x_min, y_min, x_max, y_max)
 
     return FileResponse(result_path, media_type="application/json")
@@ -129,12 +140,14 @@ async def count_features(
 ) -> int:
     result_driver = ogr.GetDriverByName("Memory")
     result_datasource = result_driver.CreateDataSource("")
-    result_layer = result_datasource.CreateLayer(result_layer_name, geom_type=handlers[dataset].feature_type)
+    result_layer = result_datasource.CreateLayer(
+        result_layer_name, geom_type=handlers[dataset].feature_type
+    )
     handlers[dataset].data_retriever(result_layer, x_min, y_min, x_max, y_max)
-    
+
     return result_layer.GetFeatureCount()
 
 
 @router.get("/list")
 async def export_types() -> List[str]:
-    return [ entry.value for entry in Dataset ]
+    return [entry.value for entry in Dataset]

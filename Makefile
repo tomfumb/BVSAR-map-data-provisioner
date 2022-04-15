@@ -19,15 +19,15 @@ web-deploy-wireless:
 web-watch:
 	cd rpi/ui && \
 	docker build -t tomfumb/bvsar-ng . && \
-	docker run -d --name bvsar-web-watch --rm -w $$PWD/viewer:/viewer -w /viewer tomfumb/bvsar-ng ng build --watch --baseHref /web/ && \
+	docker run -d --name bvsar-web-watch --rm -v $$PWD/viewer:/viewer -w /viewer tomfumb/bvsar-ng ng build --watch --baseHref /web/ && \
 	docker logs -f bvsar-web-watch
 
 web-build:
 	cd rpi/ui && \
 	docker build -t tomfumb/bvsar-ng . && \
-	docker run --rm -w $$PWD/viewer:/viewer -w /viewer tomfumb/bvsar-ng ng build --baseHref /web/
+	docker run --rm -v $$PWD/viewer:/viewer -w /viewer tomfumb/bvsar-ng ng build --baseHref /web/
 
 web-build-prod:
 	cd rpi/ui && \
 	docker build -t tomfumb/bvsar-ng . && \
-	docker run --rm -w $$PWD/viewer:/viewer -w /viewer tomfumb/bvsar-ng ng build --prod --baseHref /web/
+	docker run --rm -v $$PWD/viewer:/viewer -w /viewer tomfumb/bvsar-ng ng build --prod --baseHref /web/

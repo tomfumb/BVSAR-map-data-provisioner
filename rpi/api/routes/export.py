@@ -1,6 +1,6 @@
 import logging
 import os
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
 from osgeo import osr
 from osgeo.gdal import Translate
@@ -10,8 +10,12 @@ from typing import Tuple
 from uuid import uuid4
 
 from api.export.export import bbox_to_xyz, latlon_to_xyz, bbox_to_pixels
-from api.settings import TILES_PATH, PARENT_TEMP_DIR, PDF_EXPORT_MAX_TILES
+from api.settings import TILES_PATH, PARENT_TEMP_DIR, PDF_EXPORT_MAX_TILES, FILES_DIR
+from api.util import get_name_for_bounds
 
+
+export_dir = os.path.join(FILES_DIR, "PDF Exports")
+os.makedirs(export_dir, exist_ok=True)
 
 router = APIRouter()
 
@@ -35,7 +39,14 @@ async def export_info(
         "y_px": pixel_counts[1],
         "sample": f"{TILES_PATH}/{profile}/{zoom}/{'/'.join(sample_tile)}.png",
         "permitted": tile_count_permitted(export_tile_counts[0], export_tile_counts[1]),
+        "name": export_name(profile, zoom, x_min, y_min, x_max, y_max),
     }
+
+
+def export_name(
+    profile: str, zoom: int, x_min: float, y_min: float, x_max: float, y_max: float
+):
+    return f"{get_name_for_bounds(f'{profile}-{zoom}', x_min, y_min, x_max, y_max)}.pdf"
 
 
 @router.get("/pdf/{zoom}/{x_min}/{y_min}/{x_max}/{y_max}/{profile}")
@@ -46,8 +57,20 @@ async def export_pdf(
     y_min: float,
     x_max: float,
     y_max: float,
-    request: Request,
 ):
+    pdf_mime_type = "application/pdf"
+    pdf_file_path = os.path.join(
+        export_dir,
+        f"{get_name_for_bounds(f'{profile}-{zoom}', x_min, y_min, x_max, y_max)}.pdf",
+    )
+
+    def read_pdf():
+        with open(pdf_file_path, "rb") as pdf_file:
+            return pdf_file.read()
+
+    if os.path.exists(pdf_file_path):
+        return Response(read_pdf(), media_type=pdf_mime_type)
+
     export_temp_dir = os.path.join(PARENT_TEMP_DIR, str(uuid4()))
     os.makedirs(export_temp_dir)
     xml_file_path = os.path.join(export_temp_dir, "gdal.xml")
@@ -81,7 +104,6 @@ async def export_pdf(
     <ZeroBlockHttpCodes>204,404</ZeroBlockHttpCodes>
 </GDAL_WMS>"""
         )
-    pdf_file_path = os.path.join(export_temp_dir, "merge.pdf")
     bbox_srs = osr.SpatialReference()
     bbox_srs.SetFromUserInput("EPSG:4326")
     try:
@@ -95,11 +117,10 @@ async def export_pdf(
         print(result)
     except Exception as ex:
         print(ex)
-    with open(pdf_file_path, "rb") as pdf_file:
-        pdf_data = pdf_file.read()
+    pdf_data = read_pdf()
     logging.info("Deleting temp directory")
     rmtree(export_temp_dir)
-    return Response(pdf_data, media_type="application/pdf")
+    return Response(pdf_data, media_type=pdf_mime_type)
 
 
 def tile_counts(
@@ -111,7 +132,8 @@ def tile_counts(
 def check_tile_count_permitted(x_tile_count: int, y_tile_count: int) -> None:
     if not tile_count_permitted(x_tile_count, y_tile_count):
         raise HTTPException(
-            418, detail=f"Requested PDF is too big (> {PDF_EXPORT_MAX_TILES} tiles)",
+            418,
+            detail=f"Requested PDF is too big (> {PDF_EXPORT_MAX_TILES} tiles)",
         )
 
 

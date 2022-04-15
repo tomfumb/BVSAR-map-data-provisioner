@@ -89,6 +89,6 @@ if __name__ == "__main__":
 
     import uvicorn
 
-    port = 8888 if len(sys.argv) == 1 else int(sys.argv[1])
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8888
     logging.info("Available on port %d", port)
     uvicorn.run(app, host="0.0.0.0", port=port)
