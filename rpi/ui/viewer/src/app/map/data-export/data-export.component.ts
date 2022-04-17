@@ -3,7 +3,7 @@ import * as l from 'leaflet';
 import { MatDialogRef, MAT_DIALOG_DATA } from  '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { interval, Observable, Observer } from 'rxjs';
+import { forkJoin, interval, Observable, Observer, Subscriber } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { catchError, map } from 'rxjs/operators';
 
@@ -30,6 +30,9 @@ export class DataExportComponent implements OnInit {
 
   private map: l.map;
   private initObserver?: Observer<void> = undefined;
+  private names: {[index: string]: string} = {};
+  private nameUpdateDebounce: number = null;
+  private nameUpdateDelay: number = 200;
 
   constructor(
     private dialogRef: MatDialogRef<DataExportComponent>,
@@ -52,9 +55,18 @@ export class DataExportComponent implements OnInit {
     }
     this.http.get(`${environment.tile_domain}/data/list`).subscribe((response: HttpResponse<string>[]) => {
       this.dataTypes = <any>response;
-      this.initObserver.next();
-      this.initObserver.complete();
+      this.fetchExportNames().subscribe(() => {
+        this.initObserver.next();
+        this.initObserver.complete();
+      })
     })
+    this.map.on("moveend", this.updateNames.bind(this));
+    this.map.on("resize", this.updateNames.bind(this));
+  }
+
+  public ngOnDestroy(): void {
+    this.map.off("moveend", this.updateNames);
+    this.map.off("resize", this.updateNames);
   }
 
   public populateCount(dataType: string): void {
@@ -68,6 +80,10 @@ export class DataExportComponent implements OnInit {
       this.dataTypeCounts[dataType] = <any>response;
       this.dataTypeCountPending = false;
     })
+  }
+
+  public getExportName(dataType: string): string {
+    return this.names[dataType];
   }
 
   public getExportLink(dataType: string): string {
@@ -86,6 +102,36 @@ export class DataExportComponent implements OnInit {
 
   public close(): void {
     this.dialogRef.close();
+  }
+
+  private fetchExportNames(): Observable<unknown> {
+    const [minX, minY, maxX, maxY] = this.getBoundingBox();
+    let completeSubscriber: Subscriber<void>;
+    const completeObservable = new Observable(observer => {
+      completeSubscriber = observer;
+    });
+    forkJoin(this.dataTypes.map(dataType => {
+      return this.http.get(`${environment.tile_domain}/data/name/${dataType}/${minX}/${minY}/${maxX}/${maxY}`).pipe(map((response: HttpResponse<string>) => {
+        this.names[dataType] = <any>response;
+      }));
+    })).subscribe(() => {
+      completeSubscriber.next();
+      completeSubscriber.complete();
+    });
+    return completeObservable;
+  }
+
+  private updateNames(): void {
+    this.contentVisible = false;
+    if (this.nameUpdateDebounce !== null) {
+      window.clearTimeout(this.nameUpdateDebounce);
+      this.nameUpdateDebounce = null;
+    }
+    this.nameUpdateDebounce = window.setTimeout(() => {
+      this.fetchExportNames().subscribe(() => {
+        this.contentVisible = true;
+      });
+    }, this.nameUpdateDelay);
   }
 
   private getBoundingBox(): number[] {

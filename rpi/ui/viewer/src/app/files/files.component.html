@@ -27,11 +27,13 @@
         <colgroup>
             <col width="100%" />
             <col width="0%" />
+            <col width="0%" />
         </colgroup>
-        <tr *ngFor="let file of entry.files">
+        <tr *ngFor="let file of fileSort(entry.files)">
             <td class="ellips-overflow">
                 <a [download]="file.name" [href]="file.path" target="_blank">{{ file.name }}</a>
             </td>
+            <td>{{ file.uploaded | datetime }}</td>
             <td>{{ formatSize(file.size) }}</td>
         </tr>
     </table>

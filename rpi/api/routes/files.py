@@ -26,11 +26,13 @@ def path_to_dict(path: os.PathLike, builder: Dict[str, object]):
         for nested in os.listdir(path):
             path_to_dict(os.path.join(path, nested), builder[DIRS_KEY][name])
     else:
+        fileinfo = os.stat(path)
         builder[FILES_KEY].append(
             {
                 "name": name,
                 "path": f"{FILES_PATH}/{path.replace(f'{FILES_DIR}/', '')}",
-                "size": os.stat(path).st_size,
+                "size": fileinfo.st_size,
+                "uploaded": int(fileinfo.st_ctime * 1000),
             }
         )
     return builder

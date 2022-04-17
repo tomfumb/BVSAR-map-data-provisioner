@@ -19,7 +19,7 @@
                 </div>
                 <div>
                     <button [disabled]="dataTypeCountPending" type="button" class="export-control-button" (click)="populateCount(dataType)">Count</button>
-                    <a [download]="dataType" [href]="getExportLink(dataType)" (click)="exportInitiated()">
+                    <a [download]="getExportName(dataType)" [href]="getExportLink(dataType)" (click)="exportInitiated()">
                         <button type="button" class="export-control-button">Export</button>
                     </a>
                 </div>

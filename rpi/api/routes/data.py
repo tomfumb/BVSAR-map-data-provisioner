@@ -110,19 +110,20 @@ handlers = {
 }
 
 
+@router.get("/name/{dataset}/{x_min}/{y_min}/{x_max}/{y_max}")
+async def export_name(
+    dataset: Dataset, x_min: float, y_min: float, x_max: float, y_max: float
+):
+    prefix = sub(r"[^A-Z0-9\-_]+", "-", dataset.value, flags=IGNORECASE).lower()
+    return f"{get_name_for_bounds(f'{prefix}', x_min, y_min, x_max, y_max)}.json"
+
+
 @router.get("/{dataset}/export/{x_min}/{y_min}/{x_max}/{y_max}")
 async def export_features(
     dataset: Dataset, x_min: float, y_min: float, x_max: float, y_max: float
 ) -> FileResponse:
     result_driver = ogr.GetDriverByName("GeoJSON")
-    result_filename_prefix = get_name_for_bounds(
-        sub(r"[^A-Z0-9\-_]+", "-", dataset.value, flags=IGNORECASE).lower(),
-        x_min,
-        y_min,
-        x_max,
-        y_max,
-    )
-    result_filename = f"{result_filename_prefix}.json"
+    result_filename = await export_name(dataset, x_min, y_min, x_max, y_max)
     result_path = path.join(result_dir_path, result_filename)
     if not path.exists(result_path):
         result_datasource = result_driver.CreateDataSource(result_path)

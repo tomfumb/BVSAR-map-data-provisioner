@@ -3,16 +3,19 @@ import { Component, OnInit } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { SpaceService } from '../space.service';
 
+interface File {
+  name: string;
+  path: string;
+  size: number;
+  uploaded: number;
+}
+
 interface DirListing {
   id: string;
   dirs: {
     [index: string]: DirListing;
   };
-  files: {
-    name: string;
-    path: string;
-    size: number;
-  }[];
+  files: File[];
 }
 
 @Component({
@@ -34,6 +37,7 @@ export class FilesComponent implements OnInit {
     this.http.get<DirListing>(`${environment.tile_domain}/files/list`).subscribe(response => {
       this.listing = response;
       this.expanded = Object.values(this.listing.dirs).map(entry => entry.id);
+      console.log(this.listing);
     });
   }
 
@@ -55,5 +59,13 @@ export class FilesComponent implements OnInit {
     if (!this.isExpanded(id)) {
       this.expanded = this.expanded.concat([id]);
     }
+  }
+
+  public fileSort(files: File[]): File[] {
+    const filesCopy = files.slice(0);
+    filesCopy.sort((a: File, b: File) => {
+      return b.uploaded - a.uploaded;
+    });
+    return filesCopy;
   }
 }
