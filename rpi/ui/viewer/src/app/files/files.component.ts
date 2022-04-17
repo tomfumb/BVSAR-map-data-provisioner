@@ -37,7 +37,6 @@ export class FilesComponent implements OnInit {
     this.http.get<DirListing>(`${environment.tile_domain}/files/list`).subscribe(response => {
       this.listing = response;
       this.expanded = Object.values(this.listing.dirs).map(entry => entry.id);
-      console.log(this.listing);
     });
   }
 

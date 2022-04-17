@@ -1,8 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import * as l from 'leaflet';
 import { environment } from 'src/environments/environment';
-import { map } from 'rxjs/operators'
 import { forkJoin, Observable, Observer } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { TileUrlsComponent } from './tile-urls/tile-urls.component';
@@ -33,6 +32,9 @@ export class MapComponent implements OnInit, OnDestroy {
   private dataModifiedLabel: l.Control;
   private mapCentreLabel: l.Control;
 
+  private readonly lastMapBoundsKey = "last-map-bounds";
+  private readonly lastTilesetNameKey = "last-tileset-name";
+
   constructor(
     private http: HttpClient,
     private dialog: MatDialog,
@@ -56,14 +58,25 @@ export class MapComponent implements OnInit, OnDestroy {
             initialTileset = matchingTilesets[0];
           }
         } else {
-          // if there is a dataset that appears suitable for the time of year, select it by default
-          const season = [3,4,5,6,7,8,9].indexOf((new Date().getMonth())) > -1 ? "summer" : "winter";
-          const seasonRegex = new RegExp(`${season}`, "i");
-          const seasonTilesets = this.tilesets.filter(tileset => {
-            return !!tileset.name.match(seasonRegex);
-          });
-          if (seasonTilesets.length > 0) {
-            initialTileset = seasonTilesets[0];
+          const lastTilesetName = localStorage.getItem(this.lastTilesetNameKey);
+          if (lastTilesetName !== null) {
+            const candidateTilesets = this.tilesets.filter(tileset => {
+              return !!tileset.name.match(lastTilesetName);
+            });
+            if (candidateTilesets.length > 0) {
+              initialTileset = candidateTilesets[0];
+            }
+            localStorage.removeItem(this.lastTilesetNameKey);
+          } else {
+            // if there is a dataset that appears suitable for the time of year, select it by default
+            const season = [3,4,5,6,7,8,9].indexOf((new Date().getMonth())) > -1 ? "summer" : "winter";
+            const seasonRegex = new RegExp(`${season}`, "i");
+            const seasonTilesets = this.tilesets.filter(tileset => {
+              return !!tileset.name.match(seasonRegex);
+            });
+            if (seasonTilesets.length > 0) {
+              initialTileset = seasonTilesets[0];
+            }
           }
         }
         if (initialTileset) {
@@ -90,6 +103,9 @@ export class MapComponent implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     if (this.leafletMap) {
+      const mapBounds = this.leafletMap.getBounds();
+      localStorage.setItem(this.lastMapBoundsKey, JSON.stringify([mapBounds.getSouthWest(), mapBounds.getNorthEast()]));
+      localStorage.setItem(this.lastTilesetNameKey, this.tilesetSelected.name);
       this.leafletMap.off();
       this.leafletMap.remove();
     }
@@ -228,6 +244,12 @@ export class MapComponent implements OnInit, OnDestroy {
       const currentBounds = this.leafletMap.getBounds();
       if (respectCurrentBounds && newBounds.intersects(currentBounds)) {
         newBounds = currentBounds
+      }
+    } else {
+      const lastMapBounds = localStorage.getItem(this.lastMapBoundsKey);
+      if (lastMapBounds !== null) {
+        newBounds = JSON.parse(lastMapBounds);
+        localStorage.removeItem(this.lastMapBoundsKey);
       }
     }
     this.leafletMap.fitBounds(newBounds);
