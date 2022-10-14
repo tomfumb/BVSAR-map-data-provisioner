@@ -19,13 +19,15 @@ def get_base_path() -> str:
 
 
 def get_data_path(path_parts: Tuple[str] = None) -> str:
-    return os.path.join(
-        *(
-            os.path.dirname(__file__),
-            "..",
-            "..",
-            "data",
-            *(path_parts if path_parts else list()),
+    return os.path.abspath(
+        os.path.join(
+            *(
+                os.path.dirname(__file__),
+                "..",
+                "..",
+                "data",
+                *(path_parts if path_parts else list()),
+            )
         )
     )
 

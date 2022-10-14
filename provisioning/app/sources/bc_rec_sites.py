@@ -28,7 +28,11 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     rec_sites_layer.SetAttributeFilter("LIFE_CYCLE_STATUS_CODE IN ('ACTIVE','PENDING')")
     path = os.path.join(run_directory, "bc_rec_sites.shp")
     ogr_to_shp(
-        bbox, [rec_sites_layer], path, "bc_rec_sites", OUTPUT_CRS_CODE,
+        bbox,
+        [rec_sites_layer],
+        path,
+        "bc_rec_sites",
+        OUTPUT_CRS_CODE,
     )
     rec_sites_layer = None
     datasource = None

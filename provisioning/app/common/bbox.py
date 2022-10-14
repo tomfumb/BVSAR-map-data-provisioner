@@ -47,11 +47,11 @@ class BBOX(BaseModel):
         for bbox_point_pair in bbox_coords["coordinates"][0]:
             point = ogr.Geometry(ogr.wkbPoint)
             point.AssignSpatialReference(srs_in)
-            if srs_in.EPSGTreatsAsLatLong == 1:
-                point.AddPoint(bbox_point_pair[1], bbox_point_pair[0])
-            else:
-                point.AddPoint(bbox_point_pair[0], bbox_point_pair[1])
-            point.Transform(transform)
+            # if srs_in.EPSGTreatsAsLatLong() == srs_out.EPSGTreatsAsLatLong():
+            point.AddPoint(bbox_point_pair[0], bbox_point_pair[1])
+            # else:
+            #     point.AddPoint(bbox_point_pair[1], bbox_point_pair[0])
+            point.TransformTo(srs_out)
             x, y, _ = point.GetPoint()
             bbox_coords_transformed.append([x, y])
         bbox_coords["coordinates"][0] = bbox_coords_transformed

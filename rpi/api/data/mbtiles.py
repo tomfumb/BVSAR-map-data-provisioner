@@ -28,7 +28,9 @@ def cache_connections():
                             raise FileNotFoundError()
                         conn_start = time()
                         connections[dirname] = connect(mbtiles_path)
-                        logging.info(f"{dirname} established in {time() - conn_start}s")
+                        logging.debug(
+                            f"{dirname} established in {time() - conn_start}s"
+                        )
                 except FileNotFoundError as e:
                     logging.warning(
                         f"Unable to establish mbtiles connection for {dirname}: {e}"

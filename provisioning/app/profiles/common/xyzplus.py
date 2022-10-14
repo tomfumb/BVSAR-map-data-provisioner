@@ -24,19 +24,26 @@ def execute(
     run_id: str,
     xyz_url: str,
     profile_name: str,
+    profile_zoom_max: int,
+    profile_zoom_min: int,
     layers: List[ProjectLayer],
     extra_styles: List[str] = list(),
 ) -> None:
     xyz_result = xyz_provisioner(
-        bbox, xyz_url, ZOOM_MIN, ZOOM_MAX, ["image/png", "image/jpeg"], OUTPUT_FORMAT
+        bbox,
+        xyz_url,
+        profile_zoom_min,
+        profile_zoom_max,
+        ["image/png", "image/jpeg"],
+        OUTPUT_FORMAT,
     )
     generate_result = generate_tiles(
         layers,
         ["common", profile_name] + extra_styles,
         bbox,
         profile_name,
-        ZOOM_MIN,
-        ZOOM_MAX,
+        profile_zoom_min,
+        profile_zoom_max,
         run_id,
     )
     xyz_tiles_merged = list()

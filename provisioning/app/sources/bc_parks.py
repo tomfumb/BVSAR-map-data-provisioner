@@ -1,6 +1,6 @@
 import os
 
-from gdal import ogr
+from osgeo import ogr
 from typing import Final, List
 
 from app.common.bbox import BBOX
@@ -25,7 +25,11 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     parks_layer = datasource.GetLayerByName("WHSE_TANTALIS_TA_PARK_ECORES_PA_SVW")
     path = os.path.join(run_directory, "bc_parks.shp")
     ogr_to_shp(
-        bbox, [parks_layer], path, "bc_parks", OUTPUT_CRS_CODE,
+        bbox,
+        [parks_layer],
+        path,
+        "bc_parks",
+        OUTPUT_CRS_CODE,
     )
     parks_layer = None
     datasource = None

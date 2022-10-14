@@ -27,9 +27,9 @@ runner-data/local-features/local-features.gpkg is an empty GeoPackage that shoul
 Several layer profiles expect data provided by the province of British Columbia and some of these datasets cannot be retrieved automatically by the tool. You must download these datasets manually and store them at the correct location before these layers can be provisioned.
 
 ### Resource Roads (used by multiple profiles)
-- Navigate to https://catalogue.data.gov.bc.ca/dataset/forest-tenure-road-segment-lines in browser
-- Click the "Access / Download" link
-- Export the "Forest Tenure Road Segment Lines" layer (remove any other layers) with the following selections
+- Navigate to https://catalogue.data.gov.bc.ca/dataset/forest-tenure-road-section-lines/resource/d55c3cc0-24aa-4c60-b2e5-f235689dfef3 in browser
+- Click on "Access/Download" at the top of the page
+- Export the roads layer with the following selections
     - Geographic Long/Lat (dd)
     - ESRI File Geodatabase
     - None

@@ -14,7 +14,10 @@ OUTPUT_CRS_CODE: Final = "EPSG:3857"
 
 
 def provision(
-    bbox: BBOX, run_id: str, src_layer_name: str, dst_layer_name: str,
+    bbox: BBOX,
+    run_id: str,
+    src_layer_name: str,
+    dst_layer_name: str,
 ) -> List[str]:
     kmz_driver = ogr.GetDriverByName("LIBKML")
     kmz_datasets = [

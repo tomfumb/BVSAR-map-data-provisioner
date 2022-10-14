@@ -61,21 +61,24 @@ def get_edge_tiles(tile_dir: str) -> List[str]:
                         range(int(x_dirs[1]), int(x_dirs[-1])),
                     )
                 ):
-                    y_file_nums = sorted(
-                        [
-                            int(re.sub(r"\.png", "", y_file_name))
-                            for y_file_name in os.listdir(
-                                os.path.join(tile_dir, zoom_dir, x_mid_dir)
-                            )
-                        ]
-                    )
-                    edge_tiles.append(
-                        os.path.join(zoom_dir, x_mid_dir, f"{y_file_nums[0]}.png")
-                    )
-                    if len(y_file_nums) > 1:
-                        edge_tiles.append(
-                            os.path.join(zoom_dir, x_mid_dir, f"{y_file_nums[-1]}.png")
+                    if os.path.exists(x_mid_dir):
+                        y_file_nums = sorted(
+                            [
+                                int(re.sub(r"\.png", "", y_file_name))
+                                for y_file_name in os.listdir(
+                                    os.path.join(tile_dir, zoom_dir, x_mid_dir)
+                                )
+                            ]
                         )
+                        edge_tiles.append(
+                            os.path.join(zoom_dir, x_mid_dir, f"{y_file_nums[0]}.png")
+                        )
+                        if len(y_file_nums) > 1:
+                            edge_tiles.append(
+                                os.path.join(
+                                    zoom_dir, x_mid_dir, f"{y_file_nums[-1]}.png"
+                                )
+                            )
     return edge_tiles
 
 

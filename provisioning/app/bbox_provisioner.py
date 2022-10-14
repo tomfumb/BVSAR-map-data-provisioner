@@ -10,7 +10,7 @@ from shutil import rmtree
 from app.common.bbox import BBOX
 
 from app.common.http_retriever import check_exists
-from app.profiles import xyz, topo, xyzsummer, xyzwinter, xyzhunting
+from app.profiles import xyz, topo, xyzsummer, xyzwinter, xyzhunting, ates
 from app.record.run_recorder import record_run, has_prior_run
 
 from app.sources.xyz_service import build_exists_check_requests as xyz_check_builder
@@ -55,7 +55,7 @@ def provision(arg: ProvisionArg) -> ProvisionResult:
             "zoom_max": profile.ZOOM_MAX,
             "format": profile.OUTPUT_FORMAT,
         }
-        for profile in [xyz, topo, xyzsummer, xyzwinter, xyzhunting]
+        for profile in [xyz, topo, xyzsummer, xyzwinter, xyzhunting, ates]
     }
     profiles[profile_name]["execute"](bbox, run_id, {"xyz_url": xyz_url})
     if int(os.environ.get("BVSAR_HEAD_VALIDATE", 0)) == 1:

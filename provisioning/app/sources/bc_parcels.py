@@ -28,7 +28,11 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     )
     path = os.path.join(run_directory, "bc_parcels.shp")
     ogr_to_shp(
-        bbox, [parcels_layer], path, "bc_parcels", OUTPUT_CRS_CODE,
+        bbox,
+        [parcels_layer],
+        path,
+        "bc_parcels",
+        OUTPUT_CRS_CODE,
     )
     parcels_layer = None
     datasource = None
