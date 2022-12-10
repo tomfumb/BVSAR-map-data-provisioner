@@ -27,9 +27,9 @@ runner-data/local-features/local-features.gpkg is an empty GeoPackage that shoul
 Several layer profiles expect data provided by the province of British Columbia and some of these datasets cannot be retrieved automatically by the tool. You must download these datasets manually and store them at the correct location before these layers can be provisioned.
 
 ### Resource Roads (used by multiple profiles)
-- Navigate to https://catalogue.data.gov.bc.ca/dataset/forest-tenure-road-segment-lines in browser
-- Click the "Access / Download" link
-- Export the "Forest Tenure Road Segment Lines" layer (remove any other layers) with the following selections
+- Navigate to https://catalogue.data.gov.bc.ca/dataset/forest-tenure-road-section-lines/resource/d55c3cc0-24aa-4c60-b2e5-f235689dfef3 in browser
+- Click on "Access/Download" at the top of the page
+- Export the roads layer with the following selections
     - Geographic Long/Lat (dd)
     - ESRI File Geodatabase
     - None
@@ -37,7 +37,7 @@ Several layer profiles expect data provided by the province of British Columbia 
 - Extract .zip archive and move the FTEN_ROAD_SEGMENT_LINES_SVW.gdb directory to the provisioning/data directory
     - You should have a directory provisioning/data/FTEN_ROAD_SEGMENT_LINES_SVW.gdb
 
-### Rec Sites (used by hunting profile)
+### Rec Sites (used by xyzhunting profile)
 - Navigate to https://catalogue.data.gov.bc.ca/dataset/recreation-polygons#edc-pow
 - Follow link BC Geographic Warehouse Custom Download -> Access / Download
 - Export data with the following selections
@@ -48,11 +48,22 @@ Several layer profiles expect data provided by the province of British Columbia 
 - Extract .zip archive and move the FTEN_RECREATION_POLY_SVW.gdb directory to the provisioning/data directory
     - You should have a directory provisioning/data/FTEN_RECREATION_POLY_SVW.gdb
 
-### Parcel Fabric (used by hunting profile)
+### Parcel Fabric (used by hunting profile) (used by xyzhunting profile)
 - Navigate to https://catalogue.data.gov.bc.ca/dataset/parcelmap-bc-parcel-fabric
 - Follow first link Parcel Fabric File Geodatabase (NAD83 / BC Albers) -> Access / Download and wait for .zip archive to download
 - Extract .zip archive and move the pmbc_parcel_fabric_poly_svw.gdb directory to the provisioning/data directory
     - You should have a directory provisioning/data/pmbc_parcel_fabric_poly_svw.gdb
+
+### Provincial Parks, Ecological Reserves, and Protected Areas (used by xyzhunting profile)
+- Navigate to https://catalogue.data.gov.bc.ca/dataset/bc-parks-ecological-reserves-and-protected-areas
+- Follow link BC Geographic Warehouse Custom Download -> Access / Download
+- Export data with the following selections
+    - Geographic Long/Lat (dd)
+    - ESRI File Geodatabase
+    - None
+- Download the .zip archive from the link provided by email
+- Extract .zip archive and move the TA_PARK_ECORES_PA_SVW.gdb directory to the provisioning/data directory
+    - You should have a directory provisioning/data/TA_PARK_ECORES_PA_SVW.gdb
 
 ## Execution
 - `export AREAS_LOCATION=/path/to/dir/containing/areas.gpkg` (do not include `areas.gpkg` in path)

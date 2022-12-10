@@ -21,7 +21,11 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     datasource = driver.Open(LOCAL_FEATURES_PATH)
     path = os.path.join(run_directory, "trails.shp")
     ogr_to_shp(
-        bbox, [datasource.GetLayerByName("trails")], path, "trails", OUTPUT_CRS_CODE,
+        bbox,
+        [datasource.GetLayerByName("trails")],
+        path,
+        "trails",
+        OUTPUT_CRS_CODE,
     )
     datasource = None
     return [path]

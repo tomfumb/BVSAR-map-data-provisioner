@@ -261,7 +261,12 @@ def _create_run_output(
             Translate(
                 tile.final_path,
                 tile.tif_path,
-                projWin=[int_win_x_min, int_win_y_max, int_win_x_max, int_win_y_min,],
+                projWin=[
+                    int_win_x_min,
+                    int_win_y_max,
+                    int_win_x_max,
+                    int_win_y_min,
+                ],
             )
             file_list[tile.scale].append(tile.final_path)
         except Exception as ex:

@@ -12,7 +12,7 @@ from app.sources.common.ogr_to_shp import ogr_to_shp
 from app.tilemill.ProjectLayerType import ProjectLayerType
 
 
-CACHE_DIR_NAME: Final = "bc-parcels"
+CACHE_DIR_NAME: Final = "bc-parks"
 OUTPUT_CRS_CODE: Final = "EPSG:3857"
 OUTPUT_TYPE: Final = ProjectLayerType.POLYGON
 
@@ -21,19 +21,16 @@ def provision(bbox: BBOX, run_id: str) -> List[str]:
     run_directory = get_run_data_path(run_id, (CACHE_DIR_NAME,))
     os.makedirs(run_directory)
     driver = ogr.GetDriverByName("OpenFileGDB")
-    datasource = driver.Open(get_data_path(("pmbc_parcel_fabric_poly_svw.gdb",)))
-    parcels_layer = datasource.GetLayerByName("pmbc_parcel_fabric_poly_svw")
-    parcels_layer.SetAttributeFilter(
-        "OWNER_TYPE IN ('First Nation','Mixed Ownership','Municipal','Private','Unknown')"
-    )
-    path = os.path.join(run_directory, "bc_parcels.shp")
+    datasource = driver.Open(get_data_path(("TA_PARK_ECORES_PA_SVW.gdb",)))
+    parks_layer = datasource.GetLayerByName("WHSE_TANTALIS_TA_PARK_ECORES_PA_SVW")
+    path = os.path.join(run_directory, "bc_parks.shp")
     ogr_to_shp(
         bbox,
-        [parcels_layer],
+        [parks_layer],
         path,
-        "bc_parcels",
+        "bc_parks",
         OUTPUT_CRS_CODE,
     )
-    parcels_layer = None
+    parks_layer = None
     datasource = None
     return [path]

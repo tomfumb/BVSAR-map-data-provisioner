@@ -2,8 +2,8 @@ import re
 import os
 import zipfile
 
-from osgeo import ogr
 from osgeo.gdal import DEMProcessing, Warp
+from osgeo.ogr import GetDriverByName
 from typing import Final, List
 
 from app.common.bbox import BBOX
@@ -38,7 +38,7 @@ class GenerationRequest(RetrievalRequest):
 def provision(bbox: BBOX, run_id: str) -> List[str]:
     run_directory = get_run_data_path(run_id, (CACHE_DIR_NAME,))
     os.makedirs(run_directory)
-    driver = ogr.GetDriverByName("GPKG")
+    driver = GetDriverByName("GPKG")
     grid_datasource = driver.Open(get_data_path(("grids.gpkg",)))
     grid_layer = grid_datasource.GetLayerByName("Canada-50000")
     grid_layer.SetSpatialFilterRect(bbox.min_x, bbox.min_y, bbox.max_x, bbox.max_y)

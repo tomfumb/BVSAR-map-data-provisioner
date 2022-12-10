@@ -1,7 +1,8 @@
 import re
 import sys
 import json
-from osgeo import gdal
+from osgeo.gdal import Open
+from osgeo.ogr import GetDriverByName
 import time
 import random
 import logging
@@ -161,7 +162,7 @@ def _getNowAsEpochMs() -> int:
 
 
 def _getExtentFromRaster(path: str, crs_code: str) -> BBOX:
-    image = gdal.Open(path)
+    image = Open(path)
     ulx, xres, _, uly, _, yres = image.GetGeoTransform()
     lrx = ulx + (image.RasterXSize * xres)
     lry = uly + (image.RasterYSize * yres)
@@ -176,7 +177,7 @@ def _getExtentFromRaster(path: str, crs_code: str) -> BBOX:
 
 
 def _getExtentFromShp(path: str, crs_code: str) -> BBOX:
-    driver = gdal.ogr.GetDriverByName("ESRI Shapefile")
+    driver = GetDriverByName("ESRI Shapefile")
     shp_datasource = driver.Open(path)
     shp_layer = shp_datasource.GetLayerByIndex(0)
     shp_extent = shp_layer.GetExtent()

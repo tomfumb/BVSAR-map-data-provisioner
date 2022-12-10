@@ -4,6 +4,7 @@ services:
 
   tilemill:
     container_name: bvsar-tilemill
+    platform: linux/amd64
     build:
       context: ./tilemill
     image: tomfumb/bvsar-tilemill
@@ -27,41 +28,27 @@ services:
 
   provisioner:
     container_name: bvsar-provisioner
+    platform: linux/amd64
     build:
       context: ./provisioning
     image: tomfumb/bvsar-provisioner
     volumes:
       - type: bind
-        source: "${DATA_LOCATION}/cache"
-        target: /tiledata/cache
+        source: ./provisioning
+        target: /provisioning
+      - type: bind
+        source: "${DATA_LOCATION}"
+        target: /tiledata
       - type: volume
         source: bvsar-export
         target: /tiledata/export
-      - type: bind
-        source: "${DATA_LOCATION}/result"
-        target: /tiledata/result
       - type: volume
         source: bvsar-run
         target: /tiledata/run
-      - type: bind
-        source: "${AREAS_LOCATION}"
-        target: /tiledata/areas
-      - type: bind
-        source: "${LOCAL_FEATURES_LOCATION}"
-        target: /tiledata/local-features
-      - type: bind
-        source: ./provisioning/app
-        target: /app
-      - type: bind
-        source: ./provisioning/data
-        target: /data
     environment:
-      - HTTP_URL
-      - TILEMILL_URL
+      - DATA_LOCATION=/tiledata
       - BVSAR_BATCH_SIZE
       - GRIDDED_REPEAT_IF_EXISTS
-      - AREAS_LOCATION=/tiledata/areas
-      - LOCAL_FEATURES_LOCATION=/tiledata/local-features
     depends_on: 
       tilemill:
         condition: service_healthy
@@ -70,6 +57,7 @@ services:
 
   rpi:
     container_name: bvsar-rpi
+    platform: linux/amd64
     build:
       context: ./rpi
     image: tomfumb/bvsar-rpi
@@ -83,9 +71,9 @@ services:
       - type: bind
         source: ./provisioning/data
         target: /www/srcdata
-    command: uvicorn --reload --host 0.0.0.0 --port 80 --log-level "debug" "api.main:app"
+    command: uvicorn --workers 2 --host 0.0.0.0 --port 80 --log-level "debug" "api.main:app"
     environment:
-      - PDF_EXPORT_MAX_TILES
+      LOG_LEVEL: debug
     ports:
       - "9000:80"
 

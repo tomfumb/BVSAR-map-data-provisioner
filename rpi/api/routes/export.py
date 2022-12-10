@@ -116,7 +116,7 @@ async def export_pdf(
         )
         print(result)
     except Exception as ex:
-        print(ex)
+        logging.error(ex)
     pdf_data = read_pdf()
     logging.info("Deleting temp directory")
     rmtree(export_temp_dir)
